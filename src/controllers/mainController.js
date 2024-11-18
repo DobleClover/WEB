@@ -1,8 +1,8 @@
 const fetch = require('node-fetch');
 
 const controller = {
-    list: (req,res)=>{
-
+    index: (req,res)=>{
+        return res.render('index.ejs')
     }
 };
 
