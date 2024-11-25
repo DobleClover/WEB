@@ -15,6 +15,9 @@
     --green-cream-color: #C4C6B0;
     --cream-color: #E9E5DC;
 }
+body{
+    background-color: #000;
+}
 .hidden{
     display: none !important;
 }
@@ -39,6 +42,7 @@ img{
     box-shadow: 2px 5px 3px var(--box-shadow-color); /* Ajusta los valores según tus preferencias */
     border-radius: 2rem;
     height: auto;
+    background-color: #fff;
 }
 .card_image{
     width: 35%;
@@ -71,7 +75,7 @@ img{
 }
 .card_header,.card_price{
     color: #000;
-    font-size: clamp(1.15rem, 2vw + .2rem, 1.5rem);
+    font-size: clamp(1.15rem, 2vw + .05rem, 1.35rem);
     font-weight: 600;
     margin: 0;
 }

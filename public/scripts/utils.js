@@ -4,23 +4,47 @@ export function listenToProductCards() {
     if (card.dataset.listened) return;
     card.dataset.listened = true;
     const mainImage = card.querySelector(".card_main_image");
-    const hoveredImage = card.querySelector(".card_hovered_image");
+    const alternativeImage = card.querySelector(".card_alternative_image");
     const otherImages = card.querySelectorAll(".card_other_image img");
+    if(!isInDesktop()){
+      let timeoutID;
+      //aca es mobile, me fijo si toca las other images
+      otherImages.forEach(image => {
+        image.addEventListener("click",(e)=>{
+           // Evita que el <a> contenedor realice su acción predeterminada
+          e.preventDefault();
+          // Agarro el src
+          const alternativeSrc = image.src;
+          // Asigno el src a la imagen alternativa
+          alternativeImage.src = alternativeSrc;
 
+          // Agrego la clase "alternative_image_active"
+          alternativeImage.classList.add("card_alternative_image_active");
+            if(timeoutID)clearTimeout(timeoutID)
+            // Después de 3 segundos, quito la clase
+            timeoutID = setTimeout(() => {
+              alternativeImage.classList.remove("card_alternative_image_active");
+            }, 2500);
+            })
+      });
+      return
+    } else{
     // Lógica cuando isInDesktop() es true
     otherImages.forEach((image) => {
       image.addEventListener("mouseenter", () => {
         const relativeSrc = new URL(image.src).pathname;
-        hoveredImage.src = relativeSrc;
-        hoveredImage.classList.add("card_main_image_active");
+        alternativeImage.src = relativeSrc;
+        alternativeImage.classList.add("card_main_image_active");
         mainImage.classList.remove("card_main_image_active");
       });
 
       image.addEventListener("mouseleave", () => {
-        hoveredImage.classList.remove("card_main_image_active");
+        alternativeImage.classList.remove("card_main_image_active");
         mainImage.classList.add("card_main_image_active");
       });
     });
+    }
+    
   });
 }
 

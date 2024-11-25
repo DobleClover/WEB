@@ -1,9 +1,9 @@
 export function createProductCard(props) {
-    const { id, name, category, price, files } = props;
+    const { id, name, category, price, files, discount } = props;
 
     // Crear elementos
     const card = document.createElement("a");
-    card.className = "card product_card";
+    card.className = `card product_card ${discount ? "discount_card":""}`;
     card.href = `/product/${id}`;
 
     const imagesWrapper = document.createElement("div");
@@ -19,12 +19,17 @@ export function createProductCard(props) {
     mainImage.alt = `Main image for ${name}`;
 
     const hoveredImage = document.createElement("img");
-    hoveredImage.className = "card_hovered_image";
-    hoveredImage.alt = "Hovered Image";
+    hoveredImage.className = "card_alternative_image";
+    hoveredImage.alt = "Alt Image";
 
     cardImage.appendChild(mainImage);
     cardImage.appendChild(hoveredImage);
-
+    if (discount) {
+        const saleTag = document.createElement("div");
+        saleTag.className = "sale_tag";
+        saleTag.textContent = "SALE";
+        cardImage.appendChild(saleTag);
+    }
     const otherImagesContainer = document.createElement("div");
     otherImagesContainer.className = "card_other_image";
 
@@ -51,17 +56,28 @@ export function createProductCard(props) {
     cardCategory.textContent = category;
 
     const cardPrice = document.createElement("div");
-    cardPrice.className = "card_price product_card_price";
+    cardPrice.className = `card_price product_card_price`;
     cardPrice.textContent = `$${price.toLocaleString()}`;
-
-    const button = document.createElement("div");
-    button.className = "ui button";
-    button.textContent = "Seleccionar opciones";
-
+    let discountedPrice;
+    if(discount){
+        discountedPrice = document.createElement("div");
+        discountedPrice.className = `card_price product_card_price discount_price`;
+        discountedPrice.textContent = `$${((discount+1)*price).toLocaleString()}`;
+        cardPrice.textContent="";
+        const originalPrice = document.createElement("span");
+        originalPrice.className = "original_price";
+        originalPrice.textContent = `$${price.toLocaleString()}`;
+        cardPrice.appendChild(originalPrice); // Agregarlo junto al precio original
+        // Crear el elemento para mostrar el porcentaje de descuento
+        const discountInfo = document.createElement("span");
+        discountInfo.className = "discount_info";
+        discountInfo.textContent = ` ${discount*100}% OFF`;
+        cardPrice.appendChild(discountInfo); // Agregarlo junto al precio original
+    }
     cardInfo.appendChild(cardHeader);
     cardInfo.appendChild(cardCategory);
     cardInfo.appendChild(cardPrice);
-    cardInfo.appendChild(button);
+    discount ? cardInfo.appendChild(discountedPrice):null;
 
     card.appendChild(imagesWrapper);
     card.appendChild(cardInfo);

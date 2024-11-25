@@ -12,7 +12,8 @@ window.addEventListener('load',()=>{
                 { filename: "1.jpg", mainImage: true },
                 { filename: "2.jpg", mainImage: false },
                 { filename: "3.jpg", mainImage: false }
-            ]
+            ],
+            discount: 0
         },
         {
             id: 2,
@@ -24,7 +25,8 @@ window.addEventListener('load',()=>{
                 { filename: "5.jpg", mainImage: false },
                 { filename: "7.jpg", mainImage: false },
                 { filename: "1.jpg", mainImage: false }
-            ]
+            ],
+            discount: 0.5
         },
         {
             id: 3,
@@ -34,7 +36,8 @@ window.addEventListener('load',()=>{
             files: [
                 { filename: "6.jpg", mainImage: true },
                 { filename: "7.jpg", mainImage: false }
-            ]
+            ],
+            discount: 0.15
         },
         {
             id: 4,
@@ -46,19 +49,14 @@ window.addEventListener('load',()=>{
                 { filename: "5.jpg", mainImage: false },
                 { filename: "3.jpg", mainImage: false },
                 { filename: "6.jpg", mainImage: false }
-            ]
+            ],
+            discount: 0
         }
     ];
     const main = document.querySelector('.main');
 
     products.forEach(prod => {
-        const card = createProductCard({
-            id: prod.id,
-            name: prod.name,
-            category: prod.category,
-            price: prod.price,
-            files: prod.files,
-        });
+        const card = createProductCard(prod);
         main.appendChild(card);
     });
     listenToProductCards();

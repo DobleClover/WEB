@@ -1,16 +1,17 @@
 .product_card{
     width: 90vw;
-    max-width: 255px;
+    max-width: 240px;
     flex-direction: column;
     justify-content: space-between;
-    height: 60vh;
+    height: 70vh;
     overflow: hidden;
     border-radius: 1.25rem;
     margin-bottom: 5vh;
+    border: 2px solid var(--green-color);
 }
 .card_images_wrapper{
     position: relative;
-    height: 70%;
+    height: 60%;
     width: 100%;
 }
 .product_card .card_image{
@@ -19,8 +20,23 @@
     padding: 0;
     position: relative;
 }
+.sale_tag {
+    position: absolute;
+    top: 10px;
+    left: -14%;
+    background-color: var(--red-color);
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 5px 40px;
+    transform: rotate(-45deg);
+    z-index: 10;
+    pointer-events: none;
+    /* width: 0rem; */
+    text-align: center;
+  }
 .product_card .card_main_image,
-.card_hovered_image{
+.card_alternative_image{
     transition: opacity 0.13s ease-in-out; /* Suave transición */
     width: 100%;
     height: 100%;
@@ -28,10 +44,14 @@
     opacity: 0;
 
 }
-.card_hovered_image{
+.card_alternative_image{
     position: absolute;
     inset: 0;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity .3s;
 }
+.card_alternative_image_active,
 .product_card .card_main_image_active{
     opacity: 1;
 }
@@ -56,7 +76,7 @@
     transition: transform 0.2s ease-in-out, opacity 0.3s ease-in-out; /* Transición suave */
 }
 .card_information{
-    height: 25%;
+    height: 35%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -69,12 +89,24 @@
     position: static;
     transform: none;
 }
-
+.product_card .ui.button{
+    background-color: var(--green-cream-color);
+}
+.product_card.discount_card .original_price{
+    text-decoration: line-through;
+    font-size: smaller;
+    color: var(--dark-grey-color);
+}
+.discount_price{
+    color: var(--green-color);
+}
+.discount_info{
+    color: var(--green-color);
+    font-size: small;
+}
 @media(min-width:1024px){
     .product_card{
         width: 30vw;
     }
-    .product_card .card_information{
-        height: 35%;
-    }
+    
 }
