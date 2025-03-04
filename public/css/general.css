@@ -2,6 +2,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    scroll-behavior: smooth;
 }
 :root {
     --grey-color: #f2f2f2;
@@ -15,8 +16,10 @@
     --green-cream-color: #C4C6B0;
     --cream-color: #E9E5DC;
 }
+
 body{
     background-color: #000;
+    
 }
 .hidden{
     display: none !important;
@@ -27,6 +30,7 @@ img{
     object-fit: contain;
 }
 .main{
+    margin-top: 25vh;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;

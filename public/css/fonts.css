@@ -1,0 +1,33 @@
+@font-face {
+    font-family: 'adidas';
+    src: url('../fonts/adidas.ttf') format('truetype');
+}
+
+.adidas{
+    font-family: 'adidas',sans-serif;
+}
+@font-face {
+    font-family: 'jordan';
+    src: url('../fonts/jordan.ttf') format('truetype');
+}
+
+.jordan{
+    font-family: 'jordan',sans-serif;
+    font-size: medium;
+}
+@font-face {
+    font-family: 'nike';
+    src: url('../fonts/nike.otf') format('opentype');
+}
+
+.nike{
+    font-family: 'nike',sans-serif;
+}
+@font-face {
+    font-family: 'polo';
+    src: url('../fonts/polo.ttf') format('truetype');
+}
+
+.polo{
+    font-family: 'polo',sans-serif;
+}
