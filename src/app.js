@@ -14,6 +14,7 @@ import apiVariationRouter from './routes/api/apiVariationRouter.js';
 import apiColorRouter from './routes/api/apiColorRouter.js';
 import apiOrderRouter from './routes/api/apiOrderRouter.js';
 import apiPhoneRouter from './routes/api/apiPhoneRouter.js';
+import apiBrandRouter from './routes/api/apiBrandRouter.js';
 // import userRouter from './routes/userRouter.js';
 // import apiUserRouter from './routes/api/apiUserRouter.js';
 // import apiCartRouter from './routes/api/apiCartRouter.js'
@@ -54,6 +55,7 @@ app.use('/api/variation', apiVariationRouter);
 app.use('/api/color', apiColorRouter);
 app.use('/api/order', apiOrderRouter);
 app.use('/api/phone', apiPhoneRouter);
+app.use('/api/brand', apiBrandRouter);
 // app.use('/api/user',apiUserRouter);
 // app.use('/api/cart', apiCartRouter);
 // app.use('/api/type', apiTypeRouter);

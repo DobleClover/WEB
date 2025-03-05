@@ -9,9 +9,11 @@ export default (sequelize, dataTypes) => {
             allowNull: false,
         },
         filename: { type: dataTypes.STRING(255) },
-        products_id: { type: dataTypes.STRING(36) },
+        entities_id: { type: dataTypes.STRING(36) }, //el id ya sea producto, marca o drop
+        entity_types_id: { type: dataTypes.INTEGER }, //tipo de entidad que almacene
         file_types_id: { type: dataTypes.INTEGER },
         sections_id: { type: dataTypes.INTEGER },
+        file_roles_id: { type: dataTypes.INTEGER },
         main_file: { type: dataTypes.TINYINT },
     }
 
@@ -21,14 +23,6 @@ export default (sequelize, dataTypes) => {
     }
 
     const File = sequelize.define(alias, cols, config);
-
-    File.associate = (models) => {
-        const {Product} = models;
-        File.belongsTo(Product, {
-            as: 'product',
-            foreignKey: 'product_id'
-        })
-    };
 
     return File;
 }

@@ -1,10 +1,18 @@
-export default [
-    {
-        id: 1,
-        section: 'Main Banner'
+export default {
+  MAIN_BANNER: {
+    id: 1,
+  },
+  PRODUCT: {
+    id: 2,
+  },
+  DROP: {
+    id: 3,
+    roles: {
+      CARD: 1,
+      CARROUSEL: 2,
     },
-    {
-        id: 2,
-        section: 'Product'
-    },
-]
+  },
+  BRAND: {
+    id: 4,
+  },
+};

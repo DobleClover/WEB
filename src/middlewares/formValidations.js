@@ -226,4 +226,20 @@ export default {
         return true
     }),
   ],
+  brandFields: [
+    body(["name"])
+    .notEmpty().withMessage("El nombre de la marca es obligatorio.")
+    .bail()
+    .trim()
+    .toLowerCase()
+    .custom(async (name) => {
+        // Verificar si la marca ya existe en la base de datos
+        const existingBrand = await db.Brand.findOne({ where: { name } });
+
+        if (existingBrand) {
+            throw new Error("La marca ya existe.");
+        };
+        return true
+    }),
+  ],
 };

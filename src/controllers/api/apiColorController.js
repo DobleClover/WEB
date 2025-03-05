@@ -51,8 +51,6 @@ const controller = {
   },
   createColor: async (req, res) => {
     try {
-      console.log(req.body);
-      
       // Traigo errores
       let errors = validationResult(req);
       if (!errors.isEmpty()) {

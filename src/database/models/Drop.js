@@ -1,3 +1,5 @@
+import entityTypes from "../../utils/staticDB/entityTypes.js";
+
 export default (sequelize, dataTypes) => {
   let alias = "Drop";
 
@@ -9,7 +11,7 @@ export default (sequelize, dataTypes) => {
     },
     name: { type: dataTypes.STRING(60) },
     active: { type: dataTypes.BOOLEAN },
-    unique: { type: dataTypes.BOOLEAN } //TODO: agregar imagenes tanto de card como de fondo
+    unique: { type: dataTypes.BOOLEAN }, //TODO: agregar imagenes tanto de card como de fondo
   };
 
   let config = {
@@ -21,10 +23,16 @@ export default (sequelize, dataTypes) => {
 
   Drop.associate = (models) => {
     Drop.belongsToMany(models.Product, {
-        as: 'products',
-        through: 'Product_Drop',
-        foreignKey: 'drops_id',
-        otherKey: "products_id"
+      as: "products",
+      through: "Product_Drop",
+      foreignKey: "drops_id",
+      otherKey: "products_id",
+    });
+    Drop.hasMany(models.File, {
+      as: "files",
+      foreignKey: "entities_id",
+      constraints: false, // Sequelize NO agregará una restricción de clave foránea
+      scope: { entity_types_id: entityTypes.DROP }, //Solo busca los files que sea = a drop
     });
   };
 

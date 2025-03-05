@@ -68,4 +68,26 @@ export default {
     destroyFailed:
       "Hubo un problema al borrar el color, por favor intente nuevamente",
   },
+  dropMsg: {
+    createSuccesfull: "Drop creado correctamente!",
+    createFailed:
+      "Hubo un problema al crear el Drop, por favor intente nuevamente",
+    updateSuccesfull: "¡Color actualizado correctamente!",
+    updateFailed:
+      "Hubo un problema al actualizar el drop, por favor intente nuevamente",
+    destroySuccesfull: "¡Color borrado correctamente!",
+    destroyFailed:
+      "Hubo un problema al borrar el drop, por favor intente nuevamente",
+  },
+  brandMsg: {
+    createSuccesfull: "Marca creada correctamente!",
+    createFailed:
+      "Hubo un problema al crear la Marca, por favor intente nuevamente",
+    updateSuccesfull: "Marca actualizada correctamente!",
+    updateFailed:
+      "Hubo un problema al actualizar la marca, por favor intente nuevamente",
+    destroySuccesfull: "Marca borrada correctamente!",
+    destroyFailed:
+      "Hubo un problema al borrar la marca, por favor intente nuevamente",
+  },
 };

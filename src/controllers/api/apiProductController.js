@@ -3,8 +3,8 @@ const { Product } = db;
 // LIBRERIES
 import { validationResult } from "express-validator";
 import { v4 as UUIDV4 } from "uuid";
-import  {
-  insertFilesInDb,
+import {
+  insertFilesInDB,
   findFilesInDb,
   deleteFileInDb,
 } from "../../utils/helpers/filesHandler.js";
@@ -30,6 +30,8 @@ import sizes from "../../utils/staticDB/sizes.js";
 import { categories } from "../../utils/staticDB/categories.js";
 import minDecimalPlaces from "../../utils/helpers/minDecimalPlaces.js";
 import { HTTP_STATUS } from "../../utils/staticDB/httpStatusCodes.js";
+import entityTypes from "../../utils/staticDB/entityTypes.js";
+import sections from "../../utils/staticDB/sections.js";
 
 const { productMsg } = systemMessages;
 const {
@@ -120,7 +122,7 @@ const controller = {
         price,
         discount,
         categories_id,
-        tags,
+        brands,
         variations,
         filesFromArray,
       } = body;
@@ -167,7 +169,7 @@ const controller = {
         const objectToUpload = {
           files,
           folderName: PRODUCTS_FOLDER_NAME,
-          sections_id: 2,
+          sections_id: sections.PRODUCT.id,
         };
         const filesToInsertInDb = await uploadFilesToAWS(objectToUpload);
         if (!filesToInsertInDb) {
@@ -176,10 +178,11 @@ const controller = {
             msg: createFailed,
           });
         }
-        const isInsertingFilesSuccessful = await insertFilesInDb(
-          filesToInsertInDb,
-          newProductId
-        );
+        const isInsertingFilesSuccessful = await insertFilesInDB({
+          files: filesToInsertInDb,
+          entities_id: newProductId,
+          entity_types_id: entityTypes.PRODUCT,
+        });
         if (!isInsertingFilesSuccessful) {
           return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
             ok: false,
@@ -224,7 +227,7 @@ const controller = {
       price,
       discount,
       categories_id,
-      tags,
+      brands,
       variations,
     } = body;
     discount = discount ? parseInt(discount) : null;
@@ -251,7 +254,9 @@ const controller = {
       variationsInDb,
       productId
     );
-    const areAllVariationsDeleted = variationsToDelete.length ? await deleteVariationInDb(variationsToDelete) : true;
+    const areAllVariationsDeleted = variationsToDelete.length
+      ? await deleteVariationInDb(variationsToDelete)
+      : true;
     if (!areAllVariationsDeleted) {
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
         ok: false,
@@ -309,19 +314,11 @@ const controller = {
         msg: updateFailed,
       });
     }
-    const deleteImagesPromises = imagesToDelete.map(async (img) => {
-      const { id } = img;
-      const deleteResult = await deleteFileInDb(id);
-      return deleteResult;
-    });
-    const results = await Promise.all(deleteImagesPromises);
-    const isAllDeleted = results.every((res) => res === true);
-    if (!isAllDeleted) {
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
-        ok: false,
-        msg: updateFailed.en,
-      });
+    if (imagesToDelete.length) {
+      const idsToDestroyDB = imagesToDelete.map((img) => img.id);
+      await deleteFileInDb(idsToDestroyDB);
     }
+
     let normalizedFilesToUpdateInDb = imagesToKeep.map((file) => ({
       ...file,
     }));
@@ -339,7 +336,7 @@ const controller = {
       const objectToUpload = {
         files,
         folderName: PRODUCTS_FOLDER_NAME,
-        sections_id: 2,
+        sections_id: sections.PRODUCT.id,
       };
       const filesToInsertInDb = await uploadFilesToAWS(objectToUpload);
       normalizedFilesToUpdateInDb = [
@@ -354,10 +351,11 @@ const controller = {
         });
       }
     }
-    const isInsertingFilesSuccessful = await insertFilesInDb(
-      normalizedFilesToUpdateInDb,
-      productId
-    );
+    const isInsertingFilesSuccessful = await insertFilesInDB({
+      files: normalizedFilesToUpdateInDb,
+      entities_id: productId,
+      entity_types_id: entityTypes.PRODUCT,
+    });
     if (!isInsertingFilesSuccessful) {
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
         ok: false,
@@ -596,7 +594,7 @@ export async function setProductKeysToReturn({
     product.price = minDecimalPlaces(product.price);
     if (withImages && product.files?.length) {
       await getFilesFromAWS({
-        folderName: "products",
+        folderName: PRODUCTS_FOLDER_NAME,
         files: product.files,
       });
     }

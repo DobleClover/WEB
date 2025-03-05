@@ -22,7 +22,13 @@ import provinces from "../../utils/staticDB/provinces.js";
 import { getMappedErrors } from "../../utils/helpers/getMappedErrors.js";
 import { HTTP_STATUS } from "../../utils/staticDB/httpStatusCodes.js";
 import { deleteSensitiveUserData } from "./apiUserController.js";
+import { uploadFilesToAWS } from "../../utils/helpers/awsHandler.js";
+import { insertFilesInDB } from "../../utils/helpers/filesHandler.js";
+import entityTypes from "../../utils/staticDB/entityTypes.js";
+import sections from "../../utils/staticDB/sections.js";
+import getFileType from "../../utils/helpers/getFileType.js";
 
+const DROPS_FOLDER_NAME = "drops";
 // ENV
 
 const controller = {
@@ -37,22 +43,20 @@ const controller = {
       return res.status(HTTP_STATUS.OK.code).json({
         meta: {
           status: HTTP_STATUS.OK.code,
-          path: "/api/color/",
+          path: "/api/drop/",
           method: "GET",
         },
         ok: true,
-        colors: dropsFromDB,
+        drops: dropsFromDB,
       });
     } catch (error) {
-      console.log(`Falle en apiColorController.getColors`);
+      console.log(`Falle en apiDropController.getDrops`);
       console.log(error);
       return res.status(500).json({ error });
     }
   },
-  createColor: async (req, res) => {
+  createDrop: async (req, res) => {
     try {
-      console.log(req.body);
-      
       // Traigo errores
       let errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -60,7 +64,7 @@ const controller = {
         return res.status(HTTP_STATUS.BAD_REQUEST.code).json({
           meta: {
             status: HTTP_STATUS.BAD_REQUEST.code,
-            url: "/api/color",
+            url: "/api/dorp",
             method: "POST",
           },
           ok: false,
@@ -69,33 +73,77 @@ const controller = {
           msg: systemMessages.formMsg.validationError,
         });
       }
-      let colorObjToDB = generateDropObject(req.body);
-      // Si llega por default entonces actualizo todas las otras
-      let createdColor = await insertDropToDB(colorObjToDB);
+      let dropObjToDB = generateDropObject(req.body);
 
-      if (!createdColor)
+      let createdDrop = await insertDropToDB(dropObjToDB);
+
+      if (!createdDrop)
         return res
           .status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code)
           .json({ msg: HTTP_STATUS.INTERNAL_SERVER_ERROR.message });
+
+      // Ahora agarro los productos que relaciono
+      let { products_id } = req.body;
+      let relationsToPush = products_id.map((prodID) => ({
+        products_id: prodID,
+        drop_id: createdDrop.id,
+      }));
+      relationsToPush.length &&
+        (await db.Product_Drop.bulkCreate(relationsToPush));
+      // Ahora, si cargo fotos...
+      let { files } = req;
+      let { filesFromArray } = req.body; //Esto es lo que me llega por body
+      if (files && files.length) {
+        files?.forEach((multerFile) => {
+          const fileFromFilesArrayFiltered = filesFromArray.find(
+            (arrFile) => arrFile.filename == multerFile.originalname
+          );
+          multerFile.file_types_id = getFileType(multerFile);
+          multerFile.file_roles_id = fileFromFilesArrayFiltered.file_roles_id;
+        });
+        const objectToUpload = {
+          files,
+          folderName: DROPS_FOLDER_NAME,
+          sections_id: sections.DROP.id, //Drop
+        };
+        const filesToInsertInDb = await uploadFilesToAWS(objectToUpload);
+        if (!filesToInsertInDb) {
+          return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
+            ok: false,
+            msg: createFailed,
+          });
+        }
+        const isInsertingFilesSuccessful = await insertFilesInDB({
+          files: filesToInsertInDb,
+          entities_id: createdDrop.id,
+          entity_types_id: entityTypes.DROP
+        });
+        if (!isInsertingFilesSuccessful) {
+          return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
+            ok: false,
+            msg: systemMessages.dropMsg.createFailed,
+          });
+        }
+      }
 
       // Le  mando ok con el redirect al email verification view
       return res.status(HTTP_STATUS.CREATED.code).json({
         meta: {
           status: HTTP_STATUS.CREATED.code,
-          url: "/api/color",
+          url: "/api/drop",
           method: "POST",
         },
         ok: true,
-        msg: systemMessages.colorMsg.createSuccesfull,
-        color: createdColor,
+        msg: systemMessages.dropMsg.createSuccesfull,
+        drop: createdDrop,
       });
     } catch (error) {
-      console.log(`Falle en apiColorController.createColor`);
+      console.log(`Falle en apiColorController.createDrop`);
       console.log(error);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({ error });
     }
   },
-  updateColor: async (req, res) => {
+  updateDrop: async (req, res) => {
     try {
       // Traigo errores
       // Traigo errores
@@ -105,7 +153,7 @@ const controller = {
         return res.status(HTTP_STATUS.BAD_REQUEST.code).json({
           meta: {
             status: HTTP_STATUS.BAD_REQUEST.code,
-            url: "/api/color",
+            url: "/api/drop",
             method: "PUT",
           },
           ok: false,
@@ -114,27 +162,27 @@ const controller = {
           msg: systemMessages.formMsg.validationError,
         });
       }
-      let colorObjToDB = generateDropObject(req.body);
+      let dropObjToDB = generateDropObject(req.body);
 
-      await updateDropFromDB(colorObjToDB, colorObjToDB.id);
+      await updateDropFromDB(dropObjToDB, dropObjToDB.id);
 
       // Le  mando ok con el redirect al email verification view
       return res.status(HTTP_STATUS.OK.code).json({
         meta: {
           status: HTTP_STATUS.OK.code,
-          url: "/api/color",
+          url: "/api/drop",
           method: "PUT",
         },
         ok: true,
-        msg: systemMessages.colorMsg.updateSuccesfull,
+        msg: systemMessages.dropMsg.updateSuccesfull,
       });
     } catch (error) {
-      console.log(`Falle en apiUserController.updateColor`);
+      console.log(`Falle en apiUserController.updateDrop`);
       console.log(error);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({ error });
     }
   },
-  destroyColor: async (req, res) => {
+  destroyDrop: async (req, res) => {
     try {
       let { id } = req.body;
       // Lo borro de db
@@ -144,15 +192,15 @@ const controller = {
       return res.status(HTTP_STATUS.OK.code).json({
         meta: {
           status: HTTP_STATUS.OK.code,
-          url: "/api/color",
+          url: "/api/drop",
           method: "DELETE",
         },
         ok: true,
-        msg: systemMessages.colorMsg.destroySuccesfull,
+        msg: systemMessages.dropMsg.destroySuccesfull,
         redirect: "/",
       });
     } catch (error) {
-      console.log(`Falle en apiAddressController.destroyColor`);
+      console.log(`Falle en apiAddressController.destroyDrop`);
       console.log(error);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({ error });
     }
@@ -162,6 +210,7 @@ const controller = {
 export default controller;
 
 let dropIncludeArray = ["products"];
+
 export async function insertDropToDB(obj) {
   try {
     //Lo creo en db
@@ -264,5 +313,5 @@ export async function getDropsFromDB(id = undefined) {
 }
 
 function setDropKeysToReturn(drop) {
-//   drop.name = capitalizeFirstLetterOfEachWord(drop.name, true);
+  //   drop.name = capitalizeFirstLetterOfEachWord(drop.name, true);
 }

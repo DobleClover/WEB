@@ -26,12 +26,7 @@ import {
   getUserAddressesFromDB,
   insertAddressToDB,
 } from "./apiAddressController.js";
-import getFileType from "../../utils/helpers/getFileType.js";
-import {
-  destroyFilesFromAWS,
-  getFilesFromAWS,
-  uploadFilesToAWS,
-} from "../../utils/helpers/awsHandler.js";
+
 import {
   getProductsFromDB,
   getVariationsFromDB,
