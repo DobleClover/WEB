@@ -105,9 +105,14 @@ const controller = {
           msg: systemMessages.formMsg.validationError,
         });
       }
+      let { id } = req.params;
+      if (!id)
+        return res.status(HTTP_STATUS.BAD_REQUEST.code).json({
+          ok: false,
+        });
       // Datos del body
       let phoneObjToDB = generatePhoneObject(req.body);
-
+      phoneObjToDB.id = id;
       if (phoneObjToDB.default) {
         await db.Phone.update(
           {
@@ -143,7 +148,11 @@ const controller = {
   },
   destroyPhone: async (req, res) => {
     try {
-      let { id } = req.body;
+      let { id } = req.params;
+      if (!id)
+        return res.status(HTTP_STATUS.BAD_REQUEST.code).json({
+          ok: false,
+        });
       // Lo borro de db
       let response = destroyPhoneFromDB(id);
       if (!response)
@@ -237,10 +246,10 @@ export async function getUserPhonesFromDB(id = undefined) {
 
 export function generatePhoneObject(phone) {
   // objeto para armar la phone
-  let { id, users_id, countries_id, phone_number, defaultPhone } = phone;
+  let { users_id, countries_id, phone_number, defaultPhone } = phone;
 
   let dataToDB = {
-    id: id ? id : uuidv4(),
+    id: uuidv4(),
     users_id,
     countries_id,
     phone_number,

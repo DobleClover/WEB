@@ -7,7 +7,7 @@ const __dirname = path.dirname(__filename);
 const filePath = path.join(__dirname, "../utils/staticDB/countries.js");
 const controller = {
   index: (req, res) => {
-   return res.send("actualizados!");
+   return res.render("index");
   },
 };
 

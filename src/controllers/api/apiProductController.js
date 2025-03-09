@@ -122,7 +122,7 @@ const controller = {
         price,
         discount,
         categories_id,
-        brands,
+        brands_id,
         variations,
         filesFromArray,
       } = body;
@@ -134,7 +134,9 @@ const controller = {
         price,
         discount,
         categories_id,
+        brands_id: brands_id || null,
       };
+
       const [isCreated, newProductId] = await insertProductInDb(bodyToCreate);
       if (!isCreated) {
         return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
@@ -142,7 +144,6 @@ const controller = {
           msg: createFailed,
         });
       }
-
       // vamos a recibir variaciones que contienen sizes_id, colors_id, quantity
       //Vienen modo string...
       variations = JSON.parse(req.body.variations);
@@ -157,21 +158,12 @@ const controller = {
           msg: createFailed,
         });
       }
-      const files = req.files;
+      let { files } = req;
       if (files && files.length) {
-        files?.forEach((multerFile) => {
-          const fileFromFilesArrayFiltered = filesFromArray.find(
-            (arrFile) => arrFile.filename == multerFile.originalname
-          );
-          multerFile.file_types_id = getFileType(multerFile);
-          multerFile.main_file = fileFromFilesArrayFiltered.main_file;
-        });
-        const objectToUpload = {
+        let filesToInsertInDb = await handleProductAWSFilesUpload({
           files,
-          folderName: PRODUCTS_FOLDER_NAME,
-          sections_id: sections.PRODUCT.id,
-        };
-        const filesToInsertInDb = await uploadFilesToAWS(objectToUpload);
+          filesFromBody: filesFromArray,
+        });
         if (!filesToInsertInDb) {
           return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
             ok: false,
@@ -210,188 +202,202 @@ const controller = {
     }
   },
   handleUpdateProduct: async (req, res) => {
-    // return console.log(req.body);
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(HTTP_STATUS.BAD_REQUEST.code).json({
-        ok: false,
-        msg: updateFailed,
-        errors: errors.mapped(),
-      });
-    }
-    const body = req.body;
-    let {
-      id: productId,
-      name,
-      description,
-      price,
-      discount,
-      categories_id,
-      brands,
-      variations,
-    } = body;
-    discount = discount ? parseInt(discount) : null;
-    categories_id = categories_id ? parseInt(categories_id) : null;
-    const bodyToUpdate = {
-      name,
-      description: description || null,
-      price,
-      discount,
-      categories_id,
-    };
-    const isUpdateSuccessful = await updateProductInDb(bodyToUpdate, productId);
-    if (!isUpdateSuccessful) {
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
-        ok: false,
-        msg: updateFailed.en,
-      });
-    }
-    const variationsInDb = await findProductVariations(productId);
+    try {
+      // return console.log(req.body);
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(HTTP_STATUS.BAD_REQUEST.code).json({
+          ok: false,
+          msg: updateFailed,
+          errors: errors.mapped(),
+        });
+      }
+      let { id } = req.params;
+      const dbProduct = await getProductsFromDB({ id: id });
+      if (!dbProduct) {
+        return res.status(HTTP_STATUS.NOT_FOUND.code).json({
+          ok: false,
+          msg: "Producto no encontrado",
+        });
+      }
+      const body = req.body;
+      let {
+        name,
+        description,
+        price,
+        discount,
+        categories_id,
+        brands_id,
+        variations,
+      } = body;
 
-    variations = JSON.parse(variations);
-    const variationsToDelete = getVariationsToDelete(
-      variations,
-      variationsInDb,
-      productId
-    );
-    const areAllVariationsDeleted = variationsToDelete.length
-      ? await deleteVariationInDb(variationsToDelete)
-      : true;
-    if (!areAllVariationsDeleted) {
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
-        ok: false,
-        msg: createFailed,
-      });
-    }
-    const variationsToAdd = getVariationsToAdd(
-      variations,
-      variationsInDb,
-      productId
-    );
-    const isInsertingVariationsSuccessful = await insertVariationsInDb(
-      variationsToAdd,
-      productId
-    );
-    if (!isInsertingVariationsSuccessful) {
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
-        ok: false,
-        msg: updateFailed,
-      });
-    }
-    const imagesInDb = await findFilesInDb(productId);
-    let imagesToKeep = req.body.current_images;
-    imagesToKeep = JSON.parse(imagesToKeep);
-    // current_images
-    // [
-    // id: fileid
-    // filename: randomName
-    // main_image: 1
-    //]
-    // filesFromArray
-    // [
-    // filename: filename
-    // main_image: 0
-    // ]
-    // req.files
-    let imagesToDelete;
-    if (imagesToKeep && imagesToKeep.length > 0) {
-      imagesToDelete = imagesInDb.filter(
-        (img) => !imagesToKeep.map((img) => img.filename).includes(img.filename)
-      );
-    } else {
-      imagesToDelete = imagesInDb;
-    }
-    const objectToDestroyInAws = {
-      files: imagesToDelete,
-      folderName: PRODUCTS_FOLDER_NAME,
-    };
-    const isDeletionInAwsSuccessful = await destroyFilesFromAWS(
-      objectToDestroyInAws
-    );
-    if (!isDeletionInAwsSuccessful) {
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
-        ok: false,
-        msg: updateFailed,
-      });
-    }
-    if (imagesToDelete.length) {
-      const idsToDestroyDB = imagesToDelete.map((img) => img.id);
-      await deleteFileInDb(idsToDestroyDB);
-    }
-
-    let normalizedFilesToUpdateInDb = imagesToKeep.map((file) => ({
-      ...file,
-    }));
-    if (req.files) {
-      const files = req.files;
-      let { filesFromArray } = body;
-      filesFromArray = JSON.parse(filesFromArray);
-      files.forEach((multerFile) => {
-        const fileFromFilesArrayFiltered = filesFromArray.find(
-          (arrFile) => arrFile.filename === multerFile.originalname
-        );
-        multerFile.file_types_id = getFileType(multerFile);
-        multerFile.main_file = fileFromFilesArrayFiltered.main_file;
-      });
-      const objectToUpload = {
-        files,
-        folderName: PRODUCTS_FOLDER_NAME,
-        sections_id: sections.PRODUCT.id,
+      discount = discount ? parseInt(discount) : null;
+      categories_id = categories_id ? parseInt(categories_id) : null;
+      const bodyToUpdate = {
+        name,
+        description: description || null,
+        price,
+        discount,
+        categories_id,
+        brands_id,
       };
-      const filesToInsertInDb = await uploadFilesToAWS(objectToUpload);
-      normalizedFilesToUpdateInDb = [
-        ...normalizedFilesToUpdateInDb,
-        ...filesToInsertInDb,
-      ];
+      const isUpdateSuccessful = await updateProductInDb(bodyToUpdate, id);
+      if (!isUpdateSuccessful) {
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
+          ok: false,
+          msg: updateFailed.en,
+        });
+      }
+      const oldProductVariations = await findProductVariations(id);
 
-      if (!filesToInsertInDb) {
+      variations = JSON.parse(variations);
+      const variationsToDelete = getVariationsToDelete(
+        variations,
+        oldProductVariations,
+        id
+      );
+      const areAllVariationsDeleted = variationsToDelete.length
+        ? await deleteVariationInDb(variationsToDelete)
+        : true;
+      if (!areAllVariationsDeleted) {
         return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
           ok: false,
           msg: createFailed,
         });
       }
-    }
-    const isInsertingFilesSuccessful = await insertFilesInDB({
-      files: normalizedFilesToUpdateInDb,
-      entities_id: productId,
-      entity_types_id: entityTypes.PRODUCT,
-    });
-    if (!isInsertingFilesSuccessful) {
+      const variationsToAdd = getVariationsToAdd(
+        variations,
+        oldProductVariations,
+        id
+      );
+      const isInsertingVariationsSuccessful = await insertVariationsInDb(
+        variationsToAdd,
+        id
+      );
+      if (!isInsertingVariationsSuccessful) {
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
+          ok: false,
+          msg: updateFailed,
+        });
+      }
+      const imagesInDb = dbProduct?.files || [];
+
+      let imagesToKeep = req.body.current_images;
+      imagesToKeep = JSON.parse(imagesToKeep);
+      // current_images
+      // [
+      // id: fileid
+      // filename: randomName
+      // main_image: 1,
+      // position: 1
+      //]
+      // filesFromArray
+      // [
+      // filename: filename
+      // main_image: 0,
+      //position: 2
+      // ]
+      // req.files
+      let imagesToDelete;
+      if (imagesToKeep && imagesToKeep.length > 0) {
+        imagesToDelete = imagesInDb.filter(
+          (img) =>
+            !imagesToKeep.map((img) => img.filename).includes(img.filename)
+        );
+      } else {
+        imagesToDelete = imagesInDb;
+      }
+      const filesDeletedOK = await handleProductFilesDestroy(imagesToDelete);
+      if (!filesDeletedOK)
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
+          ok: false,
+          msg: updateFailed,
+        });
+
+      let normalizedFilesToUpdateInDb = imagesToKeep.map((file) => ({
+        ...file,
+      }));
+      let { files } = req;
+      let { filesFromArray } = body;
+      filesFromArray = filesFromArray ? JSON.parse(filesFromArray) : [];
+      if (files && files.length) {
+        let filesToInsertInDb = await handleProductAWSFilesUpload({
+          files,
+          filesFromBody: filesFromArray,
+        });
+        if (!filesToInsertInDb) {
+          return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
+            ok: false,
+            msg: createFailed,
+          });
+        }
+        normalizedFilesToUpdateInDb = [
+          ...normalizedFilesToUpdateInDb,
+          ...filesToInsertInDb,
+        ];
+      }
+      const isInsertingFilesSuccessful = await insertFilesInDB({
+        files: normalizedFilesToUpdateInDb,
+        entities_id: id,
+        entity_types_id: entityTypes.PRODUCT,
+      });
+      if (!isInsertingFilesSuccessful) {
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
+          ok: false,
+          msg: createFailed,
+        });
+      }
+      let productToReturn = await getProductsFromDB({
+        id: id,
+        withImages: true,
+      });
+      return res.status(HTTP_STATUS.OK.code).json({
+        ok: true,
+        product: productToReturn,
+        msg: systemMessages.productMsg.updateSuccessfull,
+      });
+    } catch (error) {
+      console.log(error);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
         ok: false,
         msg: createFailed,
       });
     }
-    let productToReturn = await getProductsFromDB({
-      id: productId,
-      withImages: true,
-    });
-    return res.status(HTTP_STATUS.OK.code).json({
-      ok: true,
-      product: productToReturn,
-      msg: systemMessages.productMsg.updateSuccessfull,
-    });
   },
   handleDeleteProduct: async (req, res) => {
     try {
-      const productId = req.params.productId;
-      if (!productId) {
+      let { id } = req.params;
+      if (!id) {
         return res.status(HTTP_STATUS.BAD_REQUEST.code).json({
           ok: false,
-          msg: deleteFailed,
         });
       }
-      const isDeletedSuccessfully = await deleteProductInDb(productId);
+      const dbProduct = await getProductsFromDB({ id: id });
+      if (!dbProduct) {
+        return res.status(HTTP_STATUS.NOT_FOUND.code).json({
+          ok: false,
+          msg: "Producto no encontrado",
+        });
+      }
+
+      const isDeletedSuccessfully = await deleteProductInDb(id);
       if (!isDeletedSuccessfully) {
         return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
           ok: false,
           msg: deleteFailed,
         });
       }
+      //Ahora borro los files
+      let filesDeletedOK = await handleProductFilesDestroy(dbProduct.files);
+      if (!filesDeletedOK)
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
+          ok: false,
+          msg: deleteFailed,
+        });
       return res.status(HTTP_STATUS.OK.code).json({
         ok: true,
         msg: deleteSuccess,
-        data: productId,
+        data: id,
       });
     } catch (error) {
       console.log(`Error handling product deletion: ${error}`);
@@ -406,7 +412,8 @@ const controller = {
 
 export default controller;
 
-let productIncludeArray = ["files", "variations"];
+export let productIncludeArray = ["files", "variations"];
+
 export async function getProductsFromDB({
   id = null,
   categoryId = null,
@@ -597,9 +604,57 @@ export async function setProductKeysToReturn({
         folderName: PRODUCTS_FOLDER_NAME,
         files: product.files,
       });
+      product.files?.sort((a, b) => a.position - b.position);
     }
   } catch (error) {
     console.log("falle");
     return console.log(error);
+  }
+}
+
+async function handleProductAWSFilesUpload({ files = [], filesFromBody = [] }) {
+  try {
+    files?.forEach((multerFile) => {
+      const fileFromFilesArrayFiltered = filesFromBody.find(
+        (arrFile) => arrFile.filename == multerFile.originalname
+      );
+      multerFile.file_types_id = getFileType(multerFile);
+      multerFile.main_file = fileFromFilesArrayFiltered.main_file;
+      multerFile.file_roles_id =
+        fileFromFilesArrayFiltered.file_roles_id || null;
+      multerFile.position = fileFromFilesArrayFiltered.position || null;
+    });
+    const objectToUpload = {
+      files,
+      folderName: PRODUCTS_FOLDER_NAME,
+      sections_id: sections.PRODUCT.id,
+    };
+    const filesToInsertInDb = await uploadFilesToAWS(objectToUpload);
+    if (!filesToInsertInDb) {
+      return false;
+    }
+    return filesToInsertInDb;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+}
+async function handleProductFilesDestroy(files = []) {
+  try {
+    if (!files.length) return true;
+    const objectToDestroyInAws = {
+      files,
+      folderName: PRODUCTS_FOLDER_NAME,
+    };
+    const isDeletionInAwsSuccessful = await destroyFilesFromAWS(
+      objectToDestroyInAws
+    );
+    if (!isDeletionInAwsSuccessful) return false;
+    const idsToDestroyDB = files.map((img) => img.id);
+    await deleteFileInDb(idsToDestroyDB);
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
   }
 }

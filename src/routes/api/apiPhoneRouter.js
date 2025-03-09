@@ -6,9 +6,9 @@ import formValidations from '../../middlewares/formValidations.js';
 // POST
 router.post('/',apiPhoneController.createPhone);
 // PUT
-router.put('/',apiPhoneController.updatePhone);
+router.put('/:id',apiPhoneController.updatePhone);
 
 // DELETE
-router.delete('/',apiPhoneController.destroyPhone);
+router.delete('/:id',apiPhoneController.destroyPhone);
 
 export default router;

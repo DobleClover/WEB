@@ -10,9 +10,9 @@ import formValidations from '../../middlewares/formValidations.js';
 // POST
 router.post('/',formValidations.addressFields,apiAddressController.createAddress);
 // PUT
-router.put('/',formValidations.addressFields,apiAddressController.updateAddress);
+router.put('/:id',formValidations.addressFields,apiAddressController.updateAddress);
 
 // DELETE
-router.delete('/',apiAddressController.destroyAddress);
+router.delete('/:id',apiAddressController.destroyAddress);
 
 export default router;

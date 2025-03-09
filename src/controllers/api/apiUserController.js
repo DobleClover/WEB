@@ -19,19 +19,19 @@ import capitalizeFirstLetterOfEachWord from "../../utils/helpers/capitalizeFirst
 import getDeepCopy from "../../utils/helpers/getDeepCopy.js";
 
 import provinces from "../../utils/staticDB/provinces.js";
-import sendVerificationCodeMail from "../../utils/helpers/sendverificationCodeMail.js";
+import sendCodesMail from "../../utils/helpers/sendverificationCodeMail.js";
 import ordersStatuses from "../../utils/staticDB/ordersStatuses.js";
 import { getUserAddressesFromDB } from "./apiAddressController.js";
 import { getVariationsFromDB } from "./apiVariationsController.js";
 
-
 import { getMappedErrors } from "../../utils/helpers/getMappedErrors.js";
 import { getOrdersFromDB } from "./apiOrderController.js";
 import { getProductsFromDB } from "./apiProductController.js";
-import nodemailer from 'nodemailer';
+import nodemailer from "nodemailer";
 import mailConfig from "../../utils/staticDB/mailConfig.js";
-const {User} = db;
+const { User } = db;
 import { HTTP_STATUS } from "../../utils/staticDB/httpStatusCodes.js";
+import generateHexCode from "../../utils/helpers/generateHexCode.js";
 
 const { verify } = jwt;
 
@@ -43,58 +43,33 @@ const controller = {
     try {
       // Traigo errores
       let errors = validationResult(req);
-      
-      
+
       if (!errors.isEmpty()) {
         //Si hay errores en el back...
         //Para saber los parametros que llegaron..
-        let {errorsParams,errorsMapped} = getMappedErrors(errors);
+        let { errorsParams, errorsMapped } = getMappedErrors(errors);
         return res.status(HTTP_STATUS.BAD_REQUEST.code).json({
-            meta: {
-                status: HTTP_STATUS.BAD_REQUEST.code,
-                url: '/api/user',
-                method: "POST"
-            },
-            ok: false,
-            errors: errorsMapped,
-            params: errorsParams,
-            msg: systemMessages.formMsg.validationError.es
+          meta: {
+            status: HTTP_STATUS.BAD_REQUEST.code,
+            url: "/api/user",
+            method: "POST",
+          },
+          ok: false,
+          errors: errorsMapped,
+          params: errorsParams,
+          msg: systemMessages.formMsg.validationError,
         });
       }
-      // Datos del body
-      let { first_name, last_name, email, password, language } = req.body;
-      
-
-      //Nombres y apellidos van capitalziados
-      first_name = capitalizeFirstLetterOfEachWord(first_name, true);
-      last_name = capitalizeFirstLetterOfEachWord(last_name, true);
-
-      let userDataToDB = {
-        id: uuidv4(),
-        first_name,
-        last_name,
-        email,
-        password: bcrypt.hashSync(password, 10), //encripta la password ingresada ,
-        user_role_id: 2, //User
-        verified_email: false,
-        preffered_language: language,
-      };
+      let userDataToDB = generateUserObj(req.body);
       const userCreated = await insertUserToDB(userDataToDB); //Creo el usuario
       let emailResponse = await generateAndInstertEmailCode(userDataToDB);
-      if(!emailResponse) return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({});
-      // Lo tengo que loggear directamente
-      const cookieTime = 1000 * 60 * 60 * 24 * 7; //1 Semana
-
-      // Generar el token de autenticación
-      const token = jwt.sign({ id: userCreated.id }, webTokenSecret, {
-        expiresIn: "1w",
-      }); // genera el token
-      res.cookie("userAccessToken", token, {
-        maxAge: cookieTime,
-        httpOnly: true,
-        secure: process.env.NODE_ENV == "production",
-        sameSite: "strict",
-      });
+      if (!emailResponse)
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({});
+      let objToSetCookie = {
+        id: userDataToDB.id,
+        version: generateHexCode(10),
+      };
+      await setUserAccessCookie({ obj: objToSetCookie, type: 1, res });
       // Le  mando ok con el redirect al email verification view
       return res.status(HTTP_STATUS.CREATED.code).json({
         meta: {
@@ -114,46 +89,46 @@ const controller = {
   },
   updateUser: async (req, res) => {
     try {
-      // Traigo errores TODO:
-      // let errors = validationResult(req);
+      // Traigo errores
+      let errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        //Si hay errores en el back...
+        //Para saber los parametros que llegaron..
+        let { errorsParams, errorsMapped } = getMappedErrors(errors);
+        return res.status(HTTP_STATUS.BAD_REQUEST.code).json({
+          meta: {
+            status: HTTP_STATUS.BAD_REQUEST.code,
+            url: "/api/user",
+            method: "PUT",
+          },
+          ok: false,
+          errors: errorsMapped,
+          params: errorsParams,
+          msg: systemMessages.formMsg.validationError,
+        });
+      }
+      let { id } = req.params;
 
-      // if (!errors.isEmpty()) {
-      //   //Si hay errores en el back...
-      //   errors = errors.mapped();
-
-      //   // Ver como definir los errors
-      //   // return res.send(errors)
-      //   return res.status(HTTP_STATUS.BAD_REQUEST.code).json({
-      //       meta: {
-      //           status: HTTP_STATUS.BAD_REQUEST.code,
-      //           url: '/api/user',
-      //           method: "POST"
-      //       },
-      //       ok: false,
-      //       errors,
-      //       msg: systemMessages.formMsg.validationError.es
-      //   });
-      // }
-
-      // Datos del body
-      let { user_id, first_name, last_name, gender_id } = req.body;
-      
-      let userFromDB = await getUsersFromDB(user_id);
-      if (!userFromDB)
+      let dbUser = await getUsersFromDB(id);
+      if (!dbUser)
         return res
-          .status(404)
-          .json({ ok: false, msg: systemMessages.userMsg.updateFailed });
-      //Nombres y apellidos van capitalziados
-      first_name = capitalizeFirstLetterOfEachWord(first_name, true);
-      last_name = capitalizeFirstLetterOfEachWord(last_name, true);
+          .status(HTTP_STATUS.NOT_FOUND.code)
+          .json({ ok: false, msg: "Usuario no encontrado" });
 
-      let keysToUpdate = {
-        first_name,
-        last_name,
-        gender_id: gender_id || null,
-      };
-      await updateUserFromDB(keysToUpdate,user_id);
+      let userObjToUpdate = generateUserObj(req.body);
+      userObjToUpdate.id = id;
+      //Estas cosas ACA no actualizo
+      delete userObjToUpdate.email;
+      delete userObjToUpdate.password;
+      delete userObjToUpdate.user_roles_id;
+      delete userObjToUpdate.verified_email;
 
+      let updateResponse = await updateUserFromDB(userObjToUpdate, id);
+      if (!updateResponse) {
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
+          ok: false,
+        });
+      }
       // Le  mando ok con el redirect al email verification view
       return res.status(HTTP_STATUS.OK.code).json({
         meta: {
@@ -172,11 +147,16 @@ const controller = {
   },
   destroyUser: async (req, res) => {
     try {
-      let { user_id } = req.body;
+      let { id } = req.params;
+      let dbUser = await getUsersFromDB(id);
+      if (!dbUser)
+        return res
+          .status(HTTP_STATUS.NOT_FOUND.code)
+          .json({ ok: false, msg: "Usuario no encontrado" });
       // Lo borro de db
       await db.User.destroy({
         where: {
-          id: user_id,
+          id: id,
         },
       });
       // Borro cookie y session
@@ -189,7 +169,7 @@ const controller = {
           method: "DELETE",
         },
         ok: true,
-        msg: systemMessages.userMsg.updateSuccesfull.es, //TODO: ver tema idioma
+        msg: systemMessages.userMsg.destroySuccesfull, //TODO: ver tema idioma
         redirect: "/",
       });
     } catch (error) {
@@ -200,22 +180,33 @@ const controller = {
   },
   getUserOrders: async (req, res) => {
     try {
-      let { userLoggedId } = req.query;
-      let userOrders = await getOrdersFromDB({user_id: userLoggedId}) || [];
-    
+      let { users_id } = req.query;
+      if (!users_id)
+        return res.status(HTTP_STATUS.BAD_REQUEST.code).json({
+          ok: false,
+        });
+
+      let userOrders = (await getOrdersFromDB({ users_id })) || [];
+
       // return res.send(ordersToPaint);
       //Una vez tengo todas las ordenes, obtengo todos los productos que quiero mostrar, y por cada uno hago el setKeysToReturn
       let idsToLook = [];
-      userOrders?.forEach(order=>{
-        order.orderItems?.forEach(orderItem=>!idsToLook.includes(orderItem.variation_id) && idsToLook.push(orderItem.variation_id))
+      userOrders?.forEach((order) => {
+        order.orderItems?.forEach(
+          (orderItem) =>
+            !idsToLook.includes(orderItem.variations_id) &&
+            idsToLook.push(orderItem.variations_id)
+        );
       });
       //Una vez obtenido, agarro los productos de DB para agarrar sus fotos
-      let variationsFromDB = await getVariationsFromDB(idsToLook)
-      userOrders?.forEach(order=>{
-        order.orderItems?.forEach(orderItem=>{
-          let variationFromDB = variationsFromDB.find(prod=>prod.id == orderItem.variation_id);
-          orderItem.variation = variationFromDB
-      })
+      let variationsFromDB = await getVariationsFromDB(idsToLook);
+      userOrders?.forEach((order) => {
+        order.orderItems?.forEach((orderItem) => {
+          let variationFromDB = variationsFromDB.find(
+            (prod) => prod.id == orderItem.variations_id
+          );
+          orderItem.variation = variationFromDB;
+        });
       });
 
       return res.status(HTTP_STATUS.OK.code).json({
@@ -233,7 +224,7 @@ const controller = {
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({ error });
     }
   },
-  getUserAddresses: async(req,res) =>{
+  getUserAddresses: async (req, res) => {
     try {
       let { userLoggedId } = req.session;
       let userAddresses = await getUserAddressesFromDB(userLoggedId);
@@ -254,14 +245,16 @@ const controller = {
   },
   generateNewEmailCode: async (req, res) => {
     try {
-      let { user_id } = req.query;
+      let { users_id } = req.query;
       // busco el usuario
-      const userFromDB = await getUsersFromDB(user_id)
-      if(!userFromDB) return res
-      .status(400)
-      .json({ ok: false, msg: systemMessages.generalMsg.failed.es });
-      //Aca lo encontro, genero el codigo
-      await generateAndInstertEmailCode(userFromDB);
+      const userFromDB = await getUsersFromDB(users_id);
+      if (!userFromDB)
+        return res
+          .status(HTTP_STATUS.NOT_FOUND.code)
+          .json({ ok: false, msg: "Usuario no encontrado" });
+      //Aca lo encontro, genero el codigo si no esta verificado
+      if (!userFromDB.verified_email)
+        await generateAndInstertEmailCode(userFromDB);
       return res.status(HTTP_STATUS.OK.code).json({
         ok: true,
         msg: systemMessages.userMsg.verificationCodeSuccess,
@@ -271,90 +264,64 @@ const controller = {
       return res.json({ error });
     }
   },
-  handleChangeLanguage: async (req, res) => {
-    try {
-      const {body, params} = req;
-      const { userId } = params;
-      const {payment_type_id} = body;
-      const user = await getUsersFromDB(userId);
-      if(!user) return res.status(HTTP_STATUS.NOT_FOUND.code).json({}); //Retorno error
-      const isSuccessUpdatingLanguage = await updateUserLanguageInDb(payment_type_id, userId);
-      if(!isSuccessUpdatingLanguage){
-        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
-          ok: false,
-          msg: 'Internal server error'
-        })
-      }
-      return res.status(HTTP_STATUS.OK.code).json({
-        ok: true
-      })
-    } catch (error) {
-      console.log(`Error changing language`);
-      console.log(error);
-      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
-        ok: false,
-        msg: 'Internal server error'
-      })
-    }
-  },
   handleCheckForUserLogged: async (req, res) => {
     try {
       const token = req.cookies.userAccessToken;
-      if(!token){
+      if (!token) {
         return res.status(HTTP_STATUS.OK.code).json({
           ok: true,
-          data: null
-        })
+          data: null,
+        });
       }
-      const decoded = verify(token,webTokenSecret);
-      const user = await getUsersFromDB(decoded.id);
-      if(!user) {
+      const user = await verifyUserIsLogged(token);
+      if (!user) {
         return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
           ok: false,
           data: null,
-          msg: 'User not found'
-        })
+        });
       }
       deleteSensitiveUserData(user);
       return res.status(HTTP_STATUS.OK.code).json({
         ok: true,
-        data: user
-      })
+        data: user,
+      });
     } catch (error) {
       console.log(`error fetching user logged: ${error}`);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
         ok: false,
         data: {
-          isLogged: false
+          isLogged: false,
         },
-        msg: 'Internal server error'
-      })
+        msg: "Internal server error",
+      });
     }
   },
-  checkForEmailCode: async(req,res)=>{
+  checkForEmailCode: async (req, res) => {
     try {
-      let { code, user_id } = req.body;
+      let { users_id } = req.query;
+      let dbUser = await getUsersFromDB(users_id);
+      if (!dbUser)
+        return res
+          .status(HTTP_STATUS.NOT_FOUND.code)
+          .json({ ok: false, msg: "Usuario no encontrado" });
+      let { code } = req.body;
       code = JSON.parse(code);
-      let user = await getUsersFromDB(user_id)
-      if (!user) return res.status(HTTP_STATUS.NOT_FOUND.code).json();
+
       // Primero me fijo que el expiration time este bien
-      const codeExpirationTime = new Date(user.expiration_time);
+      const codeExpirationTime = new Date(dbUser.expiration_time);
       const currentTime = new Date();
       // Este if quiere decir que se vencio
       if (currentTime > codeExpirationTime) {
         return res.status(HTTP_STATUS.OK.code).json({
           ok: false,
-          msg: {
-            es: "El codigo ha vencido, solicita otro e intente nuevamente.",
-            en: "The code has expired, please require a new one."
-          },
+          msg: "El codigo ha vencido, solicita otro e intente nuevamente.",
         });
       }
       // Aca el tiempo es correcto ==> Chequeo codigo
-      if (code != user.verification_code) {
+      if (code != dbUser.verification_code) {
         return res.status(HTTP_STATUS.OK.code).json({
           ok: false,
-          msg: systemMessages.userMsg.userVerifiedFail, 
+          msg: systemMessages.userMsg.userVerifiedFail,
         });
       }
       // Aca esta todo ok ==> Hago el update al usuario y mando el status ok
@@ -362,196 +329,261 @@ const controller = {
         verified_email: 1,
         verification_code: null,
         expiration_time: null,
+      };
+      let response = await updateUserFromDB(updateObj, users_id);
+      if (!response) {
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
+          ok: false,
+          msg: "Internal server error",
+        });
       }
-      let response = await updateUserFromDB(updateObj, user_id);
       //Ahora elimino todos los usuarios con ese mismo mail y sin verificar
       await db.User.destroy({
-        where:{
-          email: user.email,
-          verified_email: false
-        }
-      })
-      if(!response) return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
-        ok: false,
-        msg: 'Internal server error' //TODO: IDIOMA
-      })
+        where: {
+          email: dbUser.email,
+          verified_email: false,
+        },
+      });
+
       return res.status(HTTP_STATUS.OK.code).json({
         ok: true,
-        msg: systemMessages.userMsg.userVerifiedSuccess, 
+        msg: systemMessages.userMsg.userVerifiedSuccess,
       });
     } catch (error) {
       console.log(error);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
         ok: false,
-        msg: 'Internal server error'
-      })
-      
+        msg: "Internal server error",
+      });
     }
   },
-  processLogin: async(req,res)=>{
+  processLogin: async (req, res) => {
     try {
-      
-      let {email, password} = req.body;
+      let { email, password } = req.body;
 
-      let userToLog = await db.User.findOne({
-        where: { email },
-      });
-      // Si hay usuario
+      let usersWithSameEmail = await db.User.findAll({ where: { email } });
+
+      // Encuentra el primer usuario con contraseña válida
+      let userToLog = usersWithSameEmail.find((user) =>
+        bcrypt.compareSync(password, user.password)
+      );
+
       if (userToLog) {
-        // Comparo contrasenas
-        if (bcrypt.compareSync(password, userToLog.password)) {
-          let cookieTime = 1000 * 60 * 60 * 24 * 7; //7 Dias
-          // Generar el token de autenticación
-          req.session.userLoggedId = userToLog.id;
-          const token = jwt.sign({ id: userToLog.id }, webTokenSecret, {
-            expiresIn: "7d",
-          }); // genera el token
-          res.cookie("userAccessToken", token, {
-            maxAge: cookieTime,
-            httpOnly: true,
-            secure: process.env.NODE_ENV == "production",
-            sameSite: "strict",
-          });
-          // Si es admin armo una cookie con el token de admin
-          if (
-            userToLog.user_role_id == 1 
-          ) {
-            const adminToken = jwt.sign({ id: userToLog.id }, webTokenSecret, {
-              expiresIn: "4h",
-            });
-            cookieTime = 1000 * 60 * 60 * 4; //4 horas
-            res.cookie("adminAuth", adminToken, {
-              maxAge: cookieTime,
-              httpOnly: true,
-              secure: process.env.NODE_ENV == "production",
-              sameSite: "strict",
-            });
-          }
-          return res.status(HTTP_STATUS.OK.code).json({
-            meta:{
-              status: HTTP_STATUS.OK.code, 
-              method: "POST", 
-              url: 'api/user/login'
-            },
-            ok: true,
-            msg: {
-              en: "Succesfully logged in",
-              es: "Inicio de sesion correcto"
-            },
-            redirect: '/'
-          });
+        req.session.userLoggedId = userToLog.id;
+        let objToSetCookie = {
+          id: userToLog.id,
+          version: generateHexCode(10),
+        };
+        await setUserAccessCookie({ obj: objToSetCookie, type: 1, res });
+
+        if (userToLog.user_roles_id == 1) {
+          await setUserAccessCookie({ obj: objToSetCookie, type: 2, res });
         }
-        // Si llego aca es porque esta mal la contrasena
-        
+
+        return res.status(HTTP_STATUS.OK.code).json({
+          meta: {
+            status: HTTP_STATUS.OK.code,
+            method: "POST",
+            url: "api/user/login",
+          },
+          ok: true,
+          msg: "Inicio de sesión correcto",
+          redirect: "/",
+        });
       }
-      // Si llego aca es porque esta mal el email o password
-      return res.status(HTTP_STATUS.OK.code).json({
-        meta:{
-          status: HTTP_STATUS.OK.code, 
-          method: "POST", 
-          url: 'api/user/login'
+
+      return res.status(HTTP_STATUS.UNAUTHORIZED.code).json({
+        meta: {
+          status: HTTP_STATUS.UNAUTHORIZED.code,
+          method: "POST",
+          url: "api/user/login",
         },
         ok: false,
-        msg: {
-          en: "Wrong credentials",
-          es: "Credenciales incorrectas"
-        }
+        msg: "Credenciales incorrectas",
       });
     } catch (error) {
-      console.log(`Error in processLogin`);
+      console.error(`Error in processLogin: ${error}`);
+      console.error(error);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
         ok: false,
-        msg: 'Internal server error'
-      })
+        msg: "Err",
+      });
     }
   },
-  handleSendContactEmail: async (req, res) => {
-    const {email, name, message} = req.body;
-    if(!email || !name || !message){
-      return res.status(400).json({
+  generatePasswordToken: async (req, res) => {
+    try {
+      const { id } = req.body;
+
+      if (!id) {
+        return res.status(HTTP_STATUS.BAD_REQUEST.code).json({
+          ok: false,
+        });
+      }
+
+      // Buscar usuario por email
+      const dbUser = await getUsersFromDB(id);
+
+      if (!dbUser) {
+        return res.status(HTTP_STATUS.NOT_FOUND.code).json({
+          ok: false,
+          msg: "Usuario no encontrado",
+        });
+      }
+
+      // Generar token de recuperación
+      const resetToken = generateHexCode(20);
+
+      // Guardar token en la base de datos (opcional: con expiración)
+      let objToUpdate = {
+        password_token: resetToken,
+        expiration_time: new Date(Date.now() + 1800000), // Expira en 1 hora
+      };
+      await updateUserFromDB(objToUpdate, id);
+
+      // Enviar email con el token
+      const resetLink = `${process.env.BASE_URL}/reset-password?token=${resetToken}`;
+      let emailHasBeenSent = await sendCodesMail(2, {
+        user: dbUser,
+        link: resetLink,
+      });
+      if (!emailHasBeenSent)
+        return res.status(HTTP_STATUS.NOT_FOUND.code).json({
+          ok: false,
+          msg: "Error interno",
+        });
+      return res.status(200).json({
+        ok: true,
+        msg: "Se envió un email con instrucciones para restablecer la contraseña.",
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
         ok: false,
-        message: "Either the email or name weren't provided"
-      })
+        msg: "Error interno",
+      });
     }
-    const success = await sendContactEmail(email, name, message);
-    if(!success){
-      return res.status(500).json({
+  },
+  checkPasswordToken: async (req, res) => {
+    try {
+      // Traigo errores
+      let errors = validationResult(req);
+
+      if (!errors.isEmpty()) {
+        //Si hay errores en el back...
+        //Para saber los parametros que llegaron..
+        let { errorsParams, errorsMapped } = getMappedErrors(errors);
+        return res.status(HTTP_STATUS.BAD_REQUEST.code).json({
+          meta: {
+            status: HTTP_STATUS.BAD_REQUEST.code,
+            url: "/api/user/reset-password",
+            method: "POST",
+          },
+          ok: false,
+          errors: errorsMapped,
+          params: errorsParams,
+          msg: systemMessages.formMsg.validationError,
+        });
+      }
+      let { password, token } = req.body;
+      // Buscar usuario por token
+      const dbUser = await db.User.findOne({
+        where: {
+          password_token: token,
+        },
+      });
+
+      if (!dbUser) {
+        return res.status(HTTP_STATUS.FORBIDDEN).json({
+          ok: false,
+        });
+      }
+      // Primero me fijo que el expiration time este bien
+      const codeExpirationTime = new Date(dbUser.expiration_time);
+      const currentTime = new Date();
+      // Este if quiere decir que se vencio
+      if (currentTime > codeExpirationTime) {
+        return res.status(HTTP_STATUS.OK.code).json({
+          ok: false,
+          msg: "El codigo ha vencido, solicita otro e intente nuevamente.",
+        });
+      }
+      // Hashear la nueva contraseña
+      const hashedPassword = bcrypt.hashSync(password, 10);
+
+      // Actualizar la contraseña y eliminar el token de recuperación
+      let objToUpdate = {
+        password: hashedPassword,
+        password_token: null,
+        expiration_time: null,
+      };
+
+      await updateUserFromDB(objToUpdate, dbUser.id);
+
+      return res.status(200).json({
+        ok: true,
+        msg: "Contraseña restablecida con éxito.",
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
         ok: false,
-        msg: 'Internal server error'
-      })
+        msg: "Error interno",
+      });
     }
-    return res.status(200).json({
-      ok: true
-    })
-  }
+  },
+  unlogAllSessions: async (req, res) => {
+    try {
+      let { users_id } = req.body;
+      if(!users_id){
+        return res
+        .status(HTTP_STATUS.BAD_REQUEST.code)
+        .json({ ok: false});
+      }
+      // Buscar al usuario
+      const dbUser = await getUsersFromDB(users_id);
+      if (!dbUser) {
+        return res
+          .status(HTTP_STATUS.NOT_FOUND.code)
+          .json({ ok: false, msg: "Usuario no encontrado" });
+      }
+      await setNewVersionForUser(users_id);
+      return res.status(HTTP_STATUS.OK.code).json({
+        ok: true,
+        msg: "Se ha cerrado sesión en todos los dispositivos.",
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
+        ok: false,
+        msg: "Error interno",
+      });
+    }
+  },
 };
 
 export default controller;
 
-const sendContactEmail = async (email, name, message) => {
-  try {
-    const userEmailContent = `
-      <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
-        <h2 style="color: #444;">Nueva consulta recibida</h2>
-        <p><strong>Nombre:</strong> ${name}</p>
-        <p><strong>Correo:</strong> ${email}</p>
-        <p><strong>Mensaje:</strong></p>
-        <blockquote style="border-left: 4px solid #ddd; padding-left: 8px; color: #666;">
-          ${message}
-        </blockquote>
-        <hr>
-        <p style="font-size: 12px; color: #aaa;">Este mensaje se envió desde el formulario de contacto de tu sitio web.</p>
-      </div>
-  `;
-  const userMailOptions = {
-    from: process.env.EMAIL_USER, 
-    to: process.env.EMAIL_USER, 
-    subject: 'Nueva consulta',
-    html: userEmailContent,
-    replyTo: email
-  };
-   let transporter = nodemailer.createTransport(mailConfig);
-   const emailSending = await transporter.sendMail(userMailOptions);
-   return true;
-  } catch (error) {
-    console.log(error)
-    return false;
-  }
-  
-
-}
-
-async function updateUserLanguageInDb(paymentID, userId){
-  try {
-    const rowsAffected = await db.User.update({payment_type_id: paymentID}, {
-      where: { id: userId }
-    })
-    return rowsAffected > 0;
-  } catch (error) {
-    console.log(`Error updating user in db: ${error}`);
-    console.log(error);
-    return false;
-  }
-}
-
 export async function generateAndInstertEmailCode(user) {
   try {
     // Genero el codigo de verificacion
-  const { verificationCode, expirationTime } =
-  generateRandomCodeWithExpiration();
-  let emailHasBeenSent = await sendVerificationCodeMail(verificationCode, user.email);
-  if(!emailHasBeenSent)return false;
-  let objectToDB = {
-    verification_code: verificationCode,
-    expiration_time: expirationTime,
-  };
-  //Lo cambio en db
-  await db.User.update(objectToDB,{
-    where: {
-      id: user.id
-    }
-  });
-  return true;
+    const { verificationCode, expirationTime } =
+      generateRandomCodeWithExpiration();
+    let emailHasBeenSent = await sendCodesMail(1, {
+      code: verificationCode,
+      user,
+    });
+    if (!emailHasBeenSent) return false;
+    let objectToDB = {
+      verification_code: verificationCode,
+      expiration_time: expirationTime,
+    };
+    //Lo cambio en db
+    await db.User.update(objectToDB, {
+      where: {
+        id: user.id,
+      },
+    });
+    return true;
   } catch (error) {
     console.log(`Falle en generateAndInstertEmailCode`);
     console.log(error);
@@ -559,16 +591,16 @@ export async function generateAndInstertEmailCode(user) {
   }
 }
 
-let userIncludeArray = ['tempCartItems','orders',"phones","addresses"];
+let userIncludeArray = ["tempCartItems", "orders", "phones", "addresses"];
 export async function getUsersFromDB(id) {
   try {
-    let usersToReturn, userToReturn
+    let usersToReturn, userToReturn;
     // Condición si id es un string
     if (typeof id === "string") {
-      userToReturn = await db.User.findByPk(id,{
-        include: userIncludeArray
+      userToReturn = await db.User.findByPk(id, {
+        include: userIncludeArray,
       });
-      if(!userToReturn)return null
+      if (!userToReturn) return null;
       userToReturn = userToReturn && getDeepCopy(userToReturn);
       setUserKeysToReturn(userToReturn);
       return userToReturn;
@@ -580,19 +612,19 @@ export async function getUsersFromDB(id) {
         where: {
           id: id, // id es un array, se hace un WHERE id IN (id)
         },
-        include: userIncludeArray
+        include: userIncludeArray,
       });
-      if(!usersToReturn || !usersToReturn.length)return null
+      if (!usersToReturn || !usersToReturn.length) return null;
       usersToReturn = getDeepCopy(usersToReturn);
-      usersToReturn.forEach(user => setUserKeysToReturn(user));
+      usersToReturn.forEach((user) => setUserKeysToReturn(user));
       return usersToReturn;
     }
     // Condición si id es undefined
     if (id === undefined) {
       usersToReturn = await db.User.findAll({
-        include: userIncludeArray
+        include: userIncludeArray,
       });
-      if(!usersToReturn || !usersToReturn.length)return null
+      if (!usersToReturn || !usersToReturn.length) return null;
       usersToReturn = getDeepCopy(usersToReturn);
       return usersToReturn;
     }
@@ -602,47 +634,140 @@ export async function getUsersFromDB(id) {
   }
 }
 
-export function deleteSensitiveUserData(user){
-  if(!user)return;
+export function deleteSensitiveUserData(user) {
+  if (!user) return;
   delete user.password;
   delete user.password_token;
   delete user.verification_code;
   delete user.expiration_time;
 }
 
-export async function updateUserFromDB(obj,id) {
+export async function updateUserFromDB(obj, id) {
   try {
-    if(!obj || !id)return undefined
+    if (!obj || !id) return undefined;
 
     //Lo updateo en db
-    await db.User.update(obj,{
+    await db.User.update(obj, {
       where: {
-        id
-      }
+        id,
+      },
     });
-    return true
+    return true;
   } catch (error) {
     console.log(`Falle en updateUserFromDB`);
     console.log(error);
-    return undefined
+    return undefined;
   }
 }
 
 export async function insertUserToDB(obj) {
   try {
-    if(!obj)return undefined
+    if (!obj) return undefined;
     //Lo inserto en db
     let createdUser = await db.User.create(obj);
-    return createdUser
+    return createdUser;
   } catch (error) {
     console.log(`Falle en insertUserToDB`);
     console.log(error);
-    return undefined
+    return undefined;
   }
 }
 
-function setUserKeysToReturn(user){
-  user.phones?.forEach(phone => {
-    phone.country = countries.find(country=>country.id == phone.country_id)
+function setUserKeysToReturn(user) {
+  user.phones?.forEach((phone) => {
+    phone.country = countries.find((country) => country.id == phone.country_id);
   });
+}
+
+function generateUserObj(body) {
+  // Datos del body
+  let { first_name, last_name, email, genders_id, password } = body;
+
+  //Nombres y apellidos van capitalziados
+  first_name = capitalizeFirstLetterOfEachWord(first_name, true).trim();
+  last_name = capitalizeFirstLetterOfEachWord(last_name, true).trim();
+  email = email?.toLowerCase().trim();
+  return {
+    id: uuidv4(),
+    first_name,
+    last_name,
+    email: email || null,
+    genders_id: genders_id ? parseInt(genders_id) : null,
+    password: password ? bcrypt.hashSync(password, 10) : null, //encripta la password ingresada ,
+    user_roles_id: 2, //User
+    verified_email: false,
+  };
+}
+
+export async function setUserAccessCookie({ obj, type = 1, res }) {
+  //El type es para ver bien que setear
+  let cookieTime, token, tokenName;
+  if (type == 1) {
+    tokenName = "userAccessToken";
+    // Lo tengo que loggear directamente
+    cookieTime = 1000 * 60 * 60 * 24 * 7; //1 Semana
+
+    // Generar el token de autenticación
+    token = jwt.sign(
+      { id: obj.id, session_version: obj.version },
+      webTokenSecret,
+      {
+        expiresIn: "1w",
+      }
+    ); // genera el token
+  } else {
+    //Token de admin
+    tokenName = "adminAuth";
+    cookieTime = 1000 * 60 * 60 * 4; //4 horas
+    token = jwt.sign(
+      { id: obj.id, session_version: obj.version },
+      webTokenSecret,
+      {
+        expiresIn: "4h",
+      }
+    );
+  }
+  res.cookie(tokenName, token, {
+    maxAge: cookieTime,
+    httpOnly: true,
+    secure: process.env.NODE_ENV == "production",
+    sameSite: "strict",
+  });
+  // Una vez la seteo updateo la version
+  await updateUserFromDB(
+    {
+      session_version: obj.version,
+    },
+    obj.id
+  );
+}
+
+export async function verifyUserIsLogged(token) {
+  try {
+    const decoded = verify(token, webTokenSecret);
+    const user = await getUsersFromDB(decoded.id);
+    if (!user || user.session_version !== decoded.version) {
+      return undefined;
+    }
+    return true;
+  } catch (error) {
+    console.log(error);
+    return undefined;
+  }
+}
+
+export async function setNewVersionForUser(users_id) {
+  try {
+    // Cambiar el sessionVersion del usuario
+    const newSessionVersion = generateHexCode(10);
+    await updateUserFromDB(
+      {
+        session_version: newSessionVersion,
+      },
+      users_id
+    );
+  } catch (error) {
+    console.log(error);
+    return;
+  }
 }

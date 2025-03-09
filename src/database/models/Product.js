@@ -13,6 +13,7 @@ export default (sequelize, dataTypes) => {
     description: { type: dataTypes.TEXT },
     price: { type: dataTypes.DECIMAL(10, 2) },
     categories_id: { type: dataTypes.INTEGER },
+    discount: { type: dataTypes.INTEGER },
     brands_id: { type: dataTypes.STRING(36) },
   };
 

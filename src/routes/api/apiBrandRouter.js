@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.get('/', apiBrandController.getBrands);
 router.post('/',multerMiddleware.single('logo'), formValidations.brandFields, apiBrandController.createBrand); //TODO: AGREGAR MIDDLEWARE
-router.put('/', multerMiddleware.single('logo'), formValidations.brandFields, apiBrandController.updateBrand);
-router.delete('/', apiBrandController.destroyBrand);
+router.put('/:id', multerMiddleware.single('logo'), formValidations.brandFields, apiBrandController.updateBrand);
+router.delete('/:id', apiBrandController.destroyBrand);
 
 export default router;

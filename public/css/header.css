@@ -1,44 +1,26 @@
-.header_top_info{
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 5px 0;
-    background-color: var(--dark-green-color);
-    color: #fff;
-    height: 7.5vh;
-    position: absolute;
-    top: 0;
-}
 .header_hidden {
     animation: fadeOutUp 0.4s ease;
     visibility: hidden;
 }
   
-.header_active {
+.header.header_active {
     /* Para cuando scrollean para arriba */
     animation: fadeInDown 0.4s ease;
     visibility: visible;
-    /* background-color: #fff; */
-    /* border-bottom: 2.5px solid var(--cream-color); */
+    background-color: #fff;
 }
 .header{
     width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 20vh;
-    padding: 20px 0;
-    transition: visibility 0.2s ease-out, background-color .5s ease, top .3s ease;
-    position: sticky;
+    height: 15vh;
+    padding: 1.5vh 0;
+    transition: visibility 0.2s ease-out, background-color .5s ease;
+    position: fixed;
     top: 0;
     z-index: 100; /* Asegúrate de que el header esté encima del contenido */
-    margin-top: 7.5vh;
-    background: #fff;
-}
-.header.header_dark{
-    background: none;
-    top: 7.5vh;
+    background-color: transparent;
 }
 .header *{
     transition: color .3s;
@@ -63,9 +45,10 @@
     opacity: 0;
 }
 .header .nav_brand_link{
-    color: 000;
+    color: #000;
+    font-size: clamp(1rem, 2vw + .2rem, 1.25rem);
 }
-.header.header_dark .nav_brand_link{
+.header .nav_brand_link{
     color: var(--cream-color);
 }
 .nav_brands_container{
@@ -79,6 +62,29 @@
 }
 .nav_actions_container{
     width: 20%;
+    height: 100%;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+}
+.nav_actions_container i{
+    color: #fff;
+    cursor: pointer;
+    font-size: 1.5rem;
+}
+.header_active .nav_actions_container *{
+    color: #000;
+}
+.cart_icon_container{
+    position: relative;
+}
+.cart_items_length_span{
+    position: absolute;
+    color: #fff;
+    font-size: 1rem;
+    top: -45%;
+    right: -30%;
+    font-weight: 600;
 }
 
 

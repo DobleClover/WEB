@@ -13,6 +13,9 @@ export default {
     verificationCodeSuccess: "Se ha enviado un codigo a tu casilla de correo",
     userVerifiedSuccess: "Codigo verificado correctamente. Redirigiendo...",
     userVerifiedFail: "El codigo introducido es incorrecto. Intente nuevamente",
+    destroySuccesfull: "¡Usuario borrado correctamente!",
+    destroyFailed:
+      "Hubo un problema al borrar el usuario, por favor intente nuevamente",
   },
   addressMsg: {
     createSuccesfull: "¡Direccion creada correctamente!",
@@ -71,11 +74,11 @@ export default {
   dropMsg: {
     createSuccesfull: "Drop creado correctamente!",
     createFailed:
-      "Hubo un problema al crear el Drop, por favor intente nuevamente",
-    updateSuccesfull: "¡Color actualizado correctamente!",
+      "Hubo un problema al crear el drop, por favor intente nuevamente",
+    updateSuccesfull: "¡Drop actualizado correctamente!",
     updateFailed:
       "Hubo un problema al actualizar el drop, por favor intente nuevamente",
-    destroySuccesfull: "¡Color borrado correctamente!",
+    destroySuccesfull: "¡Drop borrado correctamente!",
     destroyFailed:
       "Hubo un problema al borrar el drop, por favor intente nuevamente",
   },

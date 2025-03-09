@@ -129,7 +129,12 @@ const controller = {
           msg: systemMessages.formMsg.validationError,
         });
       }
-      const dbBrand = await getBrandsFromDB(req.body.id);
+      let { id } = req.params;
+      if (!id)
+        res.status(HTTP_STATUS.BAD_REQUEST.code).json({
+          ok: false,
+        });
+      const dbBrand = await getBrandsFromDB(id);
       if (!dbBrand) {
         return res.status(HTTP_STATUS.NOT_FOUND.code).json({
           ok: false,
@@ -137,6 +142,7 @@ const controller = {
         });
       }
       let brandObjToDB = generateBrandObject(req.body);
+      brandObjToDB.id = id; //Le dejo el id del update
       // Verificar si el usuario subió un nuevo logo
       let { file } = req;
       if (file) await handleBrandFileUpload({ file, brandID: dbBrand.id });
@@ -165,7 +171,11 @@ const controller = {
   },
   destroyBrand: async (req, res) => {
     try {
-      let { id } = req.body;
+      let { id } = req.params;
+      if (!id)
+        return res.status(HTTP_STATUS.BAD_REQUEST.code).json({
+          ok: false,
+        });
       let dbBrand = await getBrandsFromDB(id);
       if (!dbBrand) {
         return res.status(HTTP_STATUS.NOT_FOUND.code).json({
@@ -234,12 +244,12 @@ export async function getBrandsFromDB(id = undefined) {
       });
       if (!brandsToReturn || !brandsToReturn.length) return null;
       brandsToReturn = getDeepCopy(brandsToReturn);
-    };
+    }
     for (let i = 0; i < brandsToReturn.length; i++) {
       const brand = brandsToReturn[i];
       await setBrandKeysToReturn(brand);
     }
-    
+
     return brandsToReturn;
   } catch (error) {
     console.log("Falle en getBrandsFromDB");
@@ -295,10 +305,10 @@ export async function destroyBrandFromDB(id) {
 }
 export function generateBrandObject(obj) {
   // objeto para armar la address
-  let { id, name } = obj;
+  let { name } = obj;
 
   let dataToDB = {
-    id: id ? id : uuidv4(),
+    id: uuidv4(),
     name: name.trim().toLowerCase(),
   };
   return dataToDB;
@@ -311,7 +321,6 @@ async function setBrandKeysToReturn(brand) {
         folderName: BRANDS_FOLDER_NAME,
         files: [brand.logo],
       }));
-    
   } catch (error) {
     return console.log(error);
   }

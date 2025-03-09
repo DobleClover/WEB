@@ -17,6 +17,7 @@ export default (sequelize, dataTypes) => {
     verified_email: { type: dataTypes.TINYINT },
     verification_code: { type: dataTypes.STRING(6) },
     expiration_time: { type: dataTypes.DATE },
+    session_version: { type: dataTypes.STRING(10) },
   };
 
   let config = {

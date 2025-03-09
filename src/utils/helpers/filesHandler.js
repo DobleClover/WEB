@@ -1,12 +1,12 @@
 import db from "../../database/models/index.js";
 import getDeepCopy from "./getDeepCopy.js";
 
-export async function findFilesInDb(productId = undefined) {
+export async function findFilesInDb(entities_id = undefined) {
   try {
-    if (!productId) return [];
+    if (!entities_id) return [];
     let files = await db.File.findAll({
       where: {
-        products_id: productId,
+        entities_id,
       },
     });
     files = getDeepCopy(files);
@@ -46,7 +46,7 @@ export async function insertFilesInDB({
       entity_types_id: entity_types_id || null,
     }));
     await db.File.bulkCreate(filesWithIds, {
-      updateOnDuplicate: ["main_file", "file_roles_id"],
+      updateOnDuplicate: ["main_file", "file_roles_id","position"],
     });
     return true;
   } catch (error) {

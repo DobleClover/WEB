@@ -12,6 +12,7 @@ export default (sequelize, dataTypes) => {
     name: { type: dataTypes.STRING(60) },
     active: { type: dataTypes.BOOLEAN },
     unique: { type: dataTypes.BOOLEAN }, //TODO: agregar imagenes tanto de card como de fondo
+    launch_date: { type: dataTypes.DATE },
   };
 
   let config = {

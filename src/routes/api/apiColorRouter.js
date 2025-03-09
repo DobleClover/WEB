@@ -9,9 +9,9 @@ router.get('/',apiColorController.getColors);
 // POST
 router.post('/',formValidations.colorFields,apiColorController.createColor);
 // PUT
-router.put('/',formValidations.colorFields,apiColorController.updateColor);
+router.put('/:id',formValidations.colorFields,apiColorController.updateColor);
 
 // DELETE
-router.delete('/',apiColorController.destroyColor);
+router.delete('/:id',apiColorController.destroyColor);
 
 export default router;

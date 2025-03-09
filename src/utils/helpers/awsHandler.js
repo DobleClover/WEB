@@ -107,11 +107,9 @@ export async function uploadFilesToAWS(object) {
       console.log('multer file handler')
       console.log(multerFile)
       let fileObject = {
+        ...multerFile,
         id: uuidv4(),
         filename: randomName ? randomName : multerFile.filename, //Si no viene randomName es que ya estaba en db
-        main_file: multerFile.main_file,
-        file_types_id: multerFile.file_types_id, //imagen, video
-        file_roles_id: multerFile.file_roles_id || null, //Si es que tiene algun rol
         sections_id: object.sections_id,
       };
       filesToInsertDB?.push(fileObject);   
@@ -182,7 +180,6 @@ export async function getFilesFromAWS(object){
           };
           command = new GetObjectCommand(params);
           url = await getSignedUrl(s3, command, { expiresIn: 1800 }); //30 min
-          console.log(j);
           
           j <= 2 ? file.file_urls.push({ url, size: factor }) : file.thumb_url = url; //en el href product.files[x].file_url          
           

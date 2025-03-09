@@ -18,7 +18,7 @@ import getDeepCopy from "../../utils/helpers/getDeepCopy.js";
 
 import countries from "../../utils/staticDB/countries.js";
 import provinces from "../../utils/staticDB/provinces.js";
-import sendVerificationCodeMail from "../../utils/helpers/sendverificationCodeMail.js";
+import sendCodesMail from "../../utils/helpers/sendverificationCodeMail.js";
 import ordersStatuses from "../../utils/staticDB/ordersStatuses.js";
 import {
   generateAddressObject,
@@ -480,7 +480,7 @@ export async function getOrdersFromDB({ id, limit, offset, users_id }) {
       orderToReturn = await db.Order.findByPk(id, {
         include: orderIncludeArray,
         order: [
-          ["created_at", "DESC"], // ASC para orden ascendente, DESC para descendente
+          ["createdAt", "DESC"], // ASC para orden ascendente, DESC para descendente
         ],
       });
       if (!orderToReturn) return null;
@@ -496,7 +496,7 @@ export async function getOrdersFromDB({ id, limit, offset, users_id }) {
         },
         include: orderIncludeArray,
         order: [
-          ["created_at", "DESC"], // ASC para orden ascendente, DESC para descendente
+          ["createdAt", "DESC"], // ASC para orden ascendente, DESC para descendente
         ],
       });
     } else if (users_id) {
@@ -507,7 +507,7 @@ export async function getOrdersFromDB({ id, limit, offset, users_id }) {
         },
         include: orderIncludeArray,
         order: [
-          ["created_at", "DESC"], // ASC para orden ascendente, DESC para descendente
+          ["createdAt", "DESC"], // ASC para orden ascendente, DESC para descendente
         ],
       });
     }
@@ -516,7 +516,7 @@ export async function getOrdersFromDB({ id, limit, offset, users_id }) {
       ordersToReturn = await db.Order.findAll({
         include: orderIncludeArray,
         order: [
-          ["created_at", "DESC"], // ASC para orden ascendente, DESC para descendente
+          ["createdAt", "DESC"], // ASC para orden ascendente, DESC para descendente
         ],
       });
     }
@@ -716,7 +716,7 @@ export async function disableCreatedOrder(orderID) {
 }
 
 export async function checkOrderPaymentExpiration(order) {
-  // Suponiendo que order.created_at es una cadena de fecha en formato ISO
+  // Suponiendo que order.createdAt es una cadena de fecha en formato ISO
   const createdAt = new Date(order.createdAt);
   const now = new Date();
 

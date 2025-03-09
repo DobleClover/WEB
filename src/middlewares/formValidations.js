@@ -32,7 +32,7 @@ export default {
       }),
   ],
   userCreateFields: [
-    body(["first_name", "last_name", "email", "password", "rePassword"])
+    body(["first_name", "last_name", "email"])
       .notEmpty()
       .withMessage("Complete todos los campos necesarios")
       .bail()
@@ -64,21 +64,6 @@ export default {
         }
         return true;
       }),
-    body(["password"]).custom((value, { req }) => {
-      // que sea de tipo string
-      // Si viene formato json entonces lo parseo, sino me fijo directamente
-      if (isJson(value)) value = JSON.parse(value);
-      if (typeof value !== "string") {
-        throw new Error();
-      }
-      //Me fijo que cumpla
-      if (!validatePasswordString(value))
-        throw new Error("La contraseña debe cumplir con los criterios pedidos");
-      //Aca me fijo que coincida con la re-password
-      if (value?.trim() !== req.body.rePassword?.trim())
-        throw new Error("Las contraseñas deben coincidir");
-      return true;
-    }),
   ],
   userUpdateFields: [
     body(["first_name", "last_name"])
@@ -212,34 +197,96 @@ export default {
   ],
   colorFields: [
     body(["name"])
-    .notEmpty().withMessage("El nombre del color es obligatorio.")
-    .bail()
-    .trim()
-    .toLowerCase()
-    .custom(async (name) => {
+      .notEmpty()
+      .withMessage("El nombre del color es obligatorio.")
+      .bail()
+      .trim()
+      .toLowerCase()
+      .custom(async (name) => {
         // Verificar si el color ya existe en la base de datos
         const existingColor = await db.Color.findOne({ where: { name } });
 
         if (existingColor) {
-            throw new Error("El color ya existe.");
-        };
-        return true
-    }),
+          throw new Error("El color ya existe.");
+        }
+        return true;
+      }),
   ],
   brandFields: [
     body(["name"])
-    .notEmpty().withMessage("El nombre de la marca es obligatorio.")
-    .bail()
-    .trim()
-    .toLowerCase()
-    .custom(async (name) => {
+      .notEmpty()
+      .withMessage("El nombre de la marca es obligatorio.")
+      .bail()
+      .trim()
+      .toLowerCase()
+      .custom(async (name) => {
         // Verificar si la marca ya existe en la base de datos
         const existingBrand = await db.Brand.findOne({ where: { name } });
 
         if (existingBrand) {
-            throw new Error("La marca ya existe.");
-        };
-        return true
+          throw new Error("La marca ya existe.");
+        }
+        return true;
+      }),
+  ],
+  dropFields: [
+    body(["name"])
+      .notEmpty()
+      .withMessage("El nombre del drop es obligatorio.")
+      .bail(),
+    body(["active", "unique"])
+      .isBoolean()
+      .withMessage("El campo debe ser un booleano (true o false).")
+      .toBoolean()
+      .bail(),
+    body(["productIDS"]).custom((value) => {
+      if (typeof value === "string") {
+        try {
+          value = JSON.parse(value); // Convierte de string a array si es necesario
+        } catch (error) {
+          throw new Error("El campo 'productIDS' debe ser un array válido.");
+        }
+      }
+      if (!Array.isArray(value)) {
+        throw new Error("El campo 'productIDS' debe ser un array.");
+      }
+      return true;
+    }),
+    body(["launch_date"])
+      .isISO8601()
+      .withMessage(
+        "El campo 'launch_date' debe ser una fecha válida en formato ISO 8601."
+      )
+      .bail(),
+  ],
+  passwordFields: [
+    body(["password", "rePassword", "token"])
+      .notEmpty()
+      .withMessage("Complete todos los campos necesarios")
+      .bail()
+      .custom((value, { req }) => {
+        // que sea de tipo string
+        // Si viene formato json entonces lo parseo, sino me fijo directamente
+        if (isJson(value)) value = JSON.parse(value);
+        if (typeof value !== "string") {
+          throw new Error();
+        }
+        return true;
+      }),
+    body(["password"]).custom((value, { req }) => {
+      // que sea de tipo string
+      // Si viene formato json entonces lo parseo, sino me fijo directamente
+      if (isJson(value)) value = JSON.parse(value);
+      if (typeof value !== "string") {
+        throw new Error();
+      }
+      //Me fijo que cumpla
+      if (!validatePasswordString(value))
+        throw new Error("La contraseña debe cumplir con los criterios pedidos");
+      //Aca me fijo que coincida con la re-password
+      if (value?.trim() !== req.body.rePassword?.trim())
+        throw new Error("Las contraseñas deben coincidir");
+      return true;
     }),
   ],
 };

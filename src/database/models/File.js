@@ -15,6 +15,7 @@ export default (sequelize, dataTypes) => {
         sections_id: { type: dataTypes.INTEGER },
         file_roles_id: { type: dataTypes.INTEGER },
         main_file: { type: dataTypes.TINYINT },
+        position: { type: dataTypes.INTEGER },
     }
 
     let config = {

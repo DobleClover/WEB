@@ -112,8 +112,13 @@ const controller = {
           msg: systemMessages.formMsg.validationError,
         });
       }
+      let { id } = req.params;
+      if (!id)
+        return res.status(HTTP_STATUS.BAD_REQUEST.code).json({
+          ok: false,
+        });
       let colorObjToDB = generateColorObject(req.body);
-
+      colorObjToDB.id = id;
       await updateColorFromDB(colorObjToDB, colorObjToDB.id);
 
       // Le  mando ok con el redirect al email verification view
@@ -134,7 +139,11 @@ const controller = {
   },
   destroyColor: async (req, res) => {
     try {
-      let { id } = req.body;
+      let { id } = req.params;
+      if (!id)
+        return res.status(HTTP_STATUS.BAD_REQUEST.code).json({
+          ok: false,
+        });
       // Lo borro de db
       let response = await destroyColorFromDB(id);
       if (!response)
@@ -208,10 +217,10 @@ export async function destroyColorFromDB(id) {
 
 export function generateColorObject(obj) {
   // objeto para armar la address
-  let { id, name } = obj;
+  let { name } = obj;
 
   let dataToDB = {
-    id: id ? id : uuidv4(),
+    id: uuidv4(),
     name: name.trim().toLowerCase(),
   };
   return dataToDB;

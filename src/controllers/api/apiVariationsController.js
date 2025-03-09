@@ -6,7 +6,7 @@ import { getFilesFromAWS } from "../../utils/helpers/awsHandler.js";
 import sizes from "../../utils/staticDB/sizes.js";
 
 import {
-  getProductsFromDB,
+  productIncludeArray,
   setProductKeysToReturn,
 } from "./apiProductController.js";
 import getDeepCopy from "../../utils/helpers/getDeepCopy.js";
@@ -50,11 +50,7 @@ export default controller;
 let variationIncludeArray = [
   {
     association: "product",
-    include: [
-      {
-        association: "files",
-      },
-    ],
+    include: ["files"],
   },
   "orderItems",
 ];
@@ -112,7 +108,7 @@ export const insertVariationsInDb = async (
         id: variationID,
         products_id: productId,
         quantity: variation.quantity,
-        sizes_id: variation.size_id,
+        sizes_id: variation.sizes_id,
         colors_id: variation.colors_id,
       };
     });
@@ -129,25 +125,37 @@ export const insertVariationsInDb = async (
 };
 
 // A partir de lo que llega por body, retorna array de ids de las variaciones que hay que borrar
-export const getVariationsToDelete = (bodyVariations, dbVariations, productID) => {
+export const getVariationsToDelete = (
+  bodyVariations,
+  dbVariations,
+  productID
+) => {
   return dbVariations
-    .filter(dbVar => 
-      !bodyVariations.some(bodyVar =>
-        normalizeToString(dbVar.sizes_id) === normalizeToString(bodyVar.sizes_id) &&
-        normalizeToString(dbVar.products_id) === normalizeToString(productID) &&
-        normalizeToString(dbVar.colors_id) === normalizeToString(bodyVar.colors_id)
-      )
+    .filter(
+      (dbVar) =>
+        !bodyVariations.some(
+          (bodyVar) =>
+            normalizeToString(dbVar.sizes_id) ===
+              normalizeToString(bodyVar.sizes_id) &&
+            normalizeToString(dbVar.products_id) ===
+              normalizeToString(productID) &&
+            normalizeToString(dbVar.colors_id) ===
+              normalizeToString(bodyVar.colors_id)
+        )
     )
-    .map(dbVar => dbVar.id);
+    .map((dbVar) => dbVar.id);
 };
 
 // Deja el array con las variaciones para hacer el bulkCreate
 export const getVariationsToAdd = (bodyVariations, dbVariations, productID) => {
-  return bodyVariations.map(bodyVar => {
-    const existingVariation = dbVariations.find(dbVar =>
-      normalizeToString(bodyVar.sizes_id) === normalizeToString(dbVar.sizes_id) &&
-      normalizeToString(productID) === normalizeToString(dbVar.products_id) &&
-      normalizeToString(bodyVar.colors_id) === normalizeToString(dbVar.colors_id)
+  return bodyVariations.map((bodyVar) => {
+    const existingVariation = dbVariations.find(
+      (dbVar) =>
+        normalizeToString(bodyVar.sizes_id) ===
+          normalizeToString(dbVar.sizes_id) &&
+        normalizeToString(productID) === normalizeToString(dbVar.products_id) &&
+        normalizeToString(bodyVar.colors_id) ===
+          normalizeToString(dbVar.colors_id)
     );
 
     return {
@@ -159,7 +167,7 @@ export const getVariationsToAdd = (bodyVariations, dbVariations, productID) => {
 
 export const deleteVariationInDb = async (variationID = undefined) => {
   try {
-    if(!variationID) return true;
+    if (!variationID) return true;
     await Variation.destroy({
       where: {
         id: variationID,
@@ -191,14 +199,14 @@ export const populateVariations = (variations) => {
 // No me interesa popular ni nada porque es para updatear el producto nomas
 export const findProductVariations = async (productID = undefined) => {
   try {
-    if(!productID) return [];
+    if (!productID) return [];
     let productVariations = await Variation.findAll({
       where: {
-        product_id: productID,
+        products_id: productID,
       },
-      include: variationIncludeArray
+      include: variationIncludeArray,
     });
-    if(!productVariations.length) return [];
+    if (!productVariations.length) return [];
     return productVariations;
   } catch (error) {
     console.log(`Error in findProductVariations: ${error}`);
