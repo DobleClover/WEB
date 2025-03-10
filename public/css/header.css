@@ -1,116 +1,234 @@
 .header_hidden {
-    animation: fadeOutUp 0.4s ease;
-    visibility: hidden;
+  animation: fadeOutUp 0.4s ease;
+  visibility: hidden;
 }
-  
+
 .header.header_active {
-    /* Para cuando scrollean para arriba */
-    animation: fadeInDown 0.4s ease;
-    visibility: visible;
-    background-color: #fff;
+  /* Para cuando scrollean para arriba */
+  animation: fadeInDown 0.4s ease;
+  visibility: visible;
+  background-color: #fff;
 }
-.header{
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 15vh;
-    padding: 1.5vh 0;
-    transition: visibility 0.2s ease-out, background-color .5s ease;
-    position: fixed;
-    top: 0;
-    z-index: 100; /* Asegúrate de que el header esté encima del contenido */
-    background-color: transparent;
+.header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 15vh;
+  padding: 2.5vh 0;
+  transition: visibility 0.2s ease-out, background-color 0.5s ease;
+  position: fixed;
+  top: 0;
+  z-index: 10000; /* Asegúrate de que el header esté encima del contenido */
+  background-color: transparent;
 }
-.header *{
-    transition: color .3s;
+.header * {
+  transition: color 0.3s;
 }
-.logo_container{
-    width: 25%;
-    height: 100%;
-    position: relative;
+.logo_container {
+  width: 100%;
+  height: 100%;
+  position: relative;
 }
-.logo{
-    position: absolute;
-    transition: opacity .4s;
+.logo {
+  position: absolute;
+  transition: opacity 0.4s;
 }
-.logo_dark{
-    opacity: 0;
-}
-
-.header_active .logo_dark{
-    opacity: 1;
-}
-.header_active .logo_white{
-    opacity: 0;
-}
-.header .nav_brand_link{
-    color: #000;
-    font-size: clamp(1rem, 2vw + .2rem, 1.25rem);
-}
-.header .nav_brand_link{
-    color: var(--cream-color);
-}
-.nav_brands_container{
-    width: 50%;
-    display: flex;
-   justify-content: space-evenly;
+.logo_dark {
+  opacity: 0;
 }
 
-.header_active .nav_brand_link{
-    color: #000;
+.header_active .logo_dark {
+  opacity: 1;
+} 
+.header_active .logo_white {
+  opacity: 1;
 }
-.nav_actions_container{
-    width: 20%;
+.header .nav_brand_link {
+  color: #000;
+  font-size: clamp(1rem, 2vw + 0.2rem, 1.25rem);
+}
+.header .nav_brand_link {
+  color: var(--cream-color);
+}
+.nav_brands_container {
+  width: 50%;
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.header_active .nav_brand_link {
+  color: #000;
+}
+.nav_actions_container {
+  width: 20%;
+  height: 100%;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+}
+.nav_actions_container i {
+  color: #fff;
+  cursor: pointer;
+  font-size: 1.5rem;
+}
+.header_active .nav_actions_container * {
+  color: #000;
+}
+.cart_icon_container {
+  position: relative;
+}
+.cart_items_length_span {
+  position: absolute;
+  color: #fff;
+  font-size: 1rem;
+  top: -45%;
+  right: -30%;
+  font-weight: 600;
+}
+
+/* Para el logo-hamburguesa */
+.menu_logo {
+  cursor: pointer;
+  position: absolute;
+  right: 5%;
+}
+.menu_logo i{
+    font-size: 1.75rem;
+    color: #fff;
+}
+.header_active .menu_logo i {
+  color: #000;
+}
+
+/* Estilos del menú móvil */
+.mobile_menu {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 80%;
+  height: 100dvh;
+  background-color: black;
+  color: white;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  transition: right 0.3s ease-in-out;
+  z-index: 200;
+  padding-left: 40px;
+}
+
+.mobile_menu_active {
+  right: 0;
+}
+.mobile_menu_header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.close_menu {
+  font-size: 2rem;
+  cursor: pointer;
+  height: 5%;
+}
+
+.mobile_nav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  height: 70%;
+}
+
+.mobile_nav a {
+  color: white;
+  font-size: 1.5rem;
+  text-decoration: none;
+}
+
+.mobile_actions {
+  width: 100%;
+  height: fit-content;
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid #fff;
+}
+
+.btn_login,
+.btn_register {
+  background: none;
+  color: white;
+  font-size: 1rem;
+  padding: 10px 5px;
+  cursor: pointer;
+  border: none;
+}
+.nav_brands_container,.nav_actions_container{
+    display: none;
+}
+.mobile_menu .mobile_nav_list li{
+    list-style: none;
+} 
+.mobile_nav_list{
     height: 100%;
     display: flex;
+    flex-direction: column;
     justify-content: space-evenly;
-    align-items: center;
 }
-.nav_actions_container i{
-    color: #fff;
-    cursor: pointer;
-    font-size: 1.5rem;
+.mobile_nav_list > .ui.inverted.segment{
+    background: none;
+    padding: 0;
+    margin: 0;
 }
-.header_active .nav_actions_container *{
-    color: #000;
+.menu_nav_font{
+    font-size: 1.2rem !important;
 }
-.cart_icon_container{
-    position: relative;
+.mobile_nav_list > .ui.inverted.segment .content {
+    padding-left: 50px !important;
 }
-.cart_items_length_span{
-    position: absolute;
-    color: #fff;
-    font-size: 1rem;
-    top: -45%;
-    right: -30%;
-    font-weight: 600;
+.mobile_nav_list > .ui.inverted.segment .content a {
+font-size: .9rem;
 }
-
-
-
-
+.non_style_item{
+    list-style: none;
+    
+}
+@media(min-width:1024px){
+    .nav_brands_container,.nav_actions_container{
+        display: flex;
+    }
+    .menu_logo,.mobile_menu{
+        display: none;
+    }
+    .logo_container{
+        width: 25%;
+    }
+}
 /* ANIMAciónES */
 @keyframes fadeInDown {
-    0% {
-      transform: translateY(-100%);
-      opacity: 0;
-    }
-  
-    100% {
-      transform: translateY(0);
-      opacity: 1;
-    }
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
   }
-  
-  @keyframes fadeOutUp {
-    0% {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  
-    100% {
-      transform: translateY(-100%);
-      opacity: 0;
-    }
+
+  100% {
+    transform: translateY(0);
+    opacity: 1;
   }
+}
+
+@keyframes fadeOutUp {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+}

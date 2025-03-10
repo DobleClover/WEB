@@ -16,13 +16,15 @@
     --green-cream-color: #C4C6B0;
     --cream-color: #E9E5DC;
 }
-
-body{
-    background-color: #000;
-    
+html, body {
+    /* height: 100vh;  standard definition (as fallback) */
+    height: 100dvh; /* dynamic vh will make the trick on iOS */
 }
 .hidden{
     display: none !important;
+}
+.noScroll{
+    overflow: hidden;
 }
 img{
     width: 100%;
@@ -97,6 +99,12 @@ img{
 .disabled{
     opacity: .4;
     pointer-events: none;
+}
+.margin_top{
+    margin-top: 20px;
+}
+.invert_color{
+    filter: invert(1);
 }
 @media(min-width:1024px){
     .card_content{

@@ -1,0 +1,84 @@
+.hero {
+  height: 100dvh; /* Ocupa toda la altura del viewport */
+  background-image: url("https://dobleclover-web.s3.sa-east-1.amazonaws.com/index/index.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIA4LTW3WIZI6KTW4ZN%2F20250310%2Fsa-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250310T132221Z&X-Amz-Expires=300&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEEUaCXNhLWVhc3QtMSJIMEYCIQCOJpVO%2BpREi1hnvaVrIhzGhDlejVoM1oHFl7p3X7BRggIhANYOn6S4BXyax3pnU0La6FLzKvb%2F4FaeCr%2FdS7JI4OFxKvUCCI7%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQABoMODQ5NTc5MDYxODEwIgz9OB4IS0qQplwb7tkqyQLw4l%2FoiqYutZnEzZYB%2F0slG%2F3gjT0im1MCr3Qh1bOBmsSgjYLgeQjVcgiYqhr5TojbvEOtJC%2FxjkKt9apaqW9xLR6fXjMRpKuIqDb2RtS30266mDVB8RNLGthuhogOZqE%2FocWNyf%2FpTOAnvFXM7UHreMM6rxOC4wbOsvfotGxsdZw1k%2B2XOguIN12CmIVK3qmbsNpcjeqgrkUCxkEu0vlbQJ3TN7zCS%2FMd95hAl12gO4iQWHRLtzGWjmHA0XJaNpjgG1cnTCaQ1ALFw7mpFE0f4y5D6p6vRM23r5xwQXLEU6FkHuvHsljdTqX2A0dikvPe5BmXqcaL1zyYy7UI7cmu8Kary8c13KpKY%2Bkj4BSyXMzAYxXXtM1uN6Ux2d%2BUiJVB91cGkZl5HitnLgiDxaY%2BqRoVAg55c0blODyFIfjY3YqbCjFNdiK7ejCipbu%2BBjqyAmO3F8Natjiloo1KGudYCG7GXtLASDV%2FiF71WX4PbhIMlJfyxdoKGyn86D1eS%2BwSpC0B05H99ON6QG9HDGrEWe5vl%2BFD9QVNVnjSjGCmkvARFUnfNSeW%2F33Gfidvh0rGh6KgbQjFgXcS0EHZRRcTu6Tt720nljLB27Xejfm8gcmkhsnmwskVvl0oktnrXX1kAssaGuBiDMOZwAMgD8VM4TaFqrpA8y9ebxvRiwmRc4qFCMkYZCgXtysW4q8lSifMCkwdHxpLKXP4hdAcd1TGtjA8mV3RyLqtKrDam0m8lVLOU3mIKpnWY4%2BGTV7xtPvQ0JAQiqqrpiBZaRY%2FNd9It2sDQZnGWPxnOTlvY%2BSioW%2BeMscG9O%2BvSHRXUznfB6%2BptqRewEZ1YaJfc1BDJ5a9kB%2BHPw%3D%3D&X-Amz-Signature=1069463d13ddfe401285d398fa8407e28286ca0703066d77b14157ba109e7593&X-Amz-SignedHeaders=host&response-content-disposition=inline"); /* Imagen de fondo */
+  background-size: cover;
+  background-position: center 35%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  text-align: center;
+}
+
+/* 🔥 Overlay oscuro */
+.hero::before {
+    content: ""; 
+    position: absolute;
+    inset: 0; /* Ocupa todo el contenedor */
+    background-color: rgba(0, 0, 0, 0.5); /* 🔥 Ajusta la opacidad aquí (0.5 = 50% oscuro) */
+    z-index: 0; /* Mantiene el overlay detrás del contenido */
+}
+
+.hero_title_container{
+    width: fit-content;
+    height: fit-content;
+    text-align: center;
+    position: relative;
+}
+.page_title{
+    font-size: 2.25rem;
+}
+.brand_card_wrapper {
+  width: 100%;
+  height: fit-content;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+}
+.brand_cards_section {
+  background-color: var(--green-color);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5vh 0;
+}
+.section_title_container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 5vh;
+}
+.section_logo {
+  width: 75px;
+  height: auto;
+}
+.section_title {
+  font-size: 2.5rem;
+  margin: 0;
+  text-transform: uppercase;
+}
+.section_divider_line {
+  width: 50px;
+  height: 3.5px;
+  background-color: #000;
+}
+.section_desc_container {
+  margin: 4.5vh 0;
+  text-align: center;
+}
+.section_desc {
+  font-size: 1.5rem;
+  color: #000;
+}
+@media (min-width: 1024px) {
+  .hero {
+    height: 100vh; /* Ocupa toda la altura del viewport */
+    background-attachment: fixed; /* 🔥 Efecto parallax */
+  }
+  .brand_card_wrapper {
+    padding: 0 7.5vw;
+    row-gap: 5vh;
+  }
+}
