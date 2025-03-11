@@ -2,6 +2,7 @@
     height: 60vh;
     width: 75vw;
     position: relative;
+    margin-bottom: 2.5vh;
 }
 .brand_product_image_wrapper{
     width: 100%;
@@ -12,7 +13,7 @@
     position: absolute;
     inset: 0;
     background-color: rgba(0, 0, 0, 0.4);
-    z-index: 100;
+    z-index: 10;
 }
 .brand_card_product_image{
     position: absolute;
@@ -28,7 +29,7 @@
     position: absolute;
     bottom: 10px;
     height: fit-content;
-    z-index: 1000;
+    z-index: 100;
     width: 70%;
     left: 50%;
     transform: translateX(-50%);
@@ -37,6 +38,6 @@
 @media(min-width: 1024px){
     .brand_card{
         width: 22.5%;
-        /* max-width: 300px; */
+        margin-bottom: 0;
     }
 }

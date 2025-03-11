@@ -1,5 +1,10 @@
-document.addEventListener("DOMContentLoaded", () => {
+import { createUserLoginModal } from "./componentRenderer.js";
+import { handlePageModal } from "./utils.js";
+
+window.addEventListener("load", () => {
   window.scrollTo(0, 0);
+  console.log("hola");
+  
   const header = document.querySelector(".header");
   const isAtTop = function () {
     //Para saber si esta arriba de todo
@@ -59,6 +64,18 @@ document.addEventListener("DOMContentLoaded", () => {
     // Activo el acoridon
     $(".mobile_menu .ui.accordion").accordion();
   }
-  
   activateMobileMenu();
+
+  function listenToUserLogoClick() {
+    const userLogos = document.querySelectorAll(".unlogged_user_icon");
+    userLogos.forEach((element) => {
+      if (element.dataset.listened) return;
+      element.dataset.listened = true;
+      element.addEventListener("click", () => {
+        createUserLoginModal();
+        handlePageModal(true);
+      });
+    });
+  }
+  listenToUserLogoClick();
 });

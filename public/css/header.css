@@ -19,7 +19,7 @@
   transition: visibility 0.2s ease-out, background-color 0.5s ease;
   position: fixed;
   top: 0;
-  z-index: 10000; /* Asegúrate de que el header esté encima del contenido */
+  z-index: 1000; /* Asegúrate de que el header esté encima del contenido */
   background-color: transparent;
 }
 .header * {
@@ -116,7 +116,7 @@
   justify-content: space-between;
   align-items: flex-start;
   transition: right 0.3s ease-in-out;
-  z-index: 200;
+  z-index: 2000;
   padding-left: 40px;
 }
 
