@@ -81,7 +81,7 @@ export async function setOrderStatuses(){
     try {
         const orderStatusesResponse = await fetch(`${window.location.origin}/api/type/order-statuses`);
         const orderStatusesJson = await orderStatusesResponse.json();
-        statusesFromDB =  orderStatusesJson.data;
+        statusesFromDB =  orderStatusesJson.data || [];
     } catch (error) {
         console.log("Falle");
         return console.log(error);        
@@ -93,7 +93,7 @@ export async function setColors(){
     try {
         const colorsResponse = await fetch(`${window.location.origin}/api/color`);
         const colorsJson = await colorsResponse.json();
-        colorsFromDB =  colorsJson.data;
+        colorsFromDB =  colorsJson.data || [];
     } catch (error) {
         console.log("Falle");
         return console.log(error);        
@@ -105,7 +105,7 @@ export async function setBrands(){
     try {
         const response = await fetch(`${window.location.origin}/api/brand`);
         const json = await response.json();
-        brandsFromDB =  json.data;
+        brandsFromDB =  json.data || [];
     } catch (error) {
         console.log("Falle");
         return console.log(error);        
@@ -117,7 +117,7 @@ export async function setDrops(){
     try {
         const response = await fetch(`${window.location.origin}/api/drop`);
         const json = await response.json();
-        dropsFromDB =  json.data;
+        dropsFromDB =  json.data || [];
     } catch (error) {
         console.log("Falle");
         return console.log(error);        
@@ -129,7 +129,7 @@ export async function setSettings(){
     try {
         const response = await fetch(`${window.location.origin}/api/setting`);
         const json = await response.json();
-        settingsFromDB =  json.data;
+        settingsFromDB =  json.data || [];
     } catch (error) {
         console.log("Falle");
         return console.log(error);        
