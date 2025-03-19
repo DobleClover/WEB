@@ -1,6 +1,6 @@
 .hero {
   height: 100%; /* Ocupa toda la altura del viewport */
-  background-image: url("http://192.168.68.119:3500/img/index.jpg"); /* Imagen de fondo */
+  background-image: url("https://192.168.68.119:3500/img/index.jpg"); /* Imagen de fondo */
   background-size: cover;
   background-position: center 35%;
   display: flex;

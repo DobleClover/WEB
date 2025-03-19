@@ -14,10 +14,11 @@ export default  {
     "dialect": "mysql"
   },
   "production": {
-    "username": "root",
-    "password": null,
-    "database": "database_production",
-    "host": "127.0.0.1",
+    "username": process.env.MYSQLUSER,
+    "password": process.env.MYSQLPASSWORD,
+    "database": process.env.MYSQLDATABASE,
+    "host": process.env.MYSQLHOST,
+    "port": process.env.MYSQLPORT,
     "dialect": "mysql"
   }
 }
