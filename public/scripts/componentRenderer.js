@@ -1527,7 +1527,7 @@ export function generateUserLoggedDropdown() {
     items = [
       { text: "Ventas", href: "/perfil?index=0" },
       { text: "Productos", href: "/perfil?index=1" },
-      { text: "Envios", href: "/perfil?index=2" },
+      { text: "Marcas, Drops & Envios", href: "/perfil?index=2" },
       { text: "Ajustes", href: "/perfil?index=3" },
       {
         text: "Cerrar sesión",

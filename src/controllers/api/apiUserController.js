@@ -360,7 +360,7 @@ const controller = {
   processLogin: async (req, res) => {
     try {
       let { email, password } = req.body;
-
+      email = email.toLowerCase().trim();
       let usersWithSameEmail = await db.User.findAll({ where: { email } });
 
       // Encuentra el primer usuario con contraseña válida
