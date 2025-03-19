@@ -108,6 +108,8 @@ const controller = {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         let { errorsParams, errorsMapped } = getMappedErrors(errors);
+        console.log(errors);
+        
         return res.status(HTTP_STATUS.BAD_REQUEST.code).json({
           ok: false,
           msg: createFailed,
@@ -121,6 +123,7 @@ const controller = {
         description,
         price,
         discount,
+        active,
         categories_id,
         brands_id,
         variations,
@@ -133,6 +136,7 @@ const controller = {
         description: description || null,
         price,
         discount,
+        active,
         categories_id,
         brands_id: brands_id || null,
       };
@@ -146,7 +150,6 @@ const controller = {
       }
       // vamos a recibir variaciones que contienen sizes_id, colors_id, quantity
       //Vienen modo string...
-      variations = JSON.parse(req.body.variations);
       filesFromArray = JSON.parse(req.body.filesFromArray);
       const isCreatingVariationsSuccessful = await insertVariationsInDb(
         variations,
@@ -213,7 +216,7 @@ const controller = {
         });
       }
       let { id } = req.params;
-      const dbProduct = await getProductsFromDB({ id: id });
+      const dbProduct = await getProductsFromDB({ id });
       if (!dbProduct) {
         return res.status(HTTP_STATUS.NOT_FOUND.code).json({
           ok: false,
@@ -226,6 +229,7 @@ const controller = {
         description,
         price,
         discount,
+        active,
         categories_id,
         brands_id,
         variations,
@@ -238,6 +242,7 @@ const controller = {
         description: description || null,
         price,
         discount,
+        active,
         categories_id,
         brands_id,
       };
@@ -250,7 +255,6 @@ const controller = {
       }
       const oldProductVariations = await findProductVariations(id);
 
-      variations = JSON.parse(variations);
       const variationsToDelete = getVariationsToDelete(
         variations,
         oldProductVariations,
@@ -451,7 +455,7 @@ export async function getProductsFromDB({
     } else if (categoryId) {
       productsToReturn = await Product.findAll({
         where: {
-          category_id: categoryId,
+          categories_id: categoryId,
         },
         include: productIncludeArray,
         limit,
@@ -582,7 +586,7 @@ export async function getVariationsFromDB(id) {
 //compra 3 productos ==>
 function setVariationObjToReturn(variation) {
   variation.taco = tacos.find((taco) => taco.id == variation.taco_id);
-  variation.size = sizes.find((size) => size.id == variation.size_id);
+  variation.size = sizes.find((size) => size.id == variation.sizes_id);
 }
 
 export async function setProductKeysToReturn({
@@ -599,6 +603,7 @@ export async function setProductKeysToReturn({
       product.variations = populateVariations(product.variations);
     }
     product.price = minDecimalPlaces(product.price);
+    product.totalStock = product.variations?.reduce((sum, variation) => sum + variation.quantity, 0) || 0;
     if (withImages && product.files?.length) {
       await getFilesFromAWS({
         folderName: PRODUCTS_FOLDER_NAME,

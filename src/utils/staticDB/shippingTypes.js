@@ -6,7 +6,7 @@ export let shippingTypes = [
   },
   {
     id: 2,
-    type: "Retiro por local",
+    type: "Retiro por CABA",
     iconClass: "bx bx-store-alt",
   },
 ];

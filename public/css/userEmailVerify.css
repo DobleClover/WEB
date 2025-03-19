@@ -1,0 +1,135 @@
+.header_element i,
+.header_element *{
+    color: #000 !important;
+}
+.user_initials{
+    color: #fff !important;
+}
+.header_element .logo_dark{
+    opacity: 1;
+}
+.header_element .logo_white{
+    opacity: 1;
+}
+.main {
+    margin-top: 25vh;
+    min-height: 70vh;
+}
+.verify_section{
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-content: center;
+}
+.title {
+    width: 100%;
+    text-align: center;
+    font-size: 17px;
+    margin: 5vh 0;
+}
+
+.desc_container {
+    width: 100%;
+    display: flex;
+    margin-bottom: 5vh;
+    flex-direction: column;
+    align-items: center;
+}
+
+.desc_container>* {
+    font-size: 15px;
+    margin-bottom: 10px;
+}
+
+.desc_container a {
+    margin-left: 10px;
+    border: 1px solid var(--gold-color);
+    border-radius: 5px;
+    padding: 0 4px;
+    cursor: pointer;
+    background-color: #fff;
+}
+
+.desc_container a:hover {
+    background-color: #eee;
+}
+
+.desc_container a.disabled {
+    background-color: #aaa;
+    color: #eee;
+    border: none;
+}
+
+.code_input_section {
+    width: 90%;
+    max-width: 300px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.code_input_section input {
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: .5px solid ;
+}
+
+.button_container {
+    width: 100%;
+    text-align: center;
+    margin-top: 5vh;
+}
+
+@media(min-width:768px) {
+    .title {
+        font-size: 20px;
+    }
+
+    .desc_container {
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+    }
+    .desc_container>* {
+        font-size: 15px;
+        margin-bottom: 0;
+    }
+    .desc_container> p {
+        margin-right: 10px;
+    }
+    .code_input_section {
+        width: 60%;
+        max-width: 350px;
+    }
+
+    .code_input_section input {
+        border: none;
+        /* Aplicar el sombreado */
+        box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+    }
+
+    .button_container {
+        margin-top: 10vh;
+    }
+
+    .verify_button {
+        /* width: 50px; */
+        border-radius: 15px;
+        font-size: 18px;
+        padding: 10px 20px;
+    }
+}
+
+@media(min-width:1024px) {
+    .title {
+        font-size: 22px;
+    }
+
+    .verify_button {
+        font-size: 20px;
+    }
+}

@@ -4,7 +4,6 @@ import dateFormater from "./dateFormater.js";
 // import dateFormater from'./dateFormater';
 
 async function sendOrderMails(order) {
-  const orderIsInSpanish = order.payment_type_id == 1;
   // Configuración del transporte del correo
   const transporter = nodemailer.createTransport(emailConfig);
 
@@ -13,9 +12,7 @@ async function sendOrderMails(order) {
   let operatorMailContentDeliveryMethod = ``;
   if (order.shipping_type_id == 1) {
     //Domicilio
-    let addressTitleRow = `<p style="font-weight:600;">${
-      orderIsInSpanish ? "Envío a domicilio" : "Shipping to"
-    }</p>`;
+    let addressTitleRow = `<p style="font-weight:600;">Envío a domicilio</p>`;
     userMailContentDeliveryMethod += addressTitleRow;
     operatorMailContentDeliveryMethod += addressTitleRow;
     let addressRow = `
@@ -29,24 +26,13 @@ async function sendOrderMails(order) {
     operatorMailContentDeliveryMethod += addressRow;
   } else if (order.shipping_type_id == 2) {
     //Retiro por local
-    let pickupTitle = `<p style="font-weight:600;">${
-      orderIsInSpanish ? "Tipo de envio:" : "Delivery method:"
-    }</p>`;
-    let pickUpRow = `<p>${
-      orderIsInSpanish ? "Retiro por el local" : "Pickup"
-    }</p>`;
+    let pickupTitle = `<p style="font-weight:600;">Tipo de envio:</p>`;
+    let pickUpRow = `<p>Retiro por CABA</p>`;
     userMailContentDeliveryMethod = `
+    ${pickupTitle}
         ${pickUpRow}
-        <p style="color: #666;">Sarmiento 1938 , ${
-          orderIsInSpanish ? "C.P" : "ZIP"
-        }. 1044, CABA</p>
-        <p style="color: #666;">${
-          orderIsInSpanish ? "Lunes a viernes" : "Monday to Friday"
-        } / 9hs - 18hs</p>
-        `;
-    operatorMailContentDeliveryMethod = `<p style="font-weight:600;">${
-      orderIsInSpanish ? "Retiro por el local" : "Pickup"
-    }</p>`;
+        <p style="color: #666;">Nuñez / Belgrano</p>`;
+    operatorMailContentDeliveryMethod = `<p style="font-weight:600;">Retiro por CABA</p>`;
   }
 
   //   Tabla con items
@@ -57,8 +43,8 @@ async function sendOrderMails(order) {
     tableContent += `
         <tr>
             <td style="width:25%;text-align:center;">${
-              orderIsInSpanish ? item.es_name : item.eng_name
-            } (${item.taco} - ${item.size})</td>
+              item.name
+            } (${item.color} - ${item.size})</td>
             <td style="width:25%;text-align:center;">$${item.price}</td>
             <td style="width:25%;text-align:center;">${item.quantity}</td>
             <td style="width:25%;text-align:center;">$${
@@ -71,43 +57,29 @@ async function sendOrderMails(order) {
   const shippingPrice = order.total - orderItemsPrice;
   const userMailContent = `
     <main style="width:60%;margin: 0 auto;">
-    <h2 style="font-weight:600;">${
-      orderIsInSpanish ? "Resumen de tu compra" : "Order summary"
-    }</h2>
-      <p style="font-weight:600;">${
-        orderIsInSpanish ? "Id de venta" : "Order Id"
-      }</p>
+    <h2 style="font-weight:600;">Resumen de tu compra</h2>
+      <p style="font-weight:600;">Id de venta</p>
     <p style="color: #666;">${order.tra_id}</p>
-    <p style="font-weight:600;">${orderIsInSpanish ? "Fecha" : "Date"}</p>
-    <p style="color: #666;">${dateFormater(order.createdAt, false)} (dd/mm/${
-    orderIsInSpanish ? "aaaa" : "yyyy"
-  })</p>
-    <p style="font-weight:600;">${
-      orderIsInSpanish ? "Datos de facturación" : "Billing Information"
-    }</p>
+    <p style="font-weight:600;">Fecha</p>
+    <p style="color: #666;">${dateFormater(order.createdAt, false)} (dd/mm/aaaa)</p>
+    <p style="font-weight:600;">Datos de facturación</p>
     <p style="color: #666;">${order.first_name} ${order.last_name} - Tel: +${
     order.phone_code
-  } ${order.phone_number} - ${orderIsInSpanish ? "DNI" : "ID"}: ${order.dni}</p>
+  } ${order.phone_number} - DNI: ${order.dni}</p>
     ${userMailContentDeliveryMethod}
     
     <table style="width:100%">
       <tr>
         <th style="width:25%;text-align:center;">Item</th>
-        <th style="width:25%;text-align:center;">${
-          orderIsInSpanish ? "Precio unitario" : "Unit price"
-        }</th>
-        <th style="width:25%;text-align:center;">${
-          orderIsInSpanish ? "Cantidad" : "Quantity"
-        }</th>
+        <th style="width:25%;text-align:center;">Precio unitario</th>
+        <th style="width:25%;text-align:center;">Cantidad</th>
         <th style="width:25%;text-align:center;">Subtotal</th>
       </tr>
       ${tableContent}
     </table>
     ${
       order.shipping_type_id == 1
-        ? `<p style="font-size:18px;margin-top:30px;color:#222;">${
-            orderIsInSpanish ? "Envio" : "Shipping"
-          }: $${shippingPrice}</p>`
+        ? `<p style="font-size:18px;margin-top:30px;color:#222;">Envio: $${shippingPrice}</p>`
         : ""
     }
     <p style="font-size:18px;margin-top:30px;color:#222;">Total: $${
@@ -124,9 +96,11 @@ async function sendOrderMails(order) {
     <p style="font-weight:600;">Fecha</p>
     <p style="color: #666;">${dateFormater(order.createdAt, false)}</p>
     <p style="font-weight:600;">Datos de facturación</p>
-    <p style="color: #666;">Nombre:${order.first_name} ${order.last_name}<br>Tel: +${
-    order.phone_code
-  } ${order.phone_number}<br>DNI: ${order.dni}<br></p>
+    <p style="color: #666;">Nombre:${order.first_name} ${
+    order.last_name
+  }<br>Tel: +${order.phone_code} ${order.phone_number}<br>DNI: ${
+    order.dni
+  }<br></p>
     ${operatorMailContentDeliveryMethod}
     
     <table style="width:100%">
@@ -152,9 +126,7 @@ async function sendOrderMails(order) {
   const userMailOptions = {
     from: "contacto@neotangoshoes.com",
     to: order.email,
-    subject: orderIsInSpanish
-      ? "¡Gracias por tu compra!"
-      : "Thanks for your purchase!",
+    subject:  "¡Gracias por tu compra!",
     html: userMailContent,
   };
   const operatorMailOptions = {

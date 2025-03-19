@@ -1,0 +1,77 @@
+.ui.dropdown.user_menu_btn{
+    position: fixed;
+    bottom: 10%;
+    right: 2.5vw;
+    border-radius: 50%;
+    background-color: var(--green-color);
+    color: #fff;
+    z-index: 100;
+    padding: 12.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.ui.dropdown.user_menu_btn>i{
+    width: fit-content;
+    height:fit-content;
+    margin: 0;
+    font-size: 1.85rem;
+    color: #fff;
+    min-width: fit-content;
+}
+.ui.dropdown.user_menu_btn .item.active.selected{
+    background-color: var(--green-color);
+}
+.ui.dropdown.user_menu_btn .item.active.selected *{
+    color: #fff;
+}
+.ui.dropdown.user_menu_btn > .menu .item i{
+    margin-right: 5px;
+}
+
+@media(min-width: 768px){
+    .ui.dropdown.user_menu_btn{
+        position: static;
+        border-radius: 0;
+        background: none;
+        border-right: 1px solid #000;
+        padding: 0;
+        padding-right: 2vw;
+    }
+    .ui.dropdown.user_menu_btn > i{
+        display: none !important;
+    }
+    .ui.dropdown.user_menu_btn > .menu{
+        position: static;
+        display: flex;
+        flex-direction: column;
+        border: 0;
+        box-shadow: none;
+        width: 80%;
+        height: 100%;
+        background: none;
+        justify-content: flex-start;
+        margin-top: 0 !important;
+    }
+    .ui.dropdown.user_menu_btn > .menu::after{
+        display: none;
+    }
+    .ui.dropdown.user_menu_btn > .menu *{
+        padding: 0;
+    }
+    .ui.dropdown.user_menu_btn > .menu .header{
+        font-size: 1.4rem;
+        margin-top: 0;
+        margin-bottom: 4.5vh;
+    }
+    .ui.dropdown.user_menu_btn > .menu .item{
+        margin-bottom: 1.15rem;
+        font-size: 1.35rem;
+        display: flex;
+        align-items: center;
+        border-radius: .5rem;
+    }
+    .ui.dropdown.user_menu_btn > .menu .item i{
+        margin-right: 10px;
+    }
+}

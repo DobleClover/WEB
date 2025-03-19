@@ -17,12 +17,13 @@ import apiPhoneRouter from './routes/api/apiPhoneRouter.js';
 import apiBrandRouter from './routes/api/apiBrandRouter.js';
 import apiDropRouter from './routes/api/apiDropRouter.js';
 import apiUserRouter from './routes/api/apiUserRouter.js';
+import apiTypeRouter from './routes/api/apiTypeRouter.js';
+import apiSettingRouter from './routes/api/apiSettingRouter.js';
 // import userRouter from './routes/userRouter.js';
 // import apiCartRouter from './routes/api/apiCartRouter.js'
-// import apiTypeRouter from './routes/api/apiTypeRouter.js';
 // import apiShippingRouter from './routes/api/apiShippingRouter.js';
 // import apiPaymentRouter from './routes/api/apiPaymentRouter.js';
-// import unverifiedUser from './middlewares/unverifiedUser.js';
+import unverifiedUser from './middlewares/unverifiedUser.js';
 
 // way to replace __dirname in es modules 
 const __filename = fileURLToPath(import.meta.url);
@@ -59,18 +60,23 @@ app.use('/api/phone', apiPhoneRouter);
 app.use('/api/brand', apiBrandRouter);
 app.use('/api/drop', apiDropRouter);
 app.use('/api/user',apiUserRouter);
+app.use('/api/type', apiTypeRouter);
+app.use('/api/setting', apiSettingRouter);
 // app.use('/api/cart', apiCartRouter);
-// app.use('/api/type', apiTypeRouter);
 // app.use('/api/shipping', apiShippingRouter);
 // app.use('/api/shipping', apiShippingRouter);
 // app.use('/api/payment', apiPaymentRouter);
-// app.use(unverifiedUser); //En todas las consultas de render
+app.use(unverifiedUser); //En todas las consultas de render
 app.use('/',mainRouter);
 // app.use('/user',userRouter);
 
 
 // Correr el servidor
-
+//404
+app.use((req, res, next) => {
+    res.status(404);
+    return res.redirect('/')
+  });
 const PORT = process.env.PORT || 3500;
 
 app.listen(PORT,()=>{

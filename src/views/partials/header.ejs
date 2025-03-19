@@ -1,15 +1,19 @@
-<header class="header">
+<header class="header_element">
+  <a class="cart_icon_container mobile" href="/carro">
+    <i class="bx bx-shopping-bag cart_icon"></i>
+    <span class="cart_items_length_span">0</span>
+  </a>
   <div class="logo_container">
-    <img
+    <a href="/"><img
       src="/img/logo/branding/Variante_Crema/Logo_Icono.png"
       alt="logo clear"
       class="logo logo_white"
-    />
-    <img
+    /></a>
+    <a href="/"><img
       src="/img/logo/branding/Variante_Oscura/Logo_Icono.png"
       alt="logo clear"
       class="logo logo_dark"
-    />
+    /></a>
   </div>
   <div class="nav_brands_container">
     <a href="#" class="nav_brand_link">Jordan</a>
@@ -21,11 +25,14 @@
     <a href="#" class="nav_brand_link">Levis</a>
   </div>
   <div class="nav_actions_container">
-    <div class="cart_icon_container">
+    <a class="cart_icon_container" href="/carro">
       <i class="bx bx-shopping-bag cart_icon"></i>
       <span class="cart_items_length_span">0</span>
-    </div>
-    <i class="bx bx-user unlogged_user_icon"></i>
+    </a>
+    <i class="bx bx-user unlogged_user_icon unlogged_user_container hidden"></i>
+    <div
+          class="ui menu header_dropdown user_action_item user_initials_container hidden"
+        ></div>
   </div>
   <div class="menu_logo">
     <i class="bx bx-menu"></i>
@@ -80,7 +87,13 @@
   </nav>
 
   <div class="mobile_actions">
-    <button class="btn_login"><i class="bx bx-user unlogged_user_icon"></i> Iniciar sesión</button>
-    <button class="btn_register">Registrarse</button>
+    <div class="unlogged_user_container">
+      <button class="btn_login unlogged_user_icon"><i class="bx bx-user"></i> Iniciar sesión</button>
+      <button class="btn_register">Registrarse</button>
+    </div>
+    <a
+          class="mobile_menu_logged_container" href="/perfil"
+        >
+      </a>
   </div>
 </div>

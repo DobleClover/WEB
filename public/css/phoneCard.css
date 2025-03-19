@@ -1,0 +1,17 @@
+.phone_card{
+    width: 80%;
+    max-width: 300px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    max-height: 100px;
+    border: 1px solid var(--black-transparent-color);
+}
+
+.phone_card .card_content{
+    text-align: center;
+}
+.phone_number{
+    font-size: clamp(1rem, 2vw + .2rem, 1.25rem);
+    font-weight: 600;
+}

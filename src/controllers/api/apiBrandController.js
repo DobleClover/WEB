@@ -63,8 +63,6 @@ const controller = {
   },
   createBrand: async (req, res) => {
     try {
-      console.log(req.body.name);
-
       // Traigo errores
       let errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -91,8 +89,26 @@ const controller = {
           .json({ msg: HTTP_STATUS.INTERNAL_SERVER_ERROR.message });
 
       // Ahora voy por los archivos
-      let { file } = req;
-      if (file) await handleBrandFileUpload({ file, brandID: createdBrand.id });
+      let { files } = req;
+      const logo = files["logo"] ? files["logo"][0] : null;
+      const isotype = files["isotype"] ? files["isotype"][0] : null;
+      const logotype = files["logotype"] ? files["logotype"][0] : null;
+      if(logo){
+        //Aca cargo el logo
+        logo.file_roles_id = sections.BRAND.roles.LOGO;
+        await handleBrandFileUpload({ file: logo, brandID: createdBrand.id });
+      }
+      if(isotype){
+        //Aca cargo el isotipo
+        isotype.file_roles_id = sections.BRAND.roles.ISOTYPE;
+        await handleBrandFileUpload({ file: isotype, brandID: createdBrand.id });
+      }
+      if(logotype){
+        //Aca cargo el isotipo
+        logotype.file_roles_id = sections.BRAND.roles.LOGOTYPE;
+        await handleBrandFileUpload({ file: logotype, brandID: createdBrand.id });
+      }
+     
       // Le  mando ok con el redirect al email verification view
       return res.status(HTTP_STATUS.CREATED.code).json({
         meta: {
@@ -144,15 +160,33 @@ const controller = {
       let brandObjToDB = generateBrandObject(req.body);
       brandObjToDB.id = id; //Le dejo el id del update
       // Verificar si el usuario subió un nuevo logo
-      let { file } = req;
-      if (file) await handleBrandFileUpload({ file, brandID: dbBrand.id });
-
-      // Verificar si hay que eliminar el loog (ya sea porque lo borro o cambio la foto)
-      const { deleteOldLogo } = req.body;
-      if (deleteOldLogo) await handleBrandFileDestroy(dbBrand.logo);
-
+      let { files } = req;
+      const logo = files["logo"] ? files["logo"][0] : null;
+      const isotype = files["isotype"] ? files["isotype"][0] : null;
+      const logotype = files["logotype"] ? files["logotype"][0] : null;
+      let filesToDestroy = []
+      if(logo){
+        //Aca cambio el logo
+        logo.file_roles_id = sections.BRAND.roles.LOGO;
+        await handleBrandFileUpload({ file: logo, brandID: id });
+        filesToDestroy.push(dbBrand.logo);
+      }
+      if(isotype){
+        //Aca cambio el isotipo
+        isotype.file_roles_id = sections.BRAND.roles.ISOTYPE;
+        await handleBrandFileUpload({ file: isotype, brandID: id });
+        filesToDestroy.push(dbBrand.isotype);
+      }
+      if(logotype){
+        //Aca cambio el isotipo
+        logotype.file_roles_id = sections.BRAND.roles.LOGOTYPE;
+        await handleBrandFileUpload({ file: logotype, brandID: id });
+        filesToDestroy.push(dbBrand.logotype);
+      };
+      // Si hubo para borrar lo hago
+      filesToDestroy.length && await handleBrandFileDestroy(filesToDestroy)
       await updateBrandFromDB(brandObjToDB, brandObjToDB.id);
-
+      const brandToReturn = await getBrandsFromDB(brandObjToDB.id);
       // Le  mando ok con el redirect al email verification view
       return res.status(HTTP_STATUS.OK.code).json({
         meta: {
@@ -162,6 +196,7 @@ const controller = {
         },
         ok: true,
         msg: systemMessages.brandMsg.updateSuccesfull,
+        brand: brandToReturn,
       });
     } catch (error) {
       console.log(`Falle en apiUserController.updateBrand`);
@@ -188,7 +223,7 @@ const controller = {
       if (!response)
         return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json();
       // Busco los archivos de ese file
-      if (dbBrand.logo) await handleBrandFileDestroy(dbBrand.logo);
+      if (dbBrand.files) await handleBrandFileDestroy(dbBrand.files);
 
       return res.status(HTTP_STATUS.OK.code).json({
         meta: {
@@ -210,7 +245,7 @@ const controller = {
 
 export default controller;
 
-let brandIncludeArray = ["products", "logo"];
+let brandIncludeArray = ["products", "files"];
 
 export async function getBrandsFromDB(id = undefined) {
   try {
@@ -316,16 +351,21 @@ export function generateBrandObject(obj) {
 
 async function setBrandKeysToReturn(brand) {
   try {
-    brand.logo &&
-      (await getFilesFromAWS({
+    if(brand.files?.length){
+      await getFilesFromAWS({
         folderName: BRANDS_FOLDER_NAME,
-        files: [brand.logo],
-      }));
+        files: brand.files,
+      })
+    }
+    brand.logo = brand.files?.find(file=>file.file_roles_id == sections.BRAND.roles.LOGO);
+    brand.logotype = brand.files?.find(file=>file.file_roles_id == sections.BRAND.roles.LOGOTYPE);
+    brand.isotype = brand.files?.find(file=>file.file_roles_id == sections.BRAND.roles.ISOTYPE);
+   
   } catch (error) {
     return console.log(error);
   }
 }
-
+//TYPES: 1 logo || 2 isotipo || 3 logotipo
 async function handleBrandFileUpload({ file, brandID }) {
   try {
     file.file_types_id = getFileType(file); // Tipo de archivo
@@ -358,11 +398,11 @@ async function handleBrandFileUpload({ file, brandID }) {
     return;
   }
 }
-async function handleBrandFileDestroy(file) {
+async function handleBrandFileDestroy(files) {
   try {
     // Ahora borro la imagen de la marca
     const objectToDestroyInAws = {
-      files: [file],
+      files,
       folderName: BRANDS_FOLDER_NAME,
     };
     const isDeletionInAwsSuccessful = await destroyFilesFromAWS(
@@ -374,8 +414,8 @@ async function handleBrandFileDestroy(file) {
         msg: systemMessages.brandMsg.updateFailed,
       });
     }
-
-    await deleteFileInDb(file.id);
+    let filesIds = files.map(file=>file.id)
+    await deleteFileInDb(filesIds);
   } catch (error) {
     console.log(error);
     return;

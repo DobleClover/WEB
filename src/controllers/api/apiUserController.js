@@ -273,14 +273,14 @@ const controller = {
           data: null,
         });
       }
-      const user = await verifyUserIsLogged(token);
+      const user = await verifyUserIsLogged(token, true);
       if (!user) {
         return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
           ok: false,
           data: null,
         });
       }
-      deleteSensitiveUserData(user);
+      setUserKeysToReturn(user);
       return res.status(HTTP_STATUS.OK.code).json({
         ok: true,
         data: user,
@@ -534,10 +534,8 @@ const controller = {
   unlogAllSessions: async (req, res) => {
     try {
       let { users_id } = req.body;
-      if(!users_id){
-        return res
-        .status(HTTP_STATUS.BAD_REQUEST.code)
-        .json({ ok: false});
+      if (!users_id) {
+        return res.status(HTTP_STATUS.BAD_REQUEST.code).json({ ok: false });
       }
       // Buscar al usuario
       const dbUser = await getUsersFromDB(users_id);
@@ -677,6 +675,11 @@ function setUserKeysToReturn(user) {
   user.phones?.forEach((phone) => {
     phone.country = countries.find((country) => country.id == phone.country_id);
   });
+  const firstNameLetter = user.first_name.split("")[0];
+  const lastNameLetter = user.last_name.split("")[0];
+  user.initials = firstNameLetter + lastNameLetter;
+  user.name = `${user.first_name} ${user.last_name}`;
+  deleteSensitiveUserData();
 }
 
 function generateUserObj(body) {
@@ -742,13 +745,15 @@ export async function setUserAccessCookie({ obj, type = 1, res }) {
   );
 }
 
-export async function verifyUserIsLogged(token) {
+export async function verifyUserIsLogged(token, returnUser = false) {
   try {
     const decoded = verify(token, webTokenSecret);
+
     const user = await getUsersFromDB(decoded.id);
-    if (!user || user.session_version !== decoded.version) {
+    if (!user || user.session_version !== decoded.session_version) {
       return undefined;
     }
+    if (returnUser) return user;
     return true;
   } catch (error) {
     console.log(error);

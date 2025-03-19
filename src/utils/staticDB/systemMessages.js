@@ -93,4 +93,15 @@ export default {
     destroyFailed:
       "Hubo un problema al borrar la marca, por favor intente nuevamente",
   },
+  settingMsg: {
+    createSuccesfull: "Ajuste creado correctamente!",
+    createFailed:
+      "Hubo un problema al crear el ajuste, por favor intente nuevamente",
+    updateSuccesfull: "Ajuste actualizado correctamente!",
+    updateFailed:
+      "Hubo un problema al actualizar el ajuste, por favor intente nuevamente",
+    destroySuccesfull: "Ajuste borrado correctamente!",
+    destroyFailed:
+      "Hubo un problema al borrar el ajuste, por favor intente nuevamente",
+  },
 };

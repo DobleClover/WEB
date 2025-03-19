@@ -12,6 +12,16 @@ export default {
       .withMessage("Complete todos los campos necesarios")
       .bail(),
     body(["variations"])
+      .customSanitizer((value) => {
+        if (typeof value === "string") {
+          try {
+            return JSON.parse(value); // Convertir a array si viene como string
+          } catch (error) {
+            return []; // Si hay un error, devolver un array vacío (evita que falle el JSON.parse)
+          }
+        }
+        return value;
+      })
       .isArray()
       .bail()
       .custom((variationsArray) => {
@@ -202,11 +212,11 @@ export default {
       .bail()
       .trim()
       .toLowerCase()
-      .custom(async (name) => {
+      .custom(async (name, { req }) => {
         // Verificar si el color ya existe en la base de datos
         const existingColor = await db.Color.findOne({ where: { name } });
 
-        if (existingColor) {
+        if (existingColor && existingColor.id != req.body.id) {
           throw new Error("El color ya existe.");
         }
         return true;
@@ -219,11 +229,12 @@ export default {
       .bail()
       .trim()
       .toLowerCase()
-      .custom(async (name) => {
+      .custom(async (name, { req }) => {
+        console.log(req.body.id);
         // Verificar si la marca ya existe en la base de datos
         const existingBrand = await db.Brand.findOne({ where: { name } });
 
-        if (existingBrand) {
+        if (existingBrand && existingBrand.id != req.body.id) {
           throw new Error("La marca ya existe.");
         }
         return true;
@@ -260,7 +271,7 @@ export default {
       .bail(),
   ],
   passwordFields: [
-    body(["password", "rePassword", "token"])
+    body(["password", "rePassword"])
       .notEmpty()
       .withMessage("Complete todos los campos necesarios")
       .bail()
@@ -288,5 +299,12 @@ export default {
         throw new Error("Las contraseñas deben coincidir");
       return true;
     }),
+  ],
+  settingFields: [
+    body(["value"])
+      .notEmpty()
+      .withMessage("Campos obligatorios incompletos")
+      .bail()
+      .trim(),
   ],
 };

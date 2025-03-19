@@ -10,6 +10,7 @@ export default (sequelize, dataTypes) => {
       allowNull: false,
     },
     name: { type: dataTypes.STRING(255) },
+    active: { type: dataTypes.BOOLEAN },
     description: { type: dataTypes.TEXT },
     price: { type: dataTypes.DECIMAL(10, 2) },
     categories_id: { type: dataTypes.INTEGER },

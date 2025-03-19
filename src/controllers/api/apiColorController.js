@@ -41,7 +41,7 @@ const controller = {
           method: "GET",
         },
         ok: true,
-        colors: colorsFromDB,
+        data: colorsFromDB,
       });
     } catch (error) {
       console.log(`Falle en apiColorController.getColors`);
@@ -120,7 +120,7 @@ const controller = {
       let colorObjToDB = generateColorObject(req.body);
       colorObjToDB.id = id;
       await updateColorFromDB(colorObjToDB, colorObjToDB.id);
-
+      const updatedColor = await getColorsFromDB(colorObjToDB.id)
       // Le  mando ok con el redirect al email verification view
       return res.status(HTTP_STATUS.OK.code).json({
         meta: {
@@ -130,6 +130,7 @@ const controller = {
         },
         ok: true,
         msg: systemMessages.colorMsg.updateSuccesfull,
+        color: updatedColor,
       });
     } catch (error) {
       console.log(`Falle en apiUserController.updateColor`);

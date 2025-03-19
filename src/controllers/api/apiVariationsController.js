@@ -102,7 +102,7 @@ export const insertVariationsInDb = async (
   try {
     if (!variations.length) return true;
     const mappedVariationsWithId = variations.map((variation) => {
-      //{ size_id, taco_id, color_id, stock}
+      //{ sizes_id, taco_id, colors_id, stock}
       const variationID = variation.id ? variation.id : UUIDV4();
       return {
         id: variationID,
@@ -185,7 +185,6 @@ export const deleteVariationInDb = async (variationID = undefined) => {
 export const populateVariations = (variations) => {
   return variations.map((variation) => {
     const { sizes_id } = variation;
-
     const sizePopulated = populateSize(sizes_id);
 
     return {

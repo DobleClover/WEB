@@ -1,6 +1,6 @@
 
 import jwt from "jsonwebtoken";
-import { getUsersFromDB } from "../controllers/api/apiUserController.js";
+import { getUsersFromDB, verifyUserIsLogged } from "../controllers/api/apiUserController.js";
 import { HTTP_STATUS } from "../utils/staticDB/httpStatusCodes.js";
 
 const webTokenSecret = process.env.JSONWEBTOKEN_SECRET;
@@ -11,22 +11,14 @@ const userIsLoggedMiddleware = async (req, res, next) => {
         const userAccessToken = cookies.userAccessToken;
         // 2️⃣ Si no hay cookie de adminAuth, revisar userAccessToken
         if (userAccessToken) {
-            try {
-                const decodedUserToken = jwt.verify(userAccessToken, webTokenSecret);
-                
-                if (!decodedUserToken.id) {
+            try {                
+                const userLogged = await verifyUserIsLogged(userAccessToken,true);
+                if (!userLogged) {
                     console.warn("Invalid user token structure");
                     res.clearCookie("userAccessToken"); // Si el token no tiene el ID, limpiarlo
                     return res.redirect('/')
                 }
 
-                // Consultar en la base de datos si existe el id
-                const userFromDB = await getUsersFromDB(decodedUserToken.id);
-                if (!userFromDB) {
-                    console.warn("User not found in database");
-                    res.clearCookie("userAccessToken"); // Limpiar cookie si el usuario no existe
-                    return res.redirect('/')
-                }
                 return next();
 
             } catch (err) {

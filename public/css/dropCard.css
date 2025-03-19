@@ -1,0 +1,59 @@
+.section_wrapper_card.drop_card{
+    height: 40vh;
+    width: 80%;
+    max-width: 300px;
+    position: relative;
+    margin-bottom: 2.5vh;
+    display: flex;
+    z-index: 1;
+    align-items: center;
+    border-radius: 20px;
+    overflow: hidden;
+}
+.drop_product_image_wrapper{
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: -1;
+}
+.drop_product_image_wrapper .overlay{
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.36);
+    z-index: 10;
+}
+.card_image{
+    position: absolute;
+    inset: 0;
+    object-fit: cover;
+    transition: opacity 1s ease-in-out; /* Transición suave */
+    opacity: 0; /* Ocultar todas las imágenes por defecto */
+}
+.card_image.card_image_active {
+    opacity: 1; /* Mostrar solo la imagen activa */
+}
+
+.drop_name{
+    font-size: xx-large;
+    color: #fff;
+    text-align: center;
+    width: 100%;
+}
+.drop_content{
+    font-size: medium;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #fff;
+}
+
+@media(min-width: 1024px){
+    .drop_product_image_wrapper .overlay{
+        background-color: rgba(0, 0, 0, 0.56);
+    }
+    .section_wrapper_card.drop_card{
+        height: 40vh;
+        width: 100%;
+    }
+}

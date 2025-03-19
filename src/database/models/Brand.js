@@ -25,8 +25,8 @@ export default (sequelize, dataTypes) => {
             as: 'products',
             foreignKey: 'brands_id'
         })
-        Brand.hasOne(models.File, {
-            as: "logo",
+        Brand.hasMany(models.File, {
+            as: "files",
             foreignKey: "entities_id",
             constraints: false, // Sequelize NO agregará una restricción de clave foránea
             scope: { entity_types_id: entityTypes.BRAND }, //Solo busca los files que sea = a brand

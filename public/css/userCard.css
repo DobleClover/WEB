@@ -1,0 +1,54 @@
+.card .card_header{
+    font-size: clamp(1rem, 2vw + .2rem, 1.25rem);
+}
+.card .card_content{
+    width: 100%;
+    height: fit-content;
+    justify-content: flex-start;
+    padding-left: 0;
+    margin-bottom: 5px;
+}
+.card .card_botton_container{
+    display: flex;
+}
+.card .card_link{
+    color: var(--red-color);
+    margin: 0;
+    cursor: pointer;
+}
+.card .card_link:first-child{
+    border-right: 2.5px solid var(--red-color);
+    padding-right: 8.5px;
+}
+.card .card_link:nth-child(2){
+    margin-left: 8.5px;
+}
+.default_marker{
+    border: 1px solid;
+    border-radius: 3.5px;
+    width: 15px;
+    height: 15px;
+}
+
+.default_marker_active{
+    background-color: var(--red-color);
+}
+.default_absolute_marker {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+}
+.card.card_empty{
+    justify-content: center;
+    align-items: center;
+    border-style: dashed;
+    background: none;
+    cursor: pointer;
+    padding: 5vh 0;
+}
+.card.card_empty .add_icon{
+    font-size: 4rem;
+}
+.card.card_empty .add_text{
+    font-size: 1.5rem;
+}

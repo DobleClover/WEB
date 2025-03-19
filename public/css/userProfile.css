@@ -1,0 +1,561 @@
+.header_element i,
+.header_element * {
+  color: #000 !important;
+  background-color: #fff;
+}
+.user_initials {
+  color: #fff !important;
+}
+.header_element .logo_dark {
+  opacity: 1;
+}
+.header_element .logo_white {
+  opacity: 1;
+}
+.whatsapp_link {
+  display: none;
+}
+
+.main {
+  min-height: 70vh;
+  padding: 2.5vh 5vw;
+  margin-top: 15vh;
+  flex-direction: row;
+  align-items: flex-start;
+}
+.main_content_wrapper {
+  display: flex;
+  width: 100%;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding-top: 15px;
+}
+.main_content_wrapper h1 {
+  margin: 0 !important;
+}
+.table_h3 {
+  margin-top: 15px !important;
+}
+.phones_wrapper.main_content_wrapper {
+  flex-direction: column;
+  align-items: center;
+}
+.user_info_wrapper {
+  max-width: 300px;
+  margin: 0 auto;
+}
+.user_info_container {
+  width: 100%;
+  justify-content: space-around;
+}
+.user_email_field,
+.user_info_container,
+.gender_container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.user_initials_circle {
+  padding: 20px;
+  border-radius: 50%;
+  background: var(--box-shadow-color);
+  font-weight: 600;
+  font-size: 1.5rem;
+}
+.user_info_wrapper .form_container form {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+.ui.placeholder.menu_placeholder,
+.ui.placeholder.image_placeholder {
+  height: 55vh;
+}
+.ui.placeholder.menu_placeholder {
+  margin-top: 9.5vh;
+  display: none;
+}
+.user_info_placeholder {
+  width: 60%;
+  height: 55vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.user_info_placeholder > * {
+  width: 100%;
+}
+.ui.placeholder.image_placeholder {
+  max-height: 65px;
+  max-width: 65px;
+}
+.ui.placeholder.image_placeholder .image {
+  max-width: 100px;
+}
+.table_container {
+  width: 100%;
+  height: 50vh;
+}
+#myGrid {
+  width: 100%;
+  height: 100%;
+}
+
+.total_select_container {
+  width: 100%;
+}
+
+.order_modal {
+  padding: 10px 15px;
+}
+
+.order_modal .close_button_container {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.order_modal .close_button_container i {
+  font-size: 15px;
+}
+
+.order_modal p,
+.order_modal h3 {
+  margin: 0;
+}
+
+.order_modal h2 {
+  font-size: 22px;
+}
+
+.order_modal h3 {
+  font-size: 18px;
+}
+
+.order_label_text_container {
+  margin-top: 15px;
+}
+
+.order_label {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.order_text {
+  font-size: 14px;
+  margin-top: 5px !important;
+}
+
+.order_text {
+  font-weight: 400;
+}
+
+#orderStatusSelect {
+  padding: 10px 5px;
+  margin-top: 5px;
+}
+
+.select_loading_container {
+  display: flex;
+}
+
+.total_sales_cash_container {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.total_sales_container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 200px;
+  height: auto;
+  background-color: #ffff;
+  padding: 10px 0;
+}
+
+.cart_icon,
+.money_icon {
+  font-size: 30px;
+  color: var(--light-red-color);
+}
+
+.totals_container {
+  margin-top: 15px;
+}
+
+.totals_container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 80%;
+}
+
+.totals_container p {
+  margin: 0;
+}
+
+.total_label {
+  font-size: 16px;
+  margin-bottom: 10px !important;
+}
+
+.total_label:last-child {
+  margin-bottom: 0 !important;
+}
+
+.title_description {
+  margin: 0;
+  width: 100%;
+  text-align: left;
+}
+
+.title_add_product_container {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.add_entity_container {
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.add_entity_container .add_icon {
+  background-color: var(--green-color);
+  font-size: 35px;
+  font-weight: 500;
+  color: white;
+  cursor: pointer;
+}
+.files_thumb_field {
+  width: 100%;
+  height: fit-content;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12.5px;
+  margin: 2vh 0 !important;
+}
+.files_thumb_field.brand_field {
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+}
+.files_thumb_field.bg_image_field {
+  height: 200px;
+}
+
+.image_position_select {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.files_thumb_field.brand_field img {
+  filter: invert(1);
+}
+
+.remove_variation_btn.remove_btn {
+  font-size: 1.6rem;
+}
+.ui.form .field.variation_header_field {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 2.5vh auto;
+}
+.ui.form .add_size_button_field {
+  width: fit-content;
+  margin: 2.5vh auto;
+}
+.variation_sizes_wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: space-evenly;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.variation_size_container {
+  width: 22.5%;
+  border: 1px solid var(--dark-grey-color);
+  border-radius: 10px;
+  padding: 10px;
+  position: relative;
+}
+.variation_size_container * {
+  text-align: center;
+}
+.ui.form .variation_field select {
+  padding: 5px 0;
+  text-align: center;
+}
+
+.ui.modal > .content.order_detail_modal_content {
+  padding: 5vh 0;
+}
+.ui.card.order_detail_card {
+  margin: 0 auto;
+  width: 95%;
+  max-width: 550px;
+}
+.ui.card.order_detail_card .content::after,
+.ui.card.order_detail_card .content::before {
+  display: none;
+}
+.ui.card.order_detail_card .content {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.modal_card_header_span {
+  color: #000;
+  font-weight: 600;
+  font-size: small;
+  width: 50%;
+}
+.modal_card_content_row {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  font-size: medium;
+}
+.product_table_list_content .modal_card_content_row {
+  height: 5rem;
+  width: 100%;
+}
+.product_table_list_content .order_item_image {
+  width: 20%;
+  height: 100%;
+}
+.product_table_list_content .order_item_description {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  align-content: space-between;
+  font-size: small;
+}
+.order_detail_card_section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 5vh;
+}
+.order_detail_card_section .card_label.label {
+  font-size: large;
+}
+.order_detail_card_section .ui.card {
+  display: flex;
+  flex-direction: row;
+  height: 4.25rem;
+  justify-content: space-evenly;
+  width: 80%;
+  max-width: 300px;
+  padding: 10px 0;
+}
+.order_detail_card_section .ui.card::after {
+  display: none;
+}
+.card_shipping_detail.order_detail_card_section .ui.card,
+.card_billing_detail.order_detail_card_section .ui.card {
+  height: fit-content;
+}
+.card_logo_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40%;
+}
+.card_logo_i {
+  font-size: 2.5rem;
+  color: var(--dark-grey-color);
+}
+.card_label_container {
+  width: 60%;
+  display: flex;
+  align-items: center;
+}
+
+.card_shipping_detail .card_label_container,
+.card_billing_detail .card_label_container {
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: flex-start;
+}
+.card_billing_detail .card_label_container {
+  align-items: center;
+}
+.card_billing_detail .card_label_container .card_desc {
+  text-align: center;
+}
+.card_label {
+  font-size: medium;
+  font-weight: 600;
+}
+.card_desc {
+  font-size: small;
+}
+.zones_container {
+  width: 100%;
+}
+.zone_container {
+  background-color: #ffff;
+  width: 350px;
+  height: auto;
+  border-radius: 8px;
+  margin-top: 20px;
+  padding: 10px;
+}
+.zone_container:first-child {
+  margin-top: 0;
+}
+.zone_name {
+  font-size: 16px;
+  font-weight: 700;
+}
+.shipping_label_input_container {
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+}
+.shipping_label_input_container:first-child {
+  margin-top: 0;
+}
+.shipping_label_input_container label {
+  font-size: 14px;
+}
+.shipping_label_input_container input {
+  width: 70%;
+  margin-top: 5px;
+  border: 0;
+  outline: 0;
+  border: 1px solid rgb(202, 202, 202);
+  padding: 5px 10px;
+  border-radius: 8px;
+}
+.remove_image_box_anchor {
+  color: var(--red-color);
+  width: 100%;
+  text-align: center;
+  height: fit-content;
+  margin-bottom: 5px;
+  cursor: pointer;
+}
+.top_row_container {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+.field.image_box {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: auto;
+  width: 150px;
+  margin: 0 !important;
+}
+.field.image_box .image_container {
+  height: 100%;
+}
+.field.image_box .image_container img {
+  object-fit: cover;
+}
+.setting_cards_wrapper{
+  flex-direction: column;
+  gap: 30px;
+}
+@media (min-width: 768px) {
+  .main {
+    padding: 0;
+    padding-left: 5vw;
+  }
+  .main .user_menu_btn {
+    width: 40%;
+  }
+  .main .main_content_wrapper {
+    width: 60%;
+    padding: 2.5vh 0;
+  }
+  .main > div {
+    margin: 6.5vh 0px;
+  }
+  .main > .main_content_wrapper {
+    margin: 6.5vh auto;
+  }
+  .main_content_wrapper.address_wrapper {
+    padding: 0;
+    justify-content: center;
+    margin-left: 2.5vw;
+  }
+  .ui.placeholder.menu_placeholder {
+    display: block;
+    width: 40%;
+  }
+  .ui.card.order_detail_card {
+    width: 80%;
+  }
+  .modal_card_header_span {
+    font-size: medium;
+  }
+  .order_detail_card_section .ui.card {
+    max-width: 400px;
+  }
+  .product_table_list_content .order_item_image {
+    width: fit-content;
+  }
+  .product_table_list_content .order_item_description {
+    width: 50%;
+  }
+}
+@media (min-width: 1024px) {
+  .ui.placeholder.menu_placeholder {
+    width: 30%;
+  }
+  .main .user_menu_btn {
+    width: 20%;
+  }
+  .main .main_content_wrapper {
+    width: 65%;
+    justify-content: flex-start;
+  }
+  .ag-row {
+    cursor: pointer;
+  }
+
+  .order_modal .close_button_container i {
+    cursor: pointer;
+  }
+
+  .order_label,
+  .order_text {
+    font-size: 18px;
+  }
+  .title_description {
+    font-size: 22px;
+  }
+  .zones_container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    max-width: 800px;
+  }
+  .zone_container {
+    width: 45%;
+    margin-top: 0;
+    margin-bottom: 30px;
+  }
+  .zone_name {
+    font-size: 18px;
+  }
+  .shipping_label_input_container label {
+    font-size: 16px;
+  }
+  .zone_container input {
+    font-size: 14px;
+  }
+  .zone_loading_spinner {
+    margin: 3% 0;
+  }
+}

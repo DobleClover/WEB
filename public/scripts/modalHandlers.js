@@ -1,5 +1,7 @@
-import { handleModalCreation } from "./utils";
-
+import { buildBrandBodyData, buildColorBodyData, buildDropBodyData, buildProductBodyData, buildUserLoginBodyData, buildUserSignUpBodyData, handleBrandFetch, handleColorFetch, handleDropFetch, handleModalCreation, handleProductFetch, handleUserLoginFetch, handleUserSignUpFetch, updateBrandTable, updateColorTable, updateDropTable, updateProductTable } from "./utils.js";
+import { setLocalStorageItem } from "./localStorage.js";
+import { validateUserSignUpForm } from "./formValidators.js";
+import { paintUserIconOrLetter } from "./header.js";
 export async function handlePhoneModalActions(phone = undefined){
 try {
     await handleModalCreation({
@@ -14,7 +16,6 @@ try {
     return console.log(error);
 }
 }
-
 export async function handleUserLoginModal(){
 try {
     await handleModalCreation({
@@ -22,7 +23,7 @@ try {
         method: "POST",
         buildBodyData: buildUserLoginBodyData,
         postToDatabase: handleUserLoginFetch,
-        updateElements: decideLanguageInsertion
+        updateElements: paintUserIconOrLetter
       })//hago el fetch para crear ese telefono
 } catch (error) {
     return console.log(error);
@@ -72,3 +73,47 @@ try {
 }
 }
 
+export async function handleBrandModalActions(brand = undefined){
+try {
+    await handleModalCreation({
+        entityType: 'brand',
+        method: brand ? "PUT" : "POST",
+        buildBodyData: buildBrandBodyData,
+        saveGuestEntity: null, 
+        updateElements: updateBrandTable, // Funcion que actualiza la tabla de productos
+        postToDatabase: handleBrandFetch
+      })//hago el fetch para crear esa address
+} catch (error) {
+    return console.log(error);
+}
+}
+
+export async function handleDropModalActions(drop = undefined){
+try {
+    await handleModalCreation({
+        entityType: 'drop',
+        method: drop ? "PUT" : "POST",
+        buildBodyData: buildDropBodyData,
+        saveGuestEntity: null, 
+        updateElements: updateDropTable, // Funcion que actualiza la tabla de productos
+        postToDatabase: handleDropFetch
+      })//hago el fetch para crear esa address
+} catch (error) {
+    return console.log(error);
+}
+}
+
+export async function handleColorModalActions(color = undefined){
+try {
+    await handleModalCreation({
+        entityType: 'color',
+        method: color ? "PUT" : "POST",
+        buildBodyData: buildColorBodyData,
+        saveGuestEntity: null, 
+        updateElements: updateColorTable, // Funcion que actualiza la tabla de productos
+        postToDatabase: handleColorFetch
+      })//hago el fetch para crear esa address
+} catch (error) {
+    return console.log(error);
+}
+}

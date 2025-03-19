@@ -9,10 +9,15 @@ export default {
     id: 3,
     roles: {
       CARD: 1,
-      CARROUSEL: 2,
+      BACKGROUND: 2,
     },
   },
   BRAND: {
     id: 4,
+    roles: {
+      LOGO: 1,
+      ISOTYPE: 2,
+      LOGOTYPE: 3
+    }
   },
 };

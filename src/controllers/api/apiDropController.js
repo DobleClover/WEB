@@ -277,6 +277,8 @@ const controller = {
           msg: systemMessages.dropMsg.createFailed,
         });
       }
+
+      const updatedDrop = await getDropsFromDB({id: dbDrop.id, withImages: true})
       // Le  mando ok con el redirect al email verification view
       return res.status(HTTP_STATUS.OK.code).json({
         meta: {
@@ -286,6 +288,7 @@ const controller = {
         },
         ok: true,
         msg: systemMessages.dropMsg.updateSuccesfull,
+        drop: updatedDrop
       });
     } catch (error) {
       console.log(`Falle en apiUserController.updateDrop`);
@@ -474,6 +477,9 @@ async function setDropKeysToReturn({
       folderName: DROPS_FOLDER_NAME,
       files: drop.files,
     });
+    drop.files?.sort((a, b) => a.position - b.position);
+    drop.bgImage = drop.files.find(file=>file.file_roles_id == sections.DROP.roles.BACKGROUND);
+    drop.cardImages = drop.files.filter(file=>file.file_roles_id == sections.DROP.roles.CARD);
   }
 }
 
@@ -485,6 +491,7 @@ async function handleDropFilesUpload({ files = [], filesFromBody = [] }) {
         (arrFile) => arrFile.filename == multerFile.originalname
       );
       multerFile.file_types_id = getFileType(multerFile);
+      multerFile.position = fileFromFilesArrayFiltered.position || null;
       multerFile.file_roles_id =
         fileFromFilesArrayFiltered.file_roles_id || null;
     });

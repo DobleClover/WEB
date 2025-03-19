@@ -16,7 +16,7 @@ const unverifiedUser = async (req, res, next) => {
     // Si quiere ir a logout o al verify no quiero nada de aca
     if (pathToGo == "/logout") return next();
     if (token) {
-      userLogged = await verifyUserIsLogged(token);
+      userLogged = await verifyUserIsLogged(token,true);
       if (userLogged) {
         //Si verifico el token, solo agarro el id
         deleteSensitiveUserData(userLogged);
@@ -40,6 +40,9 @@ const unverifiedUser = async (req, res, next) => {
         if (pathToGo == "/verificar") return next(); //Si ya estaba yendo lo mando
         //Aca no esta verificado y taba tratando de ir a otro lugar, lo redirijo
         return res.redirect("/verificar");
+      } else{
+        //Aca esta verificado, por las dudas me fijo qye no quiera ir a verificar
+        if (pathToGo == "/verificar") return res.redirect("/");;
       }
     }
     //Si alguien que no este loggueado quiere ir a verify lo mando al main

@@ -28,7 +28,7 @@ const adminCredentialsMiddleware = async (req, res, next) => {
     // 2️⃣ Si no hay cookie de adminAuth, revisar userAccessToken
     if (userAccessToken) {
       try {
-        const userLogged = await verifyUserIsLogged(userAccessToken);
+        const userLogged = await verifyUserIsLogged(userAccessToken,true);
 
         if (!userLogged) {
           console.warn("Invalid user token structure");

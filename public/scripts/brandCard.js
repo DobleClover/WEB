@@ -1,19 +1,19 @@
-export function changeBrandCardImages() {
-    const brandCards = document.querySelectorAll(".brand_card");
+export function changeCardImages() {
+    const cardWithImages = document.querySelectorAll(".card_with_image");
   
-    brandCards.forEach((card) => {
-      const images = card.querySelectorAll(".brand_card_product_image");
+    cardWithImages.forEach((card) => {
+      const images = card.querySelectorAll(".card_image");
       let index = 0;
   
       if (images.length === 0) return; // Evita errores si no hay imágenes en el brand_card
   
       // ✅ Inicializar la primera imagen como activa
-      images[index].classList.add("brand_card_product_image_active");
+      images[index].classList.add("card_image_active");
   
       function changeImage() {
-        images.forEach((img) => img.classList.remove("brand_card_product_image_active")); // Ocultar todas
+        images.forEach((img) => img.classList.remove("card_image_active")); // Ocultar todas
         index = (index + 1) % images.length; // Avanzar al siguiente índice
-        images[index].classList.add("brand_card_product_image_active"); // Mostrar la actual
+        images[index].classList.add("card_image_active"); // Mostrar la actual
   
         // Genera un nuevo intervalo aleatorio para la siguiente ejecución
         setTimeout(changeImage, getRandomInterval());

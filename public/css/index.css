@@ -1,6 +1,6 @@
 .hero {
   height: 100%; /* Ocupa toda la altura del viewport */
-  background-image: url("https://dobleclover-web.s3.sa-east-1.amazonaws.com/index/index.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIA4LTW3WIZPELFHO6P%2F20250311%2Fsa-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250311T003335Z&X-Amz-Expires=300&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEFEaCXNhLWVhc3QtMSJHMEUCIQDMalfSgrWtdxKS16oCRc2VQm1ESRoF3QXWZy5kGW%2Bd%2FgIgUH9Q3o94r0Ss5feVgc9MdDdwwOnCNeIJpJxUg%2FDLMJQq9QIImv%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FARAAGgw4NDk1NzkwNjE4MTAiDGCpW2YCNGb4MXCXeSrJAquYBFtbdS%2BV7qnW4hQmQWm2yMtAxK0ERByU%2F5jS%2By5o6PlGoOKCzB4lCx2enk2MgDcbZReq8R%2Bz40yDvt1pwQFqGjbJWfS2ozhUGYhcHAklD8ROhuAvC0HUpxbN%2BfRhse84mYZj4KGPc%2FCLas%2BaCryiC4gE3I6FWo3Ov35tv5hBU7hVSgsS6V1ZpkOf3ZTgS2Fp3YnzjcduVHl2pzKNX%2BlEyeE5BeDfARnF09jEkgoYC4gGsW6Q3ZAIjPWuqPuloXn9hu51QyAhYGLEy4vO03geptjq0bTpf69BhDlbF4VW%2B%2FcNjVfmtQQwrF9ysu7vkW8t4jJ4292n4lAEWbqgbc9hZdLsJsdgHLNMxBAEUhYNAfM%2FwxFOM3ILQ3yR4haFqdfWjjipBw8HLc9F4nUP4OecfElH3CBzOnRYbWo2iqZ%2BMDX4mamon1BqMNKJvr4GOrMCJGpq3gfRmUEswY1FEUoU2wUOZJiri3zi8vJtoNy%2FOLXTcnpFPjuhvFbcOTpRh4iKta8jIJbLK%2Fu%2FcvfKV%2BJxxy1nKP4K%2FvO9Xd27ly%2BVSoPHq0X7Uq8jvCG0QX6URhsP3dp7wPin7xL3ZRoECA%2FyCmNkfeF5f0LFSyse%2B5Cgl6KFfceX7rLv14dxDtdcoO57W2yVaIM6xX9VSd%2FnJEPC5mljUuuBsy5nIqQB5dIwbBTXKg03VaRUtC9VT21o9YCHqgZIUygJMZGpkFme5K8N%2FysFM8qTn%2BaqbkDOYa7DSDMC3tMNjX7rpDflAM9hzl2NcFhtroQkneWHjjvvmcZn2V5Ckih%2B7TJwtR%2FWqMlBagJbGvWjGDiC%2BRry2gXZyagikX75LgVxhhE%2FpjinWKV1vP7C8Q%3D%3D&X-Amz-Signature=03ee61302c00f8959ef779c4b6364c9429bfa13f3e2c20a0b941ee0cd42966d8&X-Amz-SignedHeaders=host&response-content-disposition=inline"); /* Imagen de fondo */
+  background-image: url("http://192.168.68.119:3500/img/index.jpg"); /* Imagen de fondo */
   background-size: cover;
   background-position: center 35%;
   display: flex;
@@ -13,62 +13,92 @@
 
 /* 🔥 Overlay oscuro */
 .hero::before {
-    content: ""; 
-    position: absolute;
-    inset: 0; /* Ocupa todo el contenedor */
-    background-color: rgba(0, 0, 0, 0.65); /* 🔥 Ajusta la opacidad aquí (0.5 = 50% oscuro) */
-    z-index: 0; /* Mantiene el overlay detrás del contenido */
+  content: "";
+  position: absolute;
+  inset: 0; /* Ocupa todo el contenedor */
+  background-color: rgba(
+    0,
+    0,
+    0,
+    0.65
+  ); /* 🔥 Ajusta la opacidad aquí (0.5 = 50% oscuro) */
+  z-index: 0; /* Mantiene el overlay detrás del contenido */
 }
 
-.hero_title_container{
-    width: 100%;
-    height: fit-content;
-    text-align: center;
-    position: relative;
-}
-.page_title{
-    font-size: 2.25rem;
-}
-.hero_buttons_container{
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-evenly;
-    height: fit-content;
-    position: absolute;
-    bottom: 15%;
-    gap: 30px;
-}
-.hero_buttons_container a.ui.button{
-    background-color: var(--cream-color);
-    background-color: var(--green-color);
-    background-color: var(--green-cream-color);
-    /* color: #fff; */
-}
-.buttons_container{
-    display: flex;
-    width: 100%;
-    max-width: 400px;
-    justify-content: space-evenly;
-}
-.buttons_container a.ui.buttons{
-    width: 42.5%;
-}
-.brand_card_wrapper {
+.hero_title_container {
   width: 100%;
   height: fit-content;
+  text-align: center;
+  position: relative;
+}
+.page_title {
+  font-size: 2.25rem;
+}
+.hero_buttons_container {
+  width: 100%;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  height: fit-content;
+  position: absolute;
+  bottom: 15%;
+  gap: 30px;
+}
+.hero_buttons_container a.ui.button {
+  background-color: var(--cream-color);
+  background-color: var(--green-color);
+  background-color: var(--green-cream-color);
+  /* color: #fff; */
+}
+.buttons_container {
+  display: flex;
+  width: 100%;
+  max-width: 400px;
   justify-content: space-evenly;
 }
-.brand_cards_section {
-  background-color: var(--green-color);
+.buttons_container a.ui.buttons {
+  width: 42.5%;
+}
+.brand_card_wrapper,
+.drop_card_wrapper {
+  width: 100%;
+  height: fit-content;
+}
+.section_wrapper {
+  display: grid;
+  gap: 20px; /* Espaciado entre tarjetas */
+  justify-content: center;
+  grid-template-columns: 1fr;
+  margin-top: 5vh;
+}
+.section_wrapper_card {
+  max-width: 350px;
+  margin: 0 auto; /* Centrar si es 1 por fila */
+}
+.brand_cards_section,
+.drop_cards_section {
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 5vh 0;
+}
+.brand_cards_section {
+  background: linear-gradient(
+    to bottom,
+    var(--green-color) 0%,
+    var(--green-color) calc(100% - 10px),
+    #000 100%
+  );
+}
+.drop_cards_section {
+  background: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 calc(100% - 10px),
+    var(--green-color) 100%
+  );
 }
 .section_title_container {
   display: flex;
@@ -76,15 +106,29 @@
   align-items: center;
   justify-content: center;
   margin-bottom: 5vh;
+  padding: 0 2.5vw;
 }
 .section_logo {
-  width: 75px;
+  width: 35px;
+  margin-bottom: 2vh;
   height: auto;
 }
 .section_title {
-  font-size: 2.5rem;
+  font-size: clamp(2rem, 2vw + 0.2rem, 2.5rem);
   margin: 0;
   text-transform: uppercase;
+  text-align: center;
+}
+.section_desc{
+  font-size: medium;
+  color: #000;
+}
+.drop_cards_section .section_title,
+.drop_cards_section .section_desc_container * {
+  color: var(--green-color);
+}
+.drop_cards_section .section_divider_line {
+  background-color: var(--green-color);
 }
 .section_divider_line {
   width: 50px;
@@ -94,18 +138,35 @@
 .section_desc_container {
   margin: 4.5vh 0;
   text-align: center;
+  padding: 0 2.5vw;
 }
-.section_desc {
-  font-size: 1.5rem;
-  color: #000;
+@media (min-width: 768px) {
+  .section_wrapper {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .section_wrapper_card {
+    max-width: 400px;
+    margin: auto; /* Centrar dentro del grid */
+  }
+  .section_desc{
+    font-size: clamp(1.1rem, 2vw + .15rem, 1.3rem);
+  }
 }
 @media (min-width: 1024px) {
   .hero {
     height: 100vh; /* Ocupa toda la altura del viewport */
     background-attachment: fixed; /* 🔥 Efecto parallax */
   }
-  .brand_card_wrapper {
+  .brand_card_wrapper,
+  .drop_card_wrapper {
     padding: 0 7.5vw;
     row-gap: 5vh;
+  }
+  .section_wrapper {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .section_wrapper_card {
+    margin: auto;
   }
 }

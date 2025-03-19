@@ -2,31 +2,31 @@ export default [
   {
     id: 1,
     status: "Completada",
-    class: "green", //Verde
+    class: "green-color", //Verde
   },
   {
     id: 2,
     status: "Pendiente de envio",
-    class: "yellow", //Amarillo
+    class: "yellow-color", //Amarillo
   },
   {
     id: 3,
     status: "Pendiente de recoleccion",
-    class: "yellow", //Amarillo
+    class: "yellow-color", //Amarillo
   },
   {
     id: 4,
     status: "Enviada",
-    class: "yellow", //Amarillo
+    class: "yellow-color", //Amarillo
   },
   {
     id: 5,
     status: "Pendiente de Pago",
-    class: "yellow", //Amarillo
+    class: "yellow-color", //Amarillo
   },
   {
     id: 6,
     status: "Cancelada",
-    class: "red", //rojo
+    class: "red-color", //rojo
   },
 ];
