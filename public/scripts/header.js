@@ -9,6 +9,7 @@ import { handlePageModal } from "./utils.js";
 const headerExportObject = {
   headerScriptInitiator: null,
 };
+window.addEventListener("DOMContentLoaded", () => window.scrollTo(0, 0))
 window.addEventListener("load", async () => {
   try {
     const header = document.querySelector("header");

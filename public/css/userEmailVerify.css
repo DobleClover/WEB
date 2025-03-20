@@ -1,16 +1,4 @@
-.header_element i,
-.header_element *{
-    color: #000 !important;
-}
-.user_initials{
-    color: #fff !important;
-}
-.header_element .logo_dark{
-    opacity: 1;
-}
-.header_element .logo_white{
-    opacity: 1;
-}
+
 .main {
     margin-top: 25vh;
     min-height: 70vh;

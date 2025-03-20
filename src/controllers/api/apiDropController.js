@@ -35,9 +35,11 @@ import entityTypes from "../../utils/staticDB/entityTypes.js";
 import sections from "../../utils/staticDB/sections.js";
 import getFileType from "../../utils/helpers/getFileType.js";
 import {
+  getProductsFromDB,
   productIncludeArray,
   setProductKeysToReturn,
 } from "./apiProductController.js";
+import { getDateString } from "../../utils/helpers/getDateString.js";
 
 const DROPS_FOLDER_NAME = "drops";
 // ENV
@@ -133,7 +135,10 @@ const controller = {
           });
         }
       }
-
+      createdDrop = await getDropsFromDB({
+        id: createdDrop.id,
+        withImages: true,
+      });
       // Le  mando ok con el redirect al email verification view
       return res.status(HTTP_STATUS.CREATED.code).json({
         meta: {
@@ -278,7 +283,10 @@ const controller = {
         });
       }
 
-      const updatedDrop = await getDropsFromDB({id: dbDrop.id, withImages: true})
+      const updatedDrop = await getDropsFromDB({
+        id: dbDrop.id,
+        withImages: true,
+      });
       // Le  mando ok con el redirect al email verification view
       return res.status(HTTP_STATUS.OK.code).json({
         meta: {
@@ -288,7 +296,7 @@ const controller = {
         },
         ok: true,
         msg: systemMessages.dropMsg.updateSuccesfull,
-        drop: updatedDrop
+        drop: updatedDrop,
       });
     } catch (error) {
       console.log(`Falle en apiUserController.updateDrop`);
@@ -338,6 +346,28 @@ const controller = {
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({ error });
     }
   },
+  getDropProducts: async(req,res)=>{
+    try {
+      const { dropId } = req.params;
+  
+      // Buscar los productos asociados al drop
+      const dropFromDB = await getDropsFromDB({id: dropId, withImages: true, withProductImages: true});
+      console.log(dropFromDB.products);
+      
+      return res.status(HTTP_STATUS.OK.code).json({
+        meta: {
+          status: HTTP_STATUS.OK.code,
+          method: "GET",
+        },
+        ok: true,
+        data: dropFromDB.products || [],
+      });
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      console.error(error);
+      res.status(500).json({ message: "Error retrieving products" });
+    }
+  }
 };
 
 export default controller;
@@ -465,21 +495,15 @@ async function setDropKeysToReturn({
   withImages = false,
   withProductImages = false,
 }) {
-  drop.products.forEach(
-    async (dropProd) =>
-      await setProductKeysToReturn({
-        product: dropProd,
-        withImages: withProductImages,
-      })
-  );
-  if (withImages && drop.files?.length) {
-    await getFilesFromAWS({
-      folderName: DROPS_FOLDER_NAME,
-      files: drop.files,
+  setDropLaunchDateString(drop);
+  for (const dropProd of drop.products) {
+    await setProductKeysToReturn({
+      product: dropProd,
+      withImages: withProductImages,
     });
-    drop.files?.sort((a, b) => a.position - b.position);
-    drop.bgImage = drop.files.find(file=>file.file_roles_id == sections.DROP.roles.BACKGROUND);
-    drop.cardImages = drop.files.filter(file=>file.file_roles_id == sections.DROP.roles.CARD);
+  }
+  if (withImages && drop.files?.length) {
+    await getDropImages(drop)
   }
 }
 
@@ -544,3 +568,22 @@ function getDropProductRelationLists({ productIDS = [], dbDrop = {} }) {
   ); // No estaban antes, pero ahora sí
   return { idsToAdd: productsToAdd, idsToRemove: productsToRemove };
 }
+
+export async function getDropImages(drop = null) {
+  if(!drop)return
+  await getFilesFromAWS({
+    folderName: DROPS_FOLDER_NAME,
+    files: drop.files,
+  });
+  drop.files?.sort((a, b) => a.position - b.position);
+  drop.bgImage = drop.files.find(
+    (file) => file.file_roles_id == sections.DROP.roles.BACKGROUND
+  );
+  drop.cardImages = drop.files.filter(
+    (file) => file.file_roles_id == sections.DROP.roles.CARD
+  );
+}
+
+export function setDropLaunchDateString(drop){
+  drop.launchDateString = getDateString(drop.launch_date);
+};

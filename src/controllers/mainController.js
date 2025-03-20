@@ -1,13 +1,45 @@
 import { readFile, writeFile } from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
+import db from "../database/models/index.js";
+import getDeepCopy from "../utils/helpers/getDeepCopy.js";
+import { getBrandsLogos } from "./api/apiBrandController.js";
+import { getProductsFromDB } from "./api/apiProductController.js";
+import sizes from "../utils/staticDB/sizes.js";
+import { getDropImages, getDropsFromDB, setDropLaunchDateString } from "./api/apiDropController.js";
 // Obtener la ruta absoluta del archivo
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const filePath = path.join(__dirname, "../utils/staticDB/countries.js");
 const controller = {
   index: (req, res) => {
-   return res.render("index");
+    return res.render("index");
+  },
+  productList: async (req, res) => {
+    // Los pido asi porque unicamente son para pintar los botones
+    let dropsFromDB = await db.Drop.findAll({
+      order: [["name", "ASC"]],
+    });
+    // Obtengo las brands con su logo
+    let brandsFromDB = await db.Brand.findAll({
+      include: ["files"],
+    });
+    brandsFromDB = getDeepCopy(brandsFromDB);
+    await getBrandsLogos(brandsFromDB);
+    return res.render("productList", { dropsFromDB, brandsFromDB });
+  },
+  dropList: async (req, res) => {
+    let {id} = req.params;
+    if(!id)return res.redirect('/tienda')
+    // Los pido asi porque unicamente son para pintar los botones
+    let dropFromDB = await db.Drop.findByPk(id, {
+      include: ['files']
+    });
+    dropFromDB = getDeepCopy(dropFromDB);
+    setDropLaunchDateString(dropFromDB)
+    await getDropImages(dropFromDB)
+    // return res.send(dropFromDB);
+    return res.render("dropDetail", { dropFromDB });
   },
   cart: (req, res) => {
     return res.render("cart");
@@ -18,27 +50,12 @@ const controller = {
   productDetail: async (req, res) => {
     try {
       let { id } = req.params;
-      let productFromDB = await findProductsInDb(id, null, true);
+      let productFromDB = await getProductsFromDB({ id, withImages: true });
       // return res.send(productFromDB);
-      return res.render("productDetail", { tacos, sizes, productFromDB });
+      return res.render("productDetail", { sizes, productFromDB });
     } catch (error) {
       console.log("FALLE EN mainController.productDetail");
       return res.send(error);
-    }
-  },
-  productList: async (req, res) => {
-    try {
-      const { categoryId } = req.params;
-      const categoryExists = categories.find(
-        (cat) => cat.id === Number(categoryId)
-      );
-      if (!categoryExists) return res.redirect("/");
-      return res.render("productList", { categoryId });
-    } catch (error) {
-      console.log(
-        `error in main controller product list: ${error}, redirecting...`
-      );
-      return res.redirect("/");
     }
   },
   userProfile: (req, res) => {

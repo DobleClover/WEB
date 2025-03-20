@@ -2,82 +2,82 @@ export default [
   {
     id: 1,
     size: "XXS",
-    categories: [4, 5, 6, 7, 9], //  Remera, Buzo, Campera, Jogging
+    categories: [4, 5, 6, 8,10,11], //  Remera, Buzo, Campera, Jogging
   },
   {
     id: 2,
     size: "XS",
-    categories: [4, 5, 6, 7, 9],
+    categories: [4, 5, 6, 8,10,11],
   },
   {
     id: 3,
     size: "S",
-    categories: [4, 5, 6, 7, 9],
+    categories: [4, 5, 6, 8,10,11],
   },
   {
     id: 4,
     size: "M",
-    categories: [4, 5, 6, 7, 9],
+    categories: [4, 5, 6, 8,10,11],
   },
   {
     id: 5,
     size: "L",
-    categories: [4, 5, 6, 7, 9],
+    categories: [4, 5, 6, 8,10,11],
   },
   {
     id: 6,
     size: "XL",
-    categories: [4, 5, 6, 7, 9],
+    categories: [4, 5, 6, 8,10,11],
   },
   {
     id: 7,
     size: "XXL",
-    categories: [4, 5, 6, 7, 9],
+    categories: [4, 5, 6, 8,10,11],
   },
   {
     id: 8,
     size: "US 6",
-    categories: [2, 8], // Calzado, Ojota
+    categories: [2, 9], // Calzado, Ojota
   },
   {
     id: 9,
     size: "US 7",
-    categories: [2, 8],
+    categories: [2, 9],
   },
   {
     id: 10,
     size: "US 8",
-    categories: [2, 8],
+    categories: [2, 9],
   },
   {
     id: 11,
     size: "US 9",
-    categories: [2, 8],
+    categories: [2, 9],
   },
   {
     id: 12,
     size: "US 10",
-    categories: [2, 8],
+    categories: [2, 9],
   },
   {
     id: 13,
     size: "US 11",
-    categories: [2, 8],
+    categories: [2, 9],
   },
   {
     id: 14,
     size: "US 12",
-    categories: [2, 8],
+    categories: [2, 9],
   },
   {
     id: 15,
     size: "US 13",
-    categories: [2, 8],
+    categories: [2, 9],
   },
   {
     id: 16,
     size: "US 14",
-    categories: [2, 8],
+    categories: [2, 9],
   },
 
   {

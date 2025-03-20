@@ -182,14 +182,15 @@ export const deleteVariationInDb = async (variationID = undefined) => {
 };
 
 // Esta funcion le deja el size a las variaciones que se pasan por param
-export const populateVariations = (variations) => {
+export const populateVariations = (variations,colorsFromDB = []) => {
   return variations.map((variation) => {
     const { sizes_id } = variation;
     const sizePopulated = populateSize(sizes_id);
-
+    const color = colorsFromDB.find(dbColor=>dbColor.id == variation.colors_id)
     return {
       ...variation,
       size: sizePopulated,
+      color
     };
   });
 };

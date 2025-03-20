@@ -4,6 +4,7 @@ import {
   closeModal,
   createAddressModal,
   createPhoneModal,
+  createProductCard,
   createUserSignUpModal,
   disableAddressModal,
   disablePhoneModal,
@@ -14,6 +15,7 @@ import {
   colorsFromDB,
   countriesFromDB,
   dropsFromDB,
+  setSettings,
   settingsFromDB,
   sizesFromDB,
 } from "./fetchEntitiesFromDB.js";
@@ -32,9 +34,9 @@ export function listenToProductCards() {
   productCards.forEach((card) => {
     if (card.dataset.listened) return;
     card.dataset.listened = true;
-    const mainImage = card.querySelector(".card_main_image");
+    const mainImage = card.querySelector(".product_card_main_image");
     const alternativeImage = card.querySelector(".card_alternative_image");
-    const otherImages = card.querySelectorAll(".card_other_image img");
+    const otherImages = card.querySelectorAll(".product_card_other_image img");
     if (!isInDesktop()) {
       let timeoutID;
       //aca es mobile, me fijo si toca las other images
@@ -60,16 +62,21 @@ export function listenToProductCards() {
     } else {
       // Lógica cuando isInDesktop() es true
       otherImages.forEach((image) => {
+        let timeoutID;
         image.addEventListener("mouseenter", () => {
-          const relativeSrc = new URL(image.src).pathname;
-          alternativeImage.src = relativeSrc;
-          alternativeImage.classList.add("card_main_image_active");
-          mainImage.classList.remove("card_main_image_active");
+          alternativeImage.src = image.src;
+          timeoutID && clearInterval(timeoutID)
+          timeoutID = setTimeout(() => {
+            alternativeImage.classList.add("product_card_active_img")
+          mainImage.classList.remove("product_card_active_img");
+          }, 250);
+          
+          
         });
 
         image.addEventListener("mouseleave", () => {
-          alternativeImage.classList.remove("card_main_image_active");
-          mainImage.classList.add("card_main_image_active");
+          alternativeImage.classList.remove("product_card_active_img");
+          mainImage.classList.add("product_card_active_img");
         });
       });
     }
@@ -413,7 +420,6 @@ export function checkForAutoselectInputs() {
     input.addEventListener("focus", function () {
       this.select(); // Selecciona el contenido cuando el input recibe foco
     });
-
   });
 }
 // Devuelve true si es todo numerico el valor
@@ -436,7 +442,7 @@ export const toggleBodyScrollableBehavior = () => {
   body.classList.toggle("non-scrollable");
 };
 
-export function generateRandomString(length) {
+export function generateRandomString(length = 10) {
   return Math.random()
     .toString(36)
     .substring(2, 2 + length);
@@ -872,21 +878,6 @@ export function buildDropBodyData(form) {
   });
 
   return formData;
-}
-
-export function getDateString(date, withTime = false) {
-  const orderDate = new Date(date);
-  const locale = "es-ES"; // Idioma español
-
-  // Opciones de formato de fecha
-  let options = { day: "numeric", month: "long", year: "numeric" };
-
-  // Si withTime es true, agregamos horas y minutos
-  if (withTime) {
-    options = { ...options, hour: "2-digit", minute: "2-digit" };
-  }
-
-  return orderDate.toLocaleDateString(locale, options);
 }
 
 //Una vez que se crea la entidad, ahi dependiendo si es en carro o profile tengo que hacer algo
@@ -1331,34 +1322,73 @@ export const handleUpdateZonePrices = async (pricesObject, zoneId) => {
   return updateResponse.ok;
 };
 
-//Retorna la menor cantidad de decimales
-export function minDecimalPlaces(number) {
-  // Convert the number to a string
-  const numberString = number.toString();
+export function minDecimalPlaces(number, type = 1) {
+  if (typeof number !== "number") return number; // Asegurar que es un número
 
-  // Check if the number has decimals
-  if (numberString.includes(".")) {
-    // Remove unnecessary zeros at the end of the decimal part
-    const decimalsWithoutZeros = numberString.replace(/\.?0+$/, "");
-    // If there are no decimals left, remove the decimal point
-    return decimalsWithoutZeros.replace(/\.$/, "");
+  let numberString;
+
+  if (type === 2) {
+    // Convertir a string con formato "200.000,20"
+    numberString = number.toLocaleString("de-DE"); // Formato alemán (punto como separador de miles, coma decimal)
   } else {
-    // If the number has no decimals, simply return the number as it is
-    return numberString;
+    // Convertir a string con formato "200,000.20"
+    numberString = number.toString();
   }
+
+  // Identificar el separador decimal según el formato
+  const decimalSeparator = type === 2 ? "," : ".";
+
+  if (numberString.includes(decimalSeparator)) {
+    // Eliminar ceros innecesarios en la parte decimal
+    const regex = type === 2 ? /,?0+$/ : /\.?0+$/;
+    const decimalsWithoutZeros = numberString.replace(regex, "");
+
+    // Asegurar que no quede el separador decimal solo al final
+    return decimalsWithoutZeros.replace(
+      new RegExp(`\\${decimalSeparator}$`),
+      ""
+    );
+  }
+
+  return numberString;
 }
 
-export function displayBigNumbers(nmbr) {
-  return parseFloat(nmbr)
-    .toFixed(2)
-    .toString()
-    .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+export function displayBigNumbers(nmbr, type = 1) {
+  if (isNaN(nmbr)) return nmbr; // Si no es un número, devolver el mismo valor
+
+  const formattedNumber = parseFloat(nmbr).toFixed(2);
+
+  if (type === 2) {
+    // Formato europeo: separador de miles con punto y decimal con coma
+    return formattedNumber
+      .replace(".", ",") // Cambiar el punto decimal por coma
+      .replace(/\B(?=(\d{3})+(?!\d))/g, "."); // Agregar puntos como separadores de miles
+  } else {
+    // Formato estándar: separador de miles con coma y decimal con punto
+    return formattedNumber.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
 }
 
 export function getLastParamFromURL() {
   const url = new URL(window.location.href);
   const pathSegments = url.pathname.split("/");
   return pathSegments[pathSegments.length - 1];
+}
+
+export function getDateString(date, withTime = false) {
+  if(!date)return
+  const orderDate = new Date(date);
+  const locale = "es-ES"; // Idioma español
+
+  // Opciones de formato de fecha
+  let options = { day: "numeric", month: "long", year: "numeric" };
+
+  // Si withTime es true, agregamos horas y minutos
+  if (withTime) {
+    options = { ...options, hour: "2-digit", minute: "2-digit" };
+  }
+
+  return orderDate.toLocaleDateString(locale, options);
 }
 
 export function handleInputFileFromModal({ show }) {
@@ -1432,6 +1462,11 @@ export async function scriptInitiator() {
         }
       }
     }
+    // Inicip el header con la animacion
+    const headerElement = document.querySelector(".header_element");
+    setTimeout(() => {
+      headerElement.classList.add("fade_in_up");
+    }, 450);
   } catch (error) {
     return console.log(error);
   }
@@ -1598,24 +1633,123 @@ export function handleFileInputChange(event, callback) {
   });
 }
 
-export async function saveSetting(id, container) {  
-  const button = container.querySelector('.ui.button');
-  const input = container.querySelector('input');
+export async function saveSetting(id, container) {
+  const button = container.querySelector(".ui.button");
+  const input = container.querySelector("input");
   const value = input.value;
-  if(!id) return
+  if (!id) return;
   console.log(`Guardando ajuste ${id}: ${value}`);
-  button.classList.add('loading')
+  button.classList.add("loading");
   let response = await fetch(`/api/setting/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ value })
-  })
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ value }),
+  });
   response = await response.json();
-  button.classList.remove('loading');
+  button.classList.remove("loading");
   showCardMessage(response.ok, response.msg);
-  if(response.ok){
-    const settingIndexToChange = settingsFromDB.findIndex(dbIndex=>dbIndex.id == id);
+  if (response.ok) {
+    const settingIndexToChange = settingsFromDB.findIndex(
+      (dbIndex) => dbIndex.id == id
+    );
     settingsFromDB[settingIndexToChange].value = value;
   }
   return;
+}
+
+export function animateElement(element) {
+  setTimeout(() => {
+    element.classList.add("fade_in_up");
+  }, 200);
+}
+
+//Se fija si aparece en pantalla para poder hace algo
+export function checkIfIsInScreen(percentege, cb, arg) {
+  return new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.intersectionRatio >= percentege) {
+          // Si aparece, invoco al cb
+          cb(arg);
+        }
+      });
+    },
+    { threshold: percentege }
+  );
+}
+
+export function animateSectionElements(section, perc = 0.4) {
+  let element, observer;
+  let allElements = section.querySelectorAll(".animated_element");
+  allElements.forEach((sectionElem) => {
+    observer = checkIfIsInScreen(perc, animateElement, sectionElem);
+    observer.observe(sectionElem);
+  });
+}
+
+export function getImgElement(fileObj, classnamesForImage) {
+  if (!fileObj || !fileObj.file_urls || fileObj.file_urls.length === 0) {
+    console.warn("No hay imágenes disponibles para el archivo:", fileObj);
+    return null;
+  }
+
+  const img = document.createElement("img");
+  img.className = classnamesForImage;
+  img.alt = fileObj.name || generateRandomString(5);
+  img.style.backgroundImage = `url(${fileObj.thumb_url})`;
+
+  // Construir srcset con diferentes tamaños
+  img.srcset = fileObj.file_urls
+    .map((file) => `${file.url} ${file.size}`)
+    .join(", ");
+
+  // Usar la imagen de menor tamaño como fallback
+  img.src =
+    fileObj.file_urls.find((file) => file.size === "1x")?.url ||
+    fileObj.file_urls[0]?.url;
+
+  // Asegurar que la imagen se active cuando cargue
+  img.addEventListener("load", () => {
+    img.classList.add("image_with_thumb_active");
+  });
+
+  return img;
+}
+
+export function displayPriceNumber(price) {
+  let dolarPrice =
+    settingsFromDB.find((set) => set.setting_types_id == 1)?.value || 2000;
+  return minDecimalPlaces(
+    displayBigNumbers(parseFloat(price) * parseFloat(dolarPrice), 2),
+    2
+  );
+}
+
+export function formatStringForTextarea(text) {
+  return text ? text.replace(/\r\n|\r|\n/g, "<br>") : "";
+}
+
+export async function paintProductCardsInList(products = []) {
+  await setSettings();
+  !products.length && await setProductsFromDB();
+  const productsToIterate = products.length ? [...products] : [...productsFromDB]
+  let productCardWrapper = document.querySelector(
+    ".product_cards_wrapper_section"
+  );
+  productCardWrapper.innerHTML = "";
+  productsToIterate.forEach((prod) => {
+    const productCard = createProductCard(prod);
+    productCardWrapper.appendChild(productCard);
+  });
+  listenToProductCards();
+  // Lo redefino
+  productCardWrapper = document.querySelector(".product_cards_wrapper_section");
+  setTimeout(() => animateSectionElements(productCardWrapper, 0.05), 500);
+}
+
+
+export function getIdFromUrl() {
+  const currentUrl = window.location.pathname; // Obtiene el path de la URL
+  const segments = currentUrl.split("/"); // Divide el path en segmentos
+  return segments[segments.length - 1]; // Retorna el último segmento (el product id)
 }

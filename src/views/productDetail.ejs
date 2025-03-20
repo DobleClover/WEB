@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('./partials/head.ejs') %>
+    <link rel="stylesheet" href="/css/productDetail.css">
+    <link rel="stylesheet" href="/css/productCard.css">
+    <link rel="stylesheet" href="/css/invertedHeader.css">
+    <script type="module" src="/scripts/productDetail.js"></script>
+    <title></title>
+</head>
+<body data-page_name="productDetail">
+    <%- include('./partials/header.ejs') %>
+    <main class="main">
+        <section class="product_images_section">
+            <div class="ui placeholder image_placeholder">
+                <div class="image"></div>
+            </div>
+        </section>
+        <section class="product_detail_section">
+            <div class="ui placeholder text_placeholder">
+                <div class="paragraph">
+                  <div class="line"></div>
+                  <div class="line"></div>
+                  <div class="line"></div>
+                  <div class="line"></div>
+                  <div class="line"></div>
+                </div>
+                <div class="paragraph">
+                  <div class="line"></div>
+                  <div class="line"></div>
+                  <div class="line"></div>
+                </div>
+                <div class="paragraph">
+                  <div class="line"></div>
+                  <div class="line"></div>
+                  <div class="line"></div>
+                </div>
+                <div class="paragraph">
+                  <div class="line"></div>
+                  <div class="line"></div>
+                  <div class="line"></div>
+                </div>
+              </div>
+        </section>
+        <section class="related_products_section">
+            <p class="page_title">Productos Relacionados</p>
+            <div class="product_cards_wrapper products-container"></div>
+        </section>
+    </main>
+  <%- include('./partials/footer.ejs') %>
+  <style>
+    .small_images_container {
+        --image-count: <%= productFromDB.files.length%>; /* Cambia según el número de imágenes */
+    }
+  </style>
+  
+</body>
+</html>

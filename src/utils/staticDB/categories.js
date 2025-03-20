@@ -28,15 +28,19 @@ export const categories = [
     name: "Accesorio",
   },
   {
-    id: 7,
+    id: 8,
     name: "Jogging",
   },
   {
-    id: 8,
+    id: 9,
     name: "Ojota",
   },
   {
-    id: 9,
+    id: 10,
     name: "Bermuda",
+  },
+  {
+    id: 11,
+    name: "Short",
   },
 ];

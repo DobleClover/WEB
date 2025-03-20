@@ -1,8 +1,11 @@
 .header_hidden {
   animation: fadeOutUpp 0.4s ease;
-  opacity: 0;
+  /* opacity: 0; */
 }
-
+.fade_in_up.header_hidden{
+  opacity: 0;
+  transform: translateY(-100%);
+}
 .header_element.header_active {
   /* Para cuando scrollean para arriba */
   animation: fadeInDownn 0.4s ease;
@@ -12,21 +15,21 @@
 .header_element {
   width: 100%;
   display: flex;
-  justify-content: space-between;
   align-items: center;
   height: 15vh;
   padding: 2.5vh 0;
-  transition: opacity 0.2s ease-out, background-color 0.5s ease;
+  transition: opacity 0.2s ease-out, background-color 0.5s ease, transform 1s;
   position: fixed;
   top: 0;
   z-index: 1000; /* Asegúrate de que el .header_element esté encima del contenido */
   background-color: transparent;
+  justify-content: center;
 }
 .header_element * {
   transition: color 0.3s;
 }
 .logo_container {
-  width: 100%;
+  width: 60%;
   height: 100%;
   position: relative;
 }
@@ -212,6 +215,9 @@ font-size: 1.15rem;
   
 }
 @media(min-width:1024px){
+  .header_element{
+    justify-content: space-between;
+  }
   .cart_icon_container.mobile{
     display: none;
   }

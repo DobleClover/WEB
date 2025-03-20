@@ -32,6 +32,7 @@ import minDecimalPlaces from "../../utils/helpers/minDecimalPlaces.js";
 import { HTTP_STATUS } from "../../utils/staticDB/httpStatusCodes.js";
 import entityTypes from "../../utils/staticDB/entityTypes.js";
 import sections from "../../utils/staticDB/sections.js";
+import capitalizeFirstLetter from "../../utils/helpers/capitalizeFirstLetter.js";
 
 const { productMsg } = systemMessages;
 const {
@@ -416,11 +417,12 @@ const controller = {
 
 export default controller;
 
-export let productIncludeArray = ["files", "variations"];
+export let productIncludeArray = ["files", "variations","brand","drops"];
 
 export async function getProductsFromDB({
   id = null,
   categoryId = null,
+  dropId = null,
   withImages = false,
   limit,
   offset,
@@ -599,8 +601,10 @@ export async function setProductKeysToReturn({
     product.category = categories.find(
       (cat) => cat.id == product.categories_id
     );
+    product.brand.name = capitalizeFirstLetter(product.brand.name)
     if (withVariations) {
-      product.variations = populateVariations(product.variations);
+      const dbColors = await db.Color.findAll();
+      product.variations = populateVariations(product.variations,dbColors);
     }
     product.price = minDecimalPlaces(product.price);
     product.totalStock = product.variations?.reduce((sum, variation) => sum + variation.quantity, 0) || 0;

@@ -7,11 +7,10 @@
     grid-template-areas:
         "footer_logo_container"
         "footer_nav_container"
-        "footer_payment_container"
         "footer_contact_container"
         "footer_media_container";
     gap: 1rem; /* Espaciado entre elementos */
-    padding: 5vh 1rem;
+    padding: 5vh 15vw;
     position: relative;
     z-index: 1000;
     min-height: 100vh;
@@ -81,10 +80,10 @@
 
 @media (min-width:768px){
     .footer_element {
-        grid-template-columns: 1fr 1fr 1fr 1fr; /* Ajusta proporción */
+        grid-template-columns: 1fr 1fr 1fr; /* Ajusta proporción */
         grid-template-areas:
-            "footer_nav_container footer_payment_container footer_contact_container footer_media_container"
-            "footer_logo_container footer_logo_container footer_logo_container footer_logo_container";
+            "footer_nav_container footer_contact_container footer_media_container"
+            "footer_logo_container footer_logo_container footer_logo_container";
         gap: 1rem 2rem;
         min-height: unset;
     }

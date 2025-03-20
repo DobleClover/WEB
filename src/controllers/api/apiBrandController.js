@@ -34,16 +34,23 @@ import {
   deleteFileInDb,
   insertFilesInDB,
 } from "../../utils/helpers/filesHandler.js";
+import { productIncludeArray, setProductKeysToReturn } from "./apiProductController.js";
 const BRANDS_FOLDER_NAME = "brands";
 // ENV
 
 const controller = {
   getBrands: async (req, res) => {
     try {
-      let { brands_id } = req.query;
+      let { brands_id, withImages, withProductImages } = req.query;
       brands_id = brands_id || undefined;
-
-      let brandsFromDB = await getBrandsFromDB(brands_id);
+      withProductImages = withProductImages || undefined;
+      console.log(withProductImages);
+      
+      let brandsFromDB = await getBrandsFromDB({
+        id: brands_id,
+        withImages,
+        withProductImages,
+      });
 
       // Mando la respuesta
       return res.status(HTTP_STATUS.OK.code).json({
@@ -93,22 +100,31 @@ const controller = {
       const logo = files["logo"] ? files["logo"][0] : null;
       const isotype = files["isotype"] ? files["isotype"][0] : null;
       const logotype = files["logotype"] ? files["logotype"][0] : null;
-      if(logo){
+      if (logo) {
         //Aca cargo el logo
         logo.file_roles_id = sections.BRAND.roles.LOGO;
         await handleBrandFileUpload({ file: logo, brandID: createdBrand.id });
       }
-      if(isotype){
+      if (isotype) {
         //Aca cargo el isotipo
         isotype.file_roles_id = sections.BRAND.roles.ISOTYPE;
-        await handleBrandFileUpload({ file: isotype, brandID: createdBrand.id });
+        await handleBrandFileUpload({
+          file: isotype,
+          brandID: createdBrand.id,
+        });
       }
-      if(logotype){
+      if (logotype) {
         //Aca cargo el isotipo
         logotype.file_roles_id = sections.BRAND.roles.LOGOTYPE;
-        await handleBrandFileUpload({ file: logotype, brandID: createdBrand.id });
+        await handleBrandFileUpload({
+          file: logotype,
+          brandID: createdBrand.id,
+        });
       }
-     
+      createdBrand = await getBrandsFromDB({
+        id: createdBrand.id,
+        withImages: true,
+      });
       // Le  mando ok con el redirect al email verification view
       return res.status(HTTP_STATUS.CREATED.code).json({
         meta: {
@@ -150,7 +166,7 @@ const controller = {
         res.status(HTTP_STATUS.BAD_REQUEST.code).json({
           ok: false,
         });
-      const dbBrand = await getBrandsFromDB(id);
+      const dbBrand = await getBrandsFromDB({ id });
       if (!dbBrand) {
         return res.status(HTTP_STATUS.NOT_FOUND.code).json({
           ok: false,
@@ -164,29 +180,32 @@ const controller = {
       const logo = files["logo"] ? files["logo"][0] : null;
       const isotype = files["isotype"] ? files["isotype"][0] : null;
       const logotype = files["logotype"] ? files["logotype"][0] : null;
-      let filesToDestroy = []
-      if(logo){
+      let filesToDestroy = [];
+      if (logo) {
         //Aca cambio el logo
         logo.file_roles_id = sections.BRAND.roles.LOGO;
         await handleBrandFileUpload({ file: logo, brandID: id });
         filesToDestroy.push(dbBrand.logo);
       }
-      if(isotype){
+      if (isotype) {
         //Aca cambio el isotipo
         isotype.file_roles_id = sections.BRAND.roles.ISOTYPE;
         await handleBrandFileUpload({ file: isotype, brandID: id });
         filesToDestroy.push(dbBrand.isotype);
       }
-      if(logotype){
+      if (logotype) {
         //Aca cambio el isotipo
         logotype.file_roles_id = sections.BRAND.roles.LOGOTYPE;
         await handleBrandFileUpload({ file: logotype, brandID: id });
         filesToDestroy.push(dbBrand.logotype);
-      };
+      }
       // Si hubo para borrar lo hago
-      filesToDestroy.length && await handleBrandFileDestroy(filesToDestroy)
+      filesToDestroy.length && (await handleBrandFileDestroy(filesToDestroy));
       await updateBrandFromDB(brandObjToDB, brandObjToDB.id);
-      const brandToReturn = await getBrandsFromDB(brandObjToDB.id);
+      const brandToReturn = await getBrandsFromDB({
+        id: brandObjToDB.id,
+        withImages: true,
+      });
       // Le  mando ok con el redirect al email verification view
       return res.status(HTTP_STATUS.OK.code).json({
         meta: {
@@ -211,7 +230,7 @@ const controller = {
         return res.status(HTTP_STATUS.BAD_REQUEST.code).json({
           ok: false,
         });
-      let dbBrand = await getBrandsFromDB(id);
+      let dbBrand = await getBrandsFromDB({ id });
       if (!dbBrand) {
         return res.status(HTTP_STATUS.NOT_FOUND.code).json({
           ok: false,
@@ -245,9 +264,13 @@ const controller = {
 
 export default controller;
 
-let brandIncludeArray = ["products", "files"];
+let brandIncludeArray = [{association: "products", include: productIncludeArray}, "files"];
 
-export async function getBrandsFromDB(id = undefined) {
+export async function getBrandsFromDB({
+  id = undefined,
+  withImages = false,
+  withProductImages = false,
+}) {
   try {
     let brandsToReturn, brandToReturn;
     // Condición si id es un string
@@ -257,7 +280,11 @@ export async function getBrandsFromDB(id = undefined) {
       });
       if (!brandToReturn) return null;
       brandToReturn = brandToReturn && getDeepCopy(brandToReturn);
-      await setBrandKeysToReturn(brandToReturn);
+      await setBrandKeysToReturn({
+        brand: brandToReturn,
+        withImages,
+        withProductImages,
+      });
       return brandToReturn;
     }
 
@@ -282,7 +309,7 @@ export async function getBrandsFromDB(id = undefined) {
     }
     for (let i = 0; i < brandsToReturn.length; i++) {
       const brand = brandsToReturn[i];
-      await setBrandKeysToReturn(brand);
+      await setBrandKeysToReturn({ brand, withImages, withProductImages });
     }
 
     return brandsToReturn;
@@ -349,18 +376,33 @@ export function generateBrandObject(obj) {
   return dataToDB;
 }
 
-async function setBrandKeysToReturn(brand) {
+async function setBrandKeysToReturn({
+  brand,
+  withImages = false,
+  withProductImages = false,
+}) {
   try {
-    if(brand.files?.length){
+    if (brand.files?.length) {
       await getFilesFromAWS({
         folderName: BRANDS_FOLDER_NAME,
         files: brand.files,
-      })
+      });
     }
-    brand.logo = brand.files?.find(file=>file.file_roles_id == sections.BRAND.roles.LOGO);
-    brand.logotype = brand.files?.find(file=>file.file_roles_id == sections.BRAND.roles.LOGOTYPE);
-    brand.isotype = brand.files?.find(file=>file.file_roles_id == sections.BRAND.roles.ISOTYPE);
-   
+    brand.logo = brand.files?.find(
+      (file) => file.file_roles_id == sections.BRAND.roles.LOGO
+    );
+    brand.logotype = brand.files?.find(
+      (file) => file.file_roles_id == sections.BRAND.roles.LOGOTYPE
+    );
+    brand.isotype = brand.files?.find(
+      (file) => file.file_roles_id == sections.BRAND.roles.ISOTYPE
+    );
+    for (const brandProd of brand.products) {
+      await setProductKeysToReturn({
+        product: brandProd,
+        withImages: withProductImages,
+      });
+    }   
   } catch (error) {
     return console.log(error);
   }
@@ -414,10 +456,26 @@ async function handleBrandFileDestroy(files) {
         msg: systemMessages.brandMsg.updateFailed,
       });
     }
-    let filesIds = files.map(file=>file.id)
+    let filesIds = files.map((file) => file.id);
     await deleteFileInDb(filesIds);
   } catch (error) {
     console.log(error);
     return;
+  }
+}
+
+export async function getBrandsLogos(brands){
+  for (const brand of brands) {
+    if(brand.files.length){
+      brand.logo = brand.files?.find(
+        (file) => file.file_roles_id == sections.BRAND.roles.LOGO
+      );
+      await getFilesFromAWS({
+        folderName: BRANDS_FOLDER_NAME,
+        files: [brand.logo],
+      });
+      delete brand.files
+    }
+    
   }
 }

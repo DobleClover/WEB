@@ -11,6 +11,7 @@ import {
   setColors,
   setCountries,
   setSizes,
+  settingsFromDB,
   sizesFromDB,
   statusesFromDB,
 } from "./fetchEntitiesFromDB.js";
@@ -61,30 +62,33 @@ import {
   updateColorTable,
   checkForAutoselectInputs,
   saveSetting,
+  getImgElement,
+  minDecimalPlaces,
+  displayPriceNumber,
 } from "./utils.js";
 
 export function createProductCard(props) {
-  const { id, name, category, price, files, discount } = props;
-
+  let { id, name, brand, price, files, discount } = props;
+  
   // Crear elementos
   const card = document.createElement("a");
-  card.className = `card product_card ${discount ? "discount_card" : ""}`;
-  card.href = `/product/${id}`;
+  card.className = `animated_element card product_card ${discount ? "discount_card" : ""}`;
+  card.href = `/producto/${id}`;
 
   const imagesWrapper = document.createElement("div");
   imagesWrapper.className = "card_images_wrapper";
 
   const cardImage = document.createElement("div");
-  cardImage.className = "card_image";
+  cardImage.className = "product_card_image";
 
-  const mainImageObj = files.find((file) => file.mainImage) || files[0];
-  const mainImage = document.createElement("img");
-  mainImage.className = "card_main_image card_main_image_active";
-  mainImage.src = mainImageObj ? `/img/product/${mainImageObj.filename}` : "";
-  mainImage.alt = `Main image for ${name}`;
-
+  const mainImageObj = files.find((file) => file.main_file) || files[0];
+  cardImage.style.backgroundImage = `url(${mainImageObj.thumb_url})`;
+  let mainImage
+  if (mainImageObj && mainImageObj.file_urls) {
+    mainImage = getImgElement(mainImageObj,'product_card_image product_card_main_image product_card_active_img') 
+  }
   const hoveredImage = document.createElement("img");
-  hoveredImage.className = "card_alternative_image";
+  hoveredImage.className = "card_alternative_image product_card_main_image card_image_active";
   hoveredImage.alt = "Alt Image";
 
   cardImage.appendChild(mainImage);
@@ -96,13 +100,11 @@ export function createProductCard(props) {
     cardImage.appendChild(saleTag);
   }
   const otherImagesContainer = document.createElement("div");
-  otherImagesContainer.className = "card_other_image";
+  otherImagesContainer.className = "product_card_other_image ";
 
   files.forEach((file) => {
-    if (file.mainImage) return;
-    const otherImage = document.createElement("img");
-    otherImage.src = `/img/product/${file.filename}`;
-    otherImage.alt = `Image for ${name}`;
+    if (file.main_file) return;
+    const otherImage = getImgElement(file,'product_card_image');
     otherImagesContainer.appendChild(otherImage);
   });
 
@@ -117,29 +119,27 @@ export function createProductCard(props) {
   cardHeader.textContent = name;
 
   const cardCategory = document.createElement("div");
-  cardCategory.className = "card_desc product_card_category";
-  cardCategory.textContent = category;
-
+  cardCategory.className = "product_card_category";
+  cardCategory.textContent = brand.name;
+  const priceInARS = displayPriceNumber(price);
   const cardPrice = document.createElement("div");
   cardPrice.className = `card_price product_card_price`;
-  cardPrice.textContent = `$${price.toLocaleString()}`;
+  cardPrice.textContent = `$${priceInARS}`;
   let discountedPrice;
   if (discount) {
     discountedPrice = document.createElement("div");
     discountedPrice.className = `card_price product_card_price discount_price`;
-    discountedPrice.textContent = `$${(
-      (discount + 1) *
-      price
-    ).toLocaleString()}`;
+    let priceWithDiscount = (1 - (parseInt(discount)/100)) * parseFloat(price)
+    discountedPrice.textContent = `$${displayPriceNumber(priceWithDiscount)}`;
     cardPrice.textContent = "";
     const originalPrice = document.createElement("span");
     originalPrice.className = "original_price";
-    originalPrice.textContent = `$${price.toLocaleString()}`;
+    originalPrice.textContent = `$${priceInARS}`;
     cardPrice.appendChild(originalPrice); // Agregarlo junto al precio original
     // Crear el elemento para mostrar el porcentaje de descuento
     const discountInfo = document.createElement("span");
     discountInfo.className = "discount_info";
-    discountInfo.textContent = ` ${discount * 100}% OFF`;
+    discountInfo.textContent = ` ${discount}% OFF`;
     cardPrice.appendChild(discountInfo); // Agregarlo junto al precio original
   }
   cardInfo.appendChild(cardHeader);
@@ -1076,7 +1076,7 @@ export function form(props) {
   container.className = "form_container";
 
   const h3Element = document.createElement("h3");
-  h3Element.className = "page-title red";
+  h3Element.className = "page_title red";
   h3Element.textContent = formTitleObject?.title;
   if (formTitleObject?.datasetObject) {
     const { dataKey, dataValue } = formTitleObject?.datasetObject;
@@ -1788,7 +1788,7 @@ export async function createDisableBrandModal(brand) {
     showCardMessage(false, msg);
     return;
   });
-};
+}
 
 export async function createDisableDropModal(drop) {
   disableDropModal(drop);
@@ -2487,7 +2487,7 @@ export function disableDropModal(drop = undefined) {
   // Agregar el modal al cuerpo del documento
   document.body.appendChild(modal);
   return modal;
-};
+}
 
 export function disableColorModal(color = undefined) {
   destroyExistingModal();
@@ -3250,7 +3250,7 @@ export async function createDropModal(drop = undefined) {
         const filename = bgImage.filename;
         container.dataset.filename = filename;
         container.dataset.db_id = bgImage.id;
-        container.classList.add('old_image_container')
+        container.classList.add("old_image_container");
         paintImgInContainer(container, src);
       }
     }
@@ -3260,13 +3260,13 @@ export async function createDropModal(drop = undefined) {
     );
     // Para escuchar los files
     listenToFileInput("drop_bg_image", (fileData) => {
-      const {src, filename} = fileData[0];
+      const { src, filename } = fileData[0];
       const container = document.querySelector(".ui.modal .bg_image_field");
-      container.classList.remove('old_image_container')
+      container.classList.remove("old_image_container");
       container.dataset.filename = filename;
       container.dataset.db_id = undefined;
-      return paintImgInContainer(container,src)
-  });
+      return paintImgInContainer(container, src);
+    });
   } catch (error) {
     console.log(error);
     return;
@@ -3318,48 +3318,212 @@ export function generateDashboardSettings(settings) {
   const container = document.createElement("div");
   container.classList.add("ui", "stacked", "cards", "setting_cards_wrapper");
 
-  settings.forEach(setting => {
-      // Crear la card
-      const card = document.createElement("div");
-      card.classList.add("card");
+  settings.forEach((setting) => {
+    // Crear la card
+    const card = document.createElement("div");
+    card.classList.add("card");
 
-      const content = document.createElement("div");
-      content.classList.add("content");
+    const content = document.createElement("div");
+    content.classList.add("content");
 
-      // Crear el encabezado
-      const header = document.createElement("div");
-      header.classList.add("header");
-      header.textContent = setting.name;
+    // Crear el encabezado
+    const header = document.createElement("div");
+    header.classList.add("header");
+    header.textContent = setting.name;
 
-      // Crear el contenedor del input y botón
-      const actionInput = document.createElement("div");
-      actionInput.classList.add("ui", "action", "input");
+    // Crear el contenedor del input y botón
+    const actionInput = document.createElement("div");
+    actionInput.classList.add("ui", "action", "input");
 
-      // Crear el input
-      const input = document.createElement("input");
-      input.type = "text";
-      input.classList.add("numeric_only_input");
-      input.value = setting.value;
+    // Crear el input
+    const input = document.createElement("input");
+    input.type = "text";
+    input.classList.add("numeric_only_input");
+    input.value = setting.value;
 
-      // Crear el botón
-      const button = document.createElement("button");
-      button.classList.add("ui", "green", "button");
-      button.textContent = "Guardar";
+    // Crear el botón
+    const button = document.createElement("button");
+    button.classList.add("ui", "green", "button");
+    button.textContent = "Guardar";
 
-      // Agregar evento al botón para guardar el valor
-      button.addEventListener("click", async () => {
-          await saveSetting(setting.id, actionInput);
-      });
+    // Agregar evento al botón para guardar el valor
+    button.addEventListener("click", async () => {
+      await saveSetting(setting.id, actionInput);
+    });
 
-      // Estructurar los elementos
-      actionInput.appendChild(input);
-      actionInput.appendChild(button);
+    // Estructurar los elementos
+    actionInput.appendChild(input);
+    actionInput.appendChild(button);
 
-      content.appendChild(header);
-      content.appendChild(actionInput);
-      card.appendChild(content);
-      container.appendChild(card);
+    content.appendChild(header);
+    content.appendChild(actionInput);
+    card.appendChild(content);
+    container.appendChild(card);
   });
 
-  return container
+  return container;
 }
+
+export function createBrandCard(brand) {
+  // Crear el elemento <a> principal
+  const card = document.createElement("a");
+  card.classList.add("brand_card", "card_with_image", "section_wrapper_card","animated_element");
+  card.href = "#"; // Enlace vacío (puedes modificarlo si necesitas redirigir a otra página)
+
+  // Contenedor de imágenes de productos
+  const productWrapper = document.createElement("div");
+  productWrapper.classList.add("brand_product_image_wrapper");
+
+  // Overlay para el efecto visual
+  const overlay = document.createElement("div");
+  overlay.classList.add("overlay");
+  productWrapper.appendChild(overlay);
+
+  // Obtener las imágenes principales de los productos con srcset
+  const productsMainFile = brand.products
+  .map(
+    (product) =>
+      product.files?.find((file) => file.main_file === 1)).filter(Boolean); // Filtrar valores nulos
+  const productImages = productsMainFile
+    .map(
+      (productMainFile) =>
+        productMainFile?.file_urls
+    );
+    const productThumb =  productsMainFile
+    .map(
+      (productMainFile) =>
+        productMainFile?.thumb_url
+    );
+    
+  productWrapper.style.backgroundImage = `url(${productThumb[0]})`;
+
+  // Agregar imágenes al contenedor con srcset
+  productImages.forEach((fileUrls, index) => {
+    if (!fileUrls || fileUrls.length === 0) return;
+
+    const img = document.createElement("img");
+    img.classList.add("brand_card_product_image", "card_image");
+
+    // Construir el atributo srcset con las distintas versiones
+    const srcset = fileUrls
+      .map((file) => `${file.url} ${file.size}`)
+      .join(", ");
+
+    img.src =
+      fileUrls.find((file) => file.size === "1x")?.url || fileUrls[0]?.url; // Fallback a 1x
+    img.srcset = srcset;
+
+    img.alt = `Producto de ${brand.name}`;
+
+    // La primera imagen se activa por defecto
+    if (index === 0) {
+      if (img.complete) {
+        img.classList.add("brand_card_product_image_active");
+      }
+      {
+        img.addEventListener("load", () => {
+          img.classList.add("brand_card_product_image_active");
+        });
+      }
+    }
+
+    productWrapper.appendChild(img);
+  });
+
+  // Agregar contenedor de imágenes al card
+  card.appendChild(productWrapper);
+
+  // Agregar el logo de la marca
+  const brandLogo = document.createElement("img");
+  brandLogo.src =
+    brand.isotype?.file_urls?.find((f) => f.size === "2x")?.url || "";
+  brandLogo.alt = brand.name;
+  brandLogo.classList.add("brand_card_logo");
+
+  card.appendChild(brandLogo);
+
+  return card;
+}
+
+export function createDropCard(drop) {
+  // Crear el elemento <a> de la tarjeta
+  const dropCard = document.createElement("a");
+  dropCard.classList.add("drop_card", "card_with_image", "section_wrapper_card","animated_element");
+  dropCard.href = `/drop/${drop.id}`;
+
+  // Crear el contenedor de imágenes
+  const imageWrapper = document.createElement("div");
+  imageWrapper.classList.add("drop_product_image_wrapper");
+
+  // Agregar overlay
+  const overlay = document.createElement("div");
+  overlay.classList.add("overlay");
+  imageWrapper.appendChild(overlay);
+
+  // Obtener imágenes de `cardImages`
+  const images = drop.cardImages || [];
+  images.forEach((image, index) => {
+      if (!image.file_urls || image.file_urls.length === 0) return;
+
+      const img = document.createElement("img");
+      img.classList.add("card_image");
+      img.alt = `Imagen de ${drop.name}`;
+
+      // Construir el atributo srcset con diferentes tamaños
+      img.srcset = image.file_urls.map(file => `${file.url} ${file.size}`).join(", ");
+
+      // Usar la imagen de menor tamaño como fallback
+      img.src = image.file_urls.find(file => file.size === "1x")?.url || image.file_urls[0]?.url;
+
+      // Activar la segunda imagen por defecto
+      // La primera imagen se activa por defecto
+    if (index === 0) {
+      if (img.complete) {
+        img.classList.add("card_image_active");
+      }
+      {
+        img.addEventListener("load", () => {
+          img.classList.add("card_image_active");
+        });
+      }
+    }
+
+      imageWrapper.appendChild(img);
+  });
+
+  // Crear el contenedor de contenido
+  const contentWrapper = document.createElement("div");
+  contentWrapper.classList.add("drop_content");
+
+  // Nombre del drop
+  const dropName = document.createElement("h4");
+  dropName.classList.add("drop_name");
+  dropName.textContent = drop.name;
+  contentWrapper.appendChild(dropName);
+
+  // Fecha formateada
+  const dropDate = document.createElement("p");
+  dropDate.classList.add("drop_data", "drop_date");
+  dropDate.textContent = getDateString(drop.launch_date);
+  contentWrapper.appendChild(dropDate);
+
+  // Cantidad de productos
+  const dropProducts = document.createElement("p");
+  dropProducts.classList.add("drop_data", "drop_products_length");
+  dropProducts.textContent = `${drop.products?.length} producto${drop.products.length > 1 ? 's':''}`;
+  contentWrapper.appendChild(dropProducts);
+  
+  let availableProducts = drop.products?.filter(prod=>prod.totalStock > 0)?.length || undefined;
+  const pluralLetter = availableProducts > 1 ? 's':''
+  const dropProductsAvailable = document.createElement("p");
+  dropProductsAvailable.classList.add("drop_data", "drop_products_length");
+  dropProductsAvailable.textContent = availableProducts > 2 ? `${ availableProducts } disponibles` : `Último${pluralLetter}${availableProducts > 1 ? ` ${availableProducts}` : ''} disponible${pluralLetter}`;
+  availableProducts && contentWrapper.appendChild(dropProductsAvailable);
+  
+  // Agregar todos los elementos al dropCard
+  dropCard.appendChild(imageWrapper);
+  dropCard.appendChild(contentWrapper);
+
+  return dropCard;
+}
+

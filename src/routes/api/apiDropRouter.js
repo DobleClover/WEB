@@ -9,6 +9,7 @@ const router = express.Router();
 const { dropFields } = formValidations;
 
 router.get("/", apiDropController.getDrops);
+router.get("/:dropId/products", apiDropController.getDropProducts);
 router.post(
   "/",
   multerMiddleware.array("images"),

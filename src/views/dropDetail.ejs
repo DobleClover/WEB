@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('./partials/head.ejs') %>
+    <link rel="stylesheet" href="/css/productList.css" />
+    <link rel="stylesheet" href="/css/productCard.css" />
+    <link rel="stylesheet" href="/css/dropDetail.css" />
+    <link rel="stylesheet" href="/css/carrouselSection.css" />
+    <!-- <link rel="stylesheet" href="/css/invertedHeader.css" /> -->
+    <script type="module" src="/scripts/dropDetail.js"></script>
+    <title>Tienda</title>
+</head>
+<body data-page_name="productList">
+    <%- include('./partials/header.ejs') %>
+    <main class="main">
+        <section class="drop_bg_images_section carrousel_section">
+            <div
+          class="background_images_container container"
+          style="
+            background-image: url(<%= dropFromDB?.cardImages[0].thumb_url %>);
+          "
+        >
+          <% dropFromDB?.cardImages?.forEach((file,i) => { %>
+          <img
+            srcset="<%file.file_urls.forEach(url=>{%>
+              <%= url.url%> <%= url.size %>,
+              <% }) %>"
+            src="<%= file.file_urls[file.file_urls.length-1].url%>"
+            alt="<%= file.filename%>"
+            class="background_image"
+            data-file_id="<%= file.id %>"
+            loading="lazy"
+          />
+          <% }) %>
+
+          <div class="background_image_overlay"></div>
+        </div>
+        <div class="text_wrapper_container">
+          <p class="carrousel_title animated_element"><%= dropFromDB?.name %></p>
+          <p class="carrousel_data animated_element"><%= dropFromDB?.launchDateString %></p>
+          
+        </div>
+        </section>
+      <section class="product_cards_wrapper_section">
+
+      </section>
+    </main>
+    <%- include('./partials/footer.ejs') %>
+  </body>
+</html>

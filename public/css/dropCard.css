@@ -15,11 +15,12 @@
     height: 100%;
     position: absolute;
     z-index: -1;
+    background-size: cover;
 }
 .drop_product_image_wrapper .overlay{
     position: absolute;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.36);
+    background-color: rgba(0, 0, 0, 0.3);
     z-index: 10;
 }
 .card_image{

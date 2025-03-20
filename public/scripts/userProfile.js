@@ -524,14 +524,16 @@ const paintAdminProducts = async () => {
 
   const rowsData = [];
   productsFromDB.forEach((prod) => {
-    const { id, files, name, category, totalStock, active, discount, price } =
+    const { id, files, name, brand, totalStock, active, discount, price } =
       prod;
+      console.log(prod);
+      
     const productMainFile = files?.length && files[0];
     const rowObject = {
       id,
-      imagen: productMainFile.file_urls[0].url,
+      imagen: productMainFile?.file_urls ? productMainFile?.file_urls[0]?.url : '',
       nombre: name,
-      categoria: category.name,
+      marca: brand?.name || '-',
       precio: `${price ? `U$S ${minDecimalPlaces(displayBigNumbers(price))}` : 'Sin precio'}`,
       descuento: `${discount ? `${discount}%` : "-"}`,
       stock: totalStock,
@@ -550,7 +552,7 @@ const paintAdminProducts = async () => {
         },
       },
       { field: "nombre", flex: 0.8 },
-      { field: "categoria", flex: 0.5 },
+      { field: "marca", flex: 0.5 },
       { field: "precio", flex: 0.5 },
       { field: "descuento", flex: 0.45 },
       { field: "stock", flex: 0.4 },

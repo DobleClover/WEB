@@ -1,28 +1,53 @@
 .hero {
-  height: 100%; /* Ocupa toda la altura del viewport */
-  background-image: url("https://192.168.68.119:3500/img/index.jpg"); /* Imagen de fondo */
-  background-size: cover;
-  background-position: center 35%;
+  position: relative;
+  background-color: black;
+  height: 100vh;
+  width: auto;
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  color: white;
-  text-align: center;
+  flex-direction: column;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-image: url('https://web-production-f9105.up.railway.app/img/index.jpg');
+  opacity: 1; /* Inicialmente invisible */
+  transition: opacity 1s ease-in-out; /* Aparece suavemente */
 }
 
-/* 🔥 Overlay oscuro */
+/* Overlay oscuro, inicialmente invisible */
 .hero::before {
   content: "";
   position: absolute;
-  inset: 0; /* Ocupa todo el contenedor */
-  background-color: rgba(
-    0,
-    0,
-    0,
-    0.65
-  ); /* 🔥 Ajusta la opacidad aquí (0.5 = 50% oscuro) */
-  z-index: 0; /* Mantiene el overlay detrás del contenido */
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.65);
+  z-index: 0;
+  opacity: 0; /* Invisible inicialmente */
+  transition: opacity 1s ease-in-out; /* Aparece suavemente */
+}
+.hero.show_overlay::before {
+  opacity: 1;
+}
+.page_title,
+.hero_buttons_container {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+  position: relative;
+  z-index: 2; /* Para que esté por encima del overlay */
+}
+
+/* Títulos */
+.hero.show_title .page_title {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Botones */
+.hero.show_buttons .hero_buttons_container {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .hero_title_container {
@@ -33,6 +58,7 @@
 }
 .page_title {
   font-size: 2.25rem;
+  color: #fff;
 }
 .hero_buttons_container {
   width: 100%;
@@ -119,7 +145,7 @@
   text-transform: uppercase;
   text-align: center;
 }
-.section_desc{
+.section_desc {
   font-size: medium;
   color: #000;
 }
@@ -148,14 +174,16 @@
     max-width: 400px;
     margin: auto; /* Centrar dentro del grid */
   }
-  .section_desc{
-    font-size: clamp(1.1rem, 2vw + .15rem, 1.3rem);
+  .section_desc {
+    font-size: clamp(1.1rem, 2vw + 0.15rem, 1.3rem);
   }
 }
 @media (min-width: 1024px) {
   .hero {
     height: 100vh; /* Ocupa toda la altura del viewport */
     background-attachment: fixed; /* 🔥 Efecto parallax */
+    background-size: cover;
+    background-position: center 40%;
   }
   .brand_card_wrapper,
   .drop_card_wrapper {
