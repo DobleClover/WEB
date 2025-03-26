@@ -6,6 +6,7 @@ import {
   DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 
+import { PassThrough } from "stream";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import sharp from "sharp";
 import path from "path";
@@ -27,98 +28,112 @@ const s3 = new S3Client({
 
 //retorna los objetos para pushear a la DB
 export async function uploadFilesToAWS(object) {
-  try {
-    // Voy por los home_files
-    let randomName, buffer, command, params, filesToInsertDB;
-    filesToInsertDB = [];
-    for (let i = 0; i < object.files.length; i++) {
-      randomName = null;
-      const multerFile = object.files[i];
-      // Lo agrego a aws
-      if (multerFile) {
-        const randomNumber = generateRandomNumber(10); //el length
-        const validBuffer = Buffer.isBuffer(multerFile.buffer)
-            ? multerFile.buffer
-            : Buffer.from(multerFile.buffer.data);
-        if (multerFile.file_types_id == 1) {
-            //imagen
-            
-          // Utiliza Sharp para obtener información de la imagen (incluido el ancho)
-          const imageInfo = await sharp(validBuffer).metadata();
-          const imageWidth = imageInfo.width;
-          // Creo el nombre unico para la foto (dentro del forEach)
-          // Cambio el formato a webp y redimensiono la imagen, total la de los productos
-        randomName = `${object.folderName}-` + randomNumber;
-          let imageSizes = [
-            //Por cada foto subo otras 2 mas chicas para optimizar la carga
-            {
-              name: randomName + "-2x.webp", //original
-              width: Math.round(imageWidth * 1),
-            },
-            {
-              name: randomName + "-1x.webp",
-              width: Math.round(imageWidth * 0.5),
-            },
-            {
-              name: randomName + "-thumb.webp",
-              width: 20,
-            },
-          ];  
-          // Voy por cada size asi lo subo a aws
-          for (let j = 0; j < imageSizes.length; j++) {
-            const imageToUpload = imageSizes[j];
-            //  no se necesita tan gde
-            console.log('buffering image...')
-            buffer = await sharp(validBuffer)
-              .resize(imageToUpload.width, undefined, {
-                fit: "contain",
-                //background: { r: 255, g: 255, b: 255, alpha: 0 },
-              })
-              .toFormat("webp")
-              .toBuffer();
-            // El objeto de la imagen que voy a subir
-            params = {
-              Bucket: bucketName,
-              Key: `${object.folderName}/${imageToUpload.name}`, //Esto hace que se guarde en la carpeta homeSection
-              Body: buffer,
-              ContentType: "image/webp",
-            };
-            console.log('uploading image...')
-            command = new PutObjectCommand(params);
-            await s3.send(command);
-            console.log('image succesfully uploaded')
-          }
-        } else{
-            const videoExtension = path.extname(multerFile.originalname); // Obtiene ".mp4", ".jpg", etc.
-            //aca es video
-            randomName = `${object.folderName}-` + randomNumber + videoExtension; //nombre del archivo
-            // Lo unico que hago es rescribir la imagen que ya estaba   
-            params = {
-                Bucket: bucketName,
-                Key: `${object.folderName}/${randomName}`,//Esto hace que se guarde en la carpeta homePage, y que sobreEscriba a la foto vieja
-                Body: validBuffer,
-                ContentType: multerFile.mimetype
-            };
-            command = new PutObjectCommand(params);
-        await s3.send(command);
-        }        
+  const filesToInsertDB = [];
+  const uploadQueue = [];
+
+  for (const multerFile of object.files) {
+    if (!multerFile) continue;
+
+    const startTotal = Date.now();
+    const randomNumber = generateRandomNumber(10);
+    const validBuffer = Buffer.isBuffer(multerFile.buffer)
+      ? multerFile.buffer
+      : Buffer.from(multerFile.buffer.data);
+
+    let randomName = null;
+
+    if (multerFile.file_types_id === 1) {
+      const imageInfo = await sharp(validBuffer).metadata();
+      const imageWidth = imageInfo.width;
+      randomName = `${object.folderName}-${randomNumber}`;
+
+      const imageSizes = [
+        { name: `${randomName}-2x.webp`, width: imageWidth, label: "2x" },
+        { name: `${randomName}-1x.webp`, width: Math.round(imageWidth * 0.5), label: "1x" },
+        { name: `${randomName}-thumb.webp`, width: 20, label: "thumb" },
+      ];
+
+      for (const image of imageSizes) {
+        const transformer = sharp(validBuffer)
+          .resize(image.width, undefined, { fit: "contain" })
+          .toFormat("webp");
+
+        const stream = new PassThrough();
+        transformer.pipe(stream);
+
+        const params = {
+          Bucket: bucketName,
+          Key: `${object.folderName}/${image.name}`,
+          Body: stream,
+          ContentType: "image/webp",
+        };
+
+        const command = new PutObjectCommand(params);
+
+        const uploadStart = Date.now();
+        const logPrefix = `[${image.label}] ${image.name}`;
+
+        const uploadPromise = s3.send(command)
+          .then(() => {
+            console.log(`✅ ${logPrefix} subida en ${Date.now() - uploadStart}ms`);
+          })
+          .catch((err) => {
+            console.error(`❌ Error subiendo ${logPrefix}:`, err);
+          });
+
+        uploadQueue.push(uploadPromise);
+
+        if (uploadQueue.length >= 2) {
+          await Promise.allSettled(uploadQueue);
+          uploadQueue.length = 0;
+        }
       }
-      // Si estoy aca entonces lo pusheo en db
-      console.log('multer file handler')
-      console.log(multerFile)
-      let fileObject = {
-        ...multerFile,
-        id: uuidv4(),
-        filename: randomName ? randomName : multerFile.filename, //Si no viene randomName es que ya estaba en db
-        sections_id: object.sections_id,
+
+    } else {
+      // archivo no imagen
+      const extension = path.extname(multerFile.originalname);
+      randomName = `${object.folderName}-${randomNumber}${extension}`;
+
+      const params = {
+        Bucket: bucketName,
+        Key: `${object.folderName}/${randomName}`,
+        Body: validBuffer,
+        ContentType: multerFile.mimetype,
       };
-      filesToInsertDB?.push(fileObject);   
+
+      const uploadStart = Date.now();
+      const command = new PutObjectCommand(params);
+
+      const uploadPromise = s3.send(command)
+        .then(() => {
+          console.log(`✅ Archivo ${randomName} subido en ${Date.now() - uploadStart}ms`);
+        })
+        .catch((err) => {
+          console.error(`❌ Error subiendo archivo ${randomName}:`, err);
+        });
+
+      uploadQueue.push(uploadPromise);
+      if (uploadQueue.length >= 2) {
+        await Promise.allSettled(uploadQueue);
+        uploadQueue.length = 0;
+      }
     }
-    return filesToInsertDB;
-  } catch (error) {
-    console.log(`Falle en uploadFileToAWS: ${error}`);
-    return null;
+
+    filesToInsertDB.push({
+      ...multerFile,
+      id: uuidv4(),
+      filename: randomName ?? multerFile.filename,
+      sections_id: object.sections_id,
+    });
+
+    console.log(`📂 Procesado archivo: ${multerFile.originalname} en ${Date.now() - startTotal}ms`);
   }
+
+  if (uploadQueue.length > 0) {
+    await Promise.allSettled(uploadQueue);
+  }
+
+  return filesToInsertDB;
 }
 
 //No retorna nada

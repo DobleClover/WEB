@@ -160,8 +160,7 @@ const controller = {
         },
       });
       // Borro cookie y session
-      res.clearCookie("userAccessToken");
-      delete req.session.userLoggedId;
+      clearUserSession(req,res)
       return res.status(HTTP_STATUS.OK.code).json({
         meta: {
           status: HTTP_STATUS.OK.code,

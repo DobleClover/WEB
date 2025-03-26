@@ -21,7 +21,7 @@ const adminCredentialsMiddleware = async (req, res, next) => {
         if (userLogged) return next(); // Token válido, continuar sin más verificaciones
       } catch (err) {
         console.warn("Invalid or expired admin token, removing cookie:", err);
-        res.clearCookie("adminAuth"); // Limpiar cookie inválida, sigue con la ejecucion
+        clearUserSession(req,res)
       }
     }
 
@@ -32,7 +32,7 @@ const adminCredentialsMiddleware = async (req, res, next) => {
 
         if (!userLogged) {
           console.warn("Invalid user token structure");
-          res.clearCookie("userAccessToken"); // Si el token no tiene el ID, limpiarlo
+          clearUserSession(req,res)
           return res
             .status(HTTP_STATUS.UNAUTHORIZED.code)
             .json({
@@ -52,7 +52,7 @@ const adminCredentialsMiddleware = async (req, res, next) => {
         }
       } catch (err) {
         console.error("Error verifying userAccessToken:", err);
-        res.clearCookie("userAccessToken"); // Si hay error, limpiar token inválido
+        clearUserSession(req,res)
       }
     }
 

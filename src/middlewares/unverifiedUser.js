@@ -22,8 +22,7 @@ const unverifiedUser = async (req, res, next) => {
         deleteSensitiveUserData(userLogged);
       } else {
         //Si no lo verifica, lo deslogueo
-        res.clearCookie("userAccessToken");
-        delete req.session.userLoggedId;
+        clearUserSession(req,res)
         return res.redirect("/");
       }
     }
@@ -49,7 +48,7 @@ const unverifiedUser = async (req, res, next) => {
     if (pathToGo == "/verificar" && !userLogged) return res.redirect("/");
     return next();
   } catch (error) {
-    res.clearCookie("adminToken");
+    clearUserSession(req,res)
     console.log(`Hubo un error en el middleware userLogged: ${error}`);
     return res.redirect(`/`);
   }

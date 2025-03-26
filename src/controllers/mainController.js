@@ -7,6 +7,7 @@ import { getBrandsLogos } from "./api/apiBrandController.js";
 import { getProductsFromDB } from "./api/apiProductController.js";
 import sizes from "../utils/staticDB/sizes.js";
 import { getDropImages, getDropsFromDB, setDropLaunchDateString } from "./api/apiDropController.js";
+import clearUserSession from "../utils/helpers/clearUserSession.js";
 // Obtener la ruta absoluta del archivo
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -205,9 +206,7 @@ const controller = {
   },
   logout: (req, res) => {
     let pathToReturn = req.session.returnTo;
-    res.clearCookie("userAccessToken");
-    res.clearCookie("adminToken");
-    req.session.destroy();
+    clearUserSession(req,res)
     return res.redirect(`${pathToReturn}`);
   },
 };

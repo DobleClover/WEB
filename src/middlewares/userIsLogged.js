@@ -15,7 +15,7 @@ const userIsLoggedMiddleware = async (req, res, next) => {
                 const userLogged = await verifyUserIsLogged(userAccessToken,true);
                 if (!userLogged) {
                     console.warn("Invalid user token structure");
-                    res.clearCookie("userAccessToken"); // Si el token no tiene el ID, limpiarlo
+                    clearUserSession(req,res)
                     return res.redirect('/')
                 }
 
@@ -23,7 +23,7 @@ const userIsLoggedMiddleware = async (req, res, next) => {
 
             } catch (err) {
                 console.error("Error verifying userIsLoggedMiddleware:", err);
-                res.clearCookie("userAccessToken"); // Si hay error, limpiar token inválido
+                clearUserSession(req,res)
             }
         }
 
