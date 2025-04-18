@@ -29,6 +29,17 @@ const controller = {
     await getBrandsLogos(brandsFromDB);
     return res.render("productList", { dropsFromDB, brandsFromDB });
   },
+  brandProductList: async (req, res) => {
+    let {brandId} = req.params
+    // Los pido asi porque unicamente son para pintar los botones
+    let brandFromDB = await db.Brand.findByPk(brandId,{
+      include: ["files"],
+    });
+    brandFromDB = getDeepCopy(brandFromDB)
+    await getBrandsLogos([brandFromDB]);
+    // return res.send([brandFromDB]);
+    return res.render("brandProductList", { brandFromDB });
+  },
   dropList: async (req, res) => {
     let {id} = req.params;
     if(!id)return res.redirect('/tienda')

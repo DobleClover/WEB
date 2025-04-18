@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('./partials/head.ejs') %>
+    <link rel="stylesheet" href="/css/productCard.css" />
+    <link rel="stylesheet" href="/css/index.css" />
+    <link rel="stylesheet" href="/css/brandProductList.css" />
+    <link rel="stylesheet" href="/css/invertedHeader.css" />
+    <script type="module" src="/scripts/brandProductList.js"></script>
+    <title><%= brandFromDB.name %></title>
+</head>
+<body data-page_name="brandProductList">
+    <%- include('./partials/header.ejs') %>
+    <main class="main">
+      <section class="product_cards_wrapper_section">
+
+      </section>
+    </main>
+    <%- include('./partials/footer.ejs') %>
+  </body>
+</html>

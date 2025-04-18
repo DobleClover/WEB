@@ -54,25 +54,24 @@ export async function uploadFilesToAWS(object) {
       ];
 
       for (const image of imageSizes) {
-        const transformer = sharp(validBuffer)
+        const buffer = await sharp(validBuffer)
           .resize(image.width, undefined, { fit: "contain" })
-          .toFormat("webp");
-
-        const stream = new PassThrough();
-        transformer.pipe(stream);
-
+          .toFormat("webp")
+          .toBuffer();
+      
         const params = {
           Bucket: bucketName,
           Key: `${object.folderName}/${image.name}`,
-          Body: stream,
+          Body: buffer,
           ContentType: "image/webp",
+          ContentLength: buffer.length, // 👈 clave para evitar el error del header
         };
-
+      
         const command = new PutObjectCommand(params);
-
+      
         const uploadStart = Date.now();
         const logPrefix = `[${image.label}] ${image.name}`;
-
+      
         const uploadPromise = s3.send(command)
           .then(() => {
             console.log(`✅ ${logPrefix} subida en ${Date.now() - uploadStart}ms`);
@@ -80,14 +79,15 @@ export async function uploadFilesToAWS(object) {
           .catch((err) => {
             console.error(`❌ Error subiendo ${logPrefix}:`, err);
           });
-
+      
         uploadQueue.push(uploadPromise);
-
+      
         if (uploadQueue.length >= 2) {
           await Promise.allSettled(uploadQueue);
           uploadQueue.length = 0;
         }
       }
+      
 
     } else {
       // archivo no imagen

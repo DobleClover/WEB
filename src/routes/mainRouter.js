@@ -8,7 +8,7 @@ router.get('/',mainController.index);
 router.get('/tienda',mainController.productList);
 router.get('/carro',mainController.cart);
 router.get('/verificar', userIsLoggedMiddleware,mainController.userVerification);
-router.get('/categoria/:categoryId',mainController.productList);
+router.get('/marcas/:brandId',mainController.brandProductList);
 router.get('/producto/:id',mainController.productDetail);
 router.get('/drop/:id',mainController.dropList);
 router.get('/perfil', userIsLoggedMiddleware, mainController.userProfile);
