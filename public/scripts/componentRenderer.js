@@ -3365,10 +3365,12 @@ export function generateDashboardSettings(settings) {
 }
 
 export function createBrandCard(brand) {
+  console.log(brand);
+  
   // Crear el elemento <a> principal
   const card = document.createElement("a");
   card.classList.add("brand_card", "card_with_image", "section_wrapper_card","animated_element");
-  card.href = "#"; // Enlace vacío (puedes modificarlo si necesitas redirigir a otra página)
+  card.href = `/marcas/${brand.id}`; // Enlace vacío (puedes modificarlo si necesitas redirigir a otra página)
 
   // Contenedor de imágenes de productos
   const productWrapper = document.createElement("div");

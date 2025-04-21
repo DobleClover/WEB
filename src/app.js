@@ -1,15 +1,5 @@
 import express from "express";
 const app = express();
-// Para las sesiones
-import session from "express-session";
-// Para produccion
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const connectRedis = require("connect-redis");
-import { createClient } from "redis";
-// En dev...
-import memorystore from "memorystore";
-const MemoryStore = memorystore(session);
 
 import path from "path";
 import { fileURLToPath } from "url";
@@ -46,6 +36,17 @@ app.use(express.static("./public"));
 // Para capturar el body
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+
+// Express-session
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const connectRedis = require("connect-redis");
+
+import { createClient } from "redis";
+import session from "express-session";
+
+import memorystore from "memorystore";
+const MemoryStore = memorystore(session);
 
 let sessionStore;
 if (process.env.NODE_ENV === "production") {
