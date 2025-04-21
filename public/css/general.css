@@ -45,6 +45,7 @@ img {
 }
 .green_section {
   background-color: var(--green-color);
+  background-image: url("/img/logo/branding/tramado.png");
 }
 /* CARDS */
 .card_desc {
@@ -366,10 +367,24 @@ select.error-input {
   transform: translateY(0);
 }
 
-.image_with_thumb_active{
+.image_with_thumb_active {
   opacity: 1;
 }
-
+.section_bg_image {
+  background-image: url('/img/logo/branding/tramado.png');
+  background-repeat: repeat;
+  background-size: 1000px auto;
+  background-position: center;
+  background-attachment: fixed;
+  position: absolute;
+  inset: 0;
+  object-fit: cover;
+  z-index: 1;
+  opacity: 0.085;
+}
+.section_bg_image.inverted{
+  background-image: url('/img/logo/branding/tramado_invertido.png');
+}
 @keyframes loading {
   to {
     transform: rotate(360deg);
@@ -389,6 +404,10 @@ select.error-input {
 
   .category-title {
     font-size: 22px;
+  }
+  .section_bg_image{
+    opacity: 0.05;
+    background-size: 1300px auto;
   }
 }
 
@@ -413,6 +432,9 @@ select.error-input {
   }
   .modal {
     border-radius: 8px;
+  }
+  .section_bg_image{
+    background-size: cover;
   }
 }
 @media (min-width: 1200px) {

@@ -13,13 +13,10 @@
 <body data-page_name="productList">
     <%- include('./partials/header.ejs') %>
     <main class="main">
+      <div class="section_bg_image" alt="tramado.png"></div>
         <section class="drop_bg_images_section carrousel_section">
-            <div
-          class="background_images_container container"
-          style="
-            background-image: url(<%= dropFromDB?.cardImages[0].thumb_url %>);
-          "
-        >
+            <div class="background_images_container container"
+          style=" background-image: url(<%= dropFromDB?.cardImages[0].thumb_url %>);">
           <% dropFromDB?.cardImages?.forEach((file,i) => { %>
           <img
             srcset="<%file.file_urls.forEach(url=>{%>

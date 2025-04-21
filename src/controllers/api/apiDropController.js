@@ -351,9 +351,7 @@ const controller = {
       const { dropId } = req.params;
   
       // Buscar los productos asociados al drop
-      const dropFromDB = await getDropsFromDB({id: dropId, withImages: true, withProductImages: true});
-      console.log(dropFromDB.products);
-      
+      const dropFromDB = await getDropsFromDB({id: dropId, withImages: true, withProductImages: true});      
       return res.status(HTTP_STATUS.OK.code).json({
         meta: {
           status: HTTP_STATUS.OK.code,

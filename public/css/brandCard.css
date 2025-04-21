@@ -4,6 +4,9 @@
     max-width: 305px;
     position: relative;
     margin-bottom: 2.5vh;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.4);
 }
 .brand_product_image_wrapper{
     width: 100%;

@@ -11,7 +11,7 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-image: url('https://web-production-f9105.up.railway.app/img/index.jpg');
+  background-image: url('http://192.168.68.119:3500/img/index.jpg');
   opacity: 1; /* Inicialmente invisible */
   transition: opacity 1s ease-in-out; /* Aparece suavemente */
 }
@@ -97,6 +97,8 @@
   justify-content: center;
   grid-template-columns: 1fr;
   margin-top: 5vh;
+  position: relative;
+  z-index: 5;
 }
 .section_wrapper_card {
   max-width: 350px;
@@ -117,6 +119,7 @@
     var(--green-color) calc(100% - 10px),
     #000 100%
   );
+  position: relative;
 }
 .drop_cards_section {
   background: linear-gradient(
@@ -125,6 +128,7 @@
     #000 calc(100% - 10px),
     var(--green-color) 100%
   );
+  position: relative;
 }
 .section_title_container {
   display: flex;

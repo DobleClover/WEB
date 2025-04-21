@@ -1,3 +1,12 @@
+.main{
+    position: relative;
+    background: none;
+}
+.section_bg_image{
+    top: 50vh;
+    height: calc(100% - 50vh);
+    opacity: 0.03;
+}
 .product_cards_wrapper_section{
     padding: 7.5vh 0;
 }

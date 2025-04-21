@@ -1,12 +1,15 @@
 import express from "express";
 const app = express();
 // Para las sesiones
+import session from "express-session";
+// Para produccion
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const connectRedis = require("connect-redis");
-
 import { createClient } from "redis";
-import session from "express-session";
+// En dev...
+import memorystore from "memorystore";
+const MemoryStore = memorystore(session);
 
 import path from "path";
 import { fileURLToPath } from "url";
@@ -44,35 +47,42 @@ app.use(express.static("./public"));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-const RedisStore = connectRedis(session); // ✅ ejecutás la función PASÁNDOLE session
-const redisClient = createClient({
-  url: process.env.REDIS_URL,
-  legacyMode: true,
-});
+let sessionStore;
+if (process.env.NODE_ENV === "production") {
+  // Para las cookies que se manden bien
+  app.set("trust proxy", 1); // Configura Express para confiar en el primer proxy
+  const RedisStore = connectRedis(session); // ✅ ejecutás la función PASÁNDOLE session
+  const redisClient = createClient({
+    url: process.env.REDIS_URL,
+    legacyMode: true,
+  });
 
-// Escuchar errores de conexión
-redisClient.on("error", (err) => console.error("❌ Redis Client Error:", err));
+  // Escuchar errores de conexión
+  redisClient.on("error", (err) =>
+    console.error("❌ Redis Client Error:", err)
+  );
 
-// Opcional: Confirmación de conexión exitosa
-redisClient.on("connect", () => console.log("✅ Redis connected"));
+  // Opcional: Confirmación de conexión exitosa
+  redisClient.on("connect", () => console.log("✅ Redis connected"));
 
-
-redisClient.connect().catch(console.error);
-
-
-app.use(
-  session({
-    store: new RedisStore({ client: redisClient }), // ✅ usás la clase que te devolvió la función
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 1000 * 60 * 60 * 8, // 8 horas
-    },
-  })
-);
-
+  redisClient.connect().catch(console.error);
+  sessionStore = new RedisStore({ client: redisClient }); // ✅ usás la clase que te devolvió la función
+} else {
+  sessionStore = new MemoryStore({
+    checkPeriod: 86400000, // Limpia las sesiones expiradas cada 24 horas
+  });
+}
+let sessionObject = {
+  store: sessionStore,
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production', // set this to true on production
+  },
+};
+app.use(session(sessionObject));
 // Cookie-parser
 app.use(cookieParser());
 
