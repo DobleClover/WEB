@@ -11,7 +11,7 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-image: url('https://https://web-production-f9105.up.railway.app/img/index.jpg');
+  background-image: url('https://web-production-f9105.up.railway.app/img/index.jpg');
   opacity: 1; /* Inicialmente invisible */
   transition: opacity 1s ease-in-out; /* Aparece suavemente */
 }
