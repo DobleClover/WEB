@@ -16,7 +16,7 @@
     <main class="main">
         <section class="drop_bg_images_section carrousel_section">
             <div class="background_images_container container"
-          style=" background-image: url(<%= dropFromDB?.cardImages[0].thumb_url %>);">
+          style=" background-image: url(<%= dropFromDB?.cardImages[0]?.thumb_url %>);">
           <% dropFromDB?.cardImages?.forEach((file,i) => { %>
           <img
             srcset="<%file.file_urls.forEach(url=>{%>

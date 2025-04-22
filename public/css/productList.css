@@ -31,6 +31,7 @@ body{
   align-items: center;
   justify-content: center;
   gap: 20px;
+  flex-wrap: wrap;
 }
 .product_list_btn {
   padding: 10px 15px;
@@ -139,9 +140,6 @@ body{
   .product_list_buttons_container{
     width: 30%;
     padding-top: 2.5vh;
-  }
-  .buttons_wrapper{
-    flex-wrap: wrap;
   }
   .product_list_btn.brand_btn {
     width: 80px;
