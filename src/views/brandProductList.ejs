@@ -5,13 +5,18 @@
     <link rel="stylesheet" href="/css/productCard.css" />
     <link rel="stylesheet" href="/css/index.css" />
     <link rel="stylesheet" href="/css/brandProductList.css" />
-    <link rel="stylesheet" href="/css/invertedHeader.css" />
     <script type="module" src="/scripts/brandProductList.js"></script>
-    <title><%= brandFromDB.name %></title>
+    <title>Dobleclover</title>
 </head>
 <body data-page_name="brandProductList">
     <%- include('./partials/header.ejs') %>
+    <div class="brand_loader_overlay" id="brand_loader">
+      <img src="/img/logo/branding/Variante_Verde/Icono.png" alt="Logo Dobleclover" class="brand_loader_logo">
+    </div>
+    <div class="black_bg"></div>
     <main class="main">
+      <section class="brand_banner_section">
+      </section>
       <section class="product_cards_wrapper_section">
 
       </section>

@@ -13,6 +13,7 @@ import {
 import {
   animateElement,
   animateSectionElements,
+  animateSectionsOnce,
   checkIfIsInScreen,
   listenToProductCards,
   scriptInitiator,
@@ -47,7 +48,7 @@ window.addEventListener("load", async () => {
       brandCardWrapper.appendChild(card);
     });
     const brandSection = main.querySelector(".brand_cards_section");
-    animateSectionElements(brandSection);
+    // animateSectionElements(brandSection);
     const dropCardWrapper = main.querySelector(".drop_card_wrapper");
     dropCardWrapper.innerHTML = "";
     dropsFromDB.forEach((drop) => {
@@ -55,7 +56,7 @@ window.addEventListener("load", async () => {
       dropCardWrapper.appendChild(card);
     });
     const dropSection = main.querySelector(".drop_cards_section");
-    animateSectionElements(dropSection);
+    animateSectionsOnce();
     changeCardImages();
   } catch (error) {
     console.log(error);

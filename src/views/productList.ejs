@@ -5,15 +5,51 @@
     <link rel="stylesheet" href="/css/productCard.css" />
     <link rel="stylesheet" href="/css/index.css" />
     <link rel="stylesheet" href="/css/productList.css" />
-    <link rel="stylesheet" href="/css/invertedHeader.css" />
+    <!-- <link rel="stylesheet" href="/css/invertedHeader.css" /> -->
     <script type="module" src="/scripts/productList.js"></script>
     <title>Tienda</title>
 </head>
 <body data-page_name="productList">
+    <div class="section_bg_image" alt="tramado.png"></div>
     <%- include('./partials/header.ejs') %>
     <main class="main">
+      <div class="black_bg"></div>
+      <section class="ecommerce_banner_rotator">
+        <div class="rotator_inner">  
+          <div class="rotator_item">
+            <p class="banner_title">🚚 Envíos a todo el país</p>
+            <p class="banner_subtitle">Logística Andreani</p>
+          </div>
+      
+          <div class="rotator_item">
+            <p class="banner_title">💳 Todos los medios de pago</p>
+            <p class="banner_subtitle">Crédito, débito, transferencia y más</p>
+          </div>
+      
+          <div class="rotator_item">
+            <p class="banner_title">📲 Seguinos en redes</p>
+            <div class="social_links">
+              <a class="social_item" href="https://www.instagram.com/dobleclover_/" target="_blank">
+                <i class='bx bxl-instagram'></i>
+                <span>@dobleclover_</span>
+              </a>
+              <a class="social_item" href="https://www.tiktok.com/@doble.clover?_t=ZM-8ubEuQxWoOl&_r=1" target="_blank">
+                <i class='bx bxl-tiktok'></i>
+                <span>@doble.clover</span>
+              </a>
+            </div>
+          </div>
+      
+          <div class="rotator_item">
+            <p class="banner_title">📦 Stock listo para entrega</p>
+            <p class="banner_subtitle">Punto de retiro en Núñez y Belgrano</p>
+          </div>
+      
+        </div>
+      </section>
       <section class="product_list_buttons_container">
-        <div class="section_title_container drop_title_container">
+        <div class="button_row_container">
+          <div class="section_title_container drop_title_container">
             <img
               src="./img/logo/branding/Variante_Crema/Icono.png"
               alt=""
@@ -26,14 +62,16 @@
                 <a href="/drop/<%= drop.id %>" class="drop_btn product_list_btn animated_element"><%= drop.name %></a>
             <% }) %>
         </div>
-        <div class="section_title_container brand_title_container">
+        </div>
+        <div class="button_row_container">
+          <div class="section_title_container brand_title_container">
             <h4 class="section_title animated_element">Marcas</h4>
         </div>
         <div class="brand_buttons_wrapper buttons_wrapper">
             <% brandsFromDB.forEach(brand => { %>
                 <% if (brand.logo && brand.logo.file_urls) { %>
                     <% let srcset = brand.logo.file_urls.map(file => `${file.url} ${file.size}`).join(', '); %>
-                    <a href="<%= brand.id %>" class="brand_btn product_list_btn animated_element">
+                    <a href="/marcas/<%= brand.id %>" class="brand_btn product_list_btn animated_element">
                         <img src="<%= brand.logo.file_urls?.find(file => file.size === '1x')?.url %>" 
                              srcset="<%= srcset %>" 
                              alt="<%= brand.name %>">
@@ -41,10 +79,12 @@
                 <% } %>
             <% }) %>
         </div>
+        </div>
+        
       </section>
       <section class="product_cards_wrapper_section">
-
       </section>
+      
     </main>
     <%- include('./partials/footer.ejs') %>
   </body>

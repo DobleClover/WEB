@@ -1,32 +1,29 @@
-.main {
-  background-color: #fff;
+body{
+    position: relative;
 }
-.section_title_container *{
-    /* color: var(--cream-color); */
-    /* margin-bottom: 0; */
+
+.section_title_container {
+  margin-bottom: 2.5vh;
 }
-.section_title_container{
-    margin-bottom: 2.5vh;
+.section_title {
+  font-size: x-large;
 }
-.section_title{
-    font-size: x-large;
+.section_logo {
+  width: 50px;
+  margin-bottom: 5vh;
+  display: none;
 }
-.section_logo{
-    width: 50px;
-    margin-bottom: 5vh;
-    display: none;
-}
-.section_title_container.brand_title_container{
-    margin-top: 5vh;
+.section_title_container.brand_title_container {
+  margin-top: 5vh;
 }
 
 .product_list_buttons_container {
   height: fit-content;
   width: 100%;
-  margin-top: 18.5vh;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  margin-top: 5vh;
   margin-bottom: 5vh;
 }
 .buttons_wrapper {
@@ -41,45 +38,126 @@
   background: var(--green-color);
   color: var(--cream-color);
   font-size: 1.2rem;
-  
 }
-.brand_btn img{
-    transition: filter .4s;
+.brand_btn img {
+  transition: filter 0.4s;
 }
-.brand_btn:hover > img{
-    filter: invert(1);
+.brand_btn:hover > {
+  filter: invert(1);
 }
-.product_list_btn.brand_btn{
-    width: 50px;
-    aspect-ratio: 1/.55;
-    border-radius: 5px;
-    padding: 7.5px 10px;
+.product_list_btn.brand_btn {
+  width: 50px;
+  aspect-ratio: 1/0.55;
+  border-radius: 5px;
+  padding: 7.5px 10px;
 }
 
 .product_cards_wrapper_section {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    grid-template-columns: repeat(1, 1fr);
-    gap: 20px; /* Espacio entre las tarjetas */
-    width: 80%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(1, 1fr);
+  gap: 20px; /* Espacio entre las tarjetas */
+  width: 80%;
+  justify-content: center;
+  padding: 20px;
+}
+.ecommerce_banner_rotator {
+    height: 20vh;
+    width: 100%;
+    background: #000;
+    color: #fff;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    position: relative;
+    font-family: "Segoe UI", sans-serif;
+  }
+  
+  .rotator_inner {
+    display: flex;
+    transition: transform 0.6s ease-in-out;
+    will-change: transform;
+  }
+  
+  .rotator_item {
+    flex: 0 0 100vw;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
     justify-content: center;
-    padding: 20px;
-    
+    align-items: center;
+    text-align: center;
+    padding: 0 10px;
+  }
+  
+  .rotator_icons a {
+    color: #fff;
+    text-decoration: none;
+    margin: 0 8px;
+    font-size: 0.9rem;
+  }
+  .banner_title {
+    font-size: 1.35rem;
+    font-weight: bold;
+    margin: 0;
+  }
+  
+  .banner_subtitle {
+    font-size: 0.9rem;
+    color: #ccc;
+    margin: 4px 0 0;
+  }
+  
+  .social_links {
+    display: flex;
+    gap: 25px;
+    margin-top: 10px;
+  }
+  .social_links:hover > *{
+    color: #fff;
+  }
+  .social_item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.85rem;
+    color: #fff;
+  }
+  
+  .social_item i {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+  }
+  
+@media (min-width: 768px) {
+  .main {
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .product_list_buttons_container{
+    width: 30%;
+    padding-top: 2.5vh;
+  }
+  .buttons_wrapper{
+    flex-wrap: wrap;
+  }
+  .product_list_btn.brand_btn {
+    width: 80px;
+    padding-top: 2.5vh;
+    padding: 10px 20px;
+  }
+  .product_list_buttons_container{
+    margin-top: 0;
+  }
+  .product_cards_wrapper_section {
+    width: 65%;
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
-
-@media(min-width: 768px){
-    .product_list_btn.brand_btn{
-        width: 80px;
-        /* aspect-ratio: 1/.55; */
-        /* border-radius: 5px; */
-        padding: 10px 20px;
-    }
-    .product_cards_wrapper_section {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-@media(min-width: 1024px){
-    .product_cards_wrapper_section {
-        grid-template-columns: repeat(3, 1fr);
-    }
+@media (min-width: 1024px) {
+  .product_cards_wrapper_section {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }

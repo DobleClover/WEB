@@ -72,7 +72,7 @@ export function createProductCard(props) {
   
   // Crear elementos
   const card = document.createElement("a");
-  card.className = `animated_element card product_card ${discount ? "discount_card" : ""}`;
+  card.className = `card product_card ${discount ? "discount_card" : ""}`;//animated_element
   card.href = `/producto/${id}`;
 
   const imagesWrapper = document.createElement("div");
@@ -3365,11 +3365,9 @@ export function generateDashboardSettings(settings) {
 }
 
 export function createBrandCard(brand) {
-  console.log(brand);
-  
   // Crear el elemento <a> principal
   const card = document.createElement("a");
-  card.classList.add("brand_card", "card_with_image", "section_wrapper_card","animated_element");
+  card.classList.add("brand_card", "card_with_image", "section_wrapper_card");//"animated_element"
   card.href = `/marcas/${brand.id}`; // Enlace vacío (puedes modificarlo si necesitas redirigir a otra página)
 
   // Contenedor de imágenes de productos
@@ -3416,7 +3414,7 @@ export function createBrandCard(brand) {
     img.srcset = srcset;
 
     img.alt = `Producto de ${brand.name}`;
-
+    img.loading = "lazy";
     // La primera imagen se activa por defecto
     if (index === 0) {
       if (img.complete) {
@@ -3450,7 +3448,7 @@ export function createBrandCard(brand) {
 export function createDropCard(drop) {
   // Crear el elemento <a> de la tarjeta
   const dropCard = document.createElement("a");
-  dropCard.classList.add("drop_card", "card_with_image", "section_wrapper_card","animated_element");
+  dropCard.classList.add("drop_card", "card_with_image", "section_wrapper_card");//,"animated_element"
   dropCard.href = `/drop/${drop.id}`;
 
   // Crear el contenedor de imágenes
@@ -3470,7 +3468,7 @@ export function createDropCard(drop) {
       const img = document.createElement("img");
       img.classList.add("card_image");
       img.alt = `Imagen de ${drop.name}`;
-
+      img.loading = "lazy";
       // Construir el atributo srcset con diferentes tamaños
       img.srcset = image.file_urls.map(file => `${file.url} ${file.size}`).join(", ");
 

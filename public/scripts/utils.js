@@ -1659,33 +1659,85 @@ export async function saveSetting(id, container) {
 
 export function animateElement(element) {
   setTimeout(() => {
-    element.classList.add("fade_in_up");
+    element.classList.add("animate");
   }, 200);
 }
 
 //Se fija si aparece en pantalla para poder hace algo
 export function checkIfIsInScreen(percentege, cb, arg) {
-  return new IntersectionObserver(
-    (entries) => {
+  const observer = new IntersectionObserver(
+    (entries, obs) => {
       entries.forEach((entry) => {
         if (entry.intersectionRatio >= percentege) {
-          // Si aparece, invoco al cb
-          cb(arg);
+          cb(entry.target);
+          obs.unobserve(entry.target); // desactiva la observación después de animar
         }
       });
     },
     { threshold: percentege }
   );
+  return observer;
 }
 
 export function animateSectionElements(section, perc = 0.4) {
   let element, observer;
-  let allElements = section.querySelectorAll(".animated_element");
-  allElements.forEach((sectionElem) => {
-    observer = checkIfIsInScreen(perc, animateElement, sectionElem);
+  let allElements = section.querySelectorAll(".animated_section");//animated_element
+  // allElements.forEach((sectionElem) => {
+  //   observer = checkIfIsInScreen(perc, animateElement, sectionElem);
+  //   observer.observe(sectionElem);
+  // });
+  allElements.forEach((sectionElem, index) => {
+    observer = checkIfIsInScreen(perc, (el) => {
+      setTimeout(() => {
+        animateElement(el);
+      }, index * 50); // 50ms entre cada uno
+    }, sectionElem);
     observer.observe(sectionElem);
   });
+  
 }
+
+export function animateSectionsOnce() {
+  const observer = new IntersectionObserver((entries, obs) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+
+      const section = entry.target;
+
+      // Animar bloque superior (logo, título, desc)
+      const introElements = section.querySelectorAll(
+        '.section_logo, .section_title, .section_desc'
+      );
+      introElements.forEach(el => el.classList.add('animate'));
+
+      // Animar tarjetas con delay escalonado
+      const cards = section.querySelectorAll('.card_with_image');
+      cards.forEach((card, i) => {
+        card.style.animationDelay = `${i * 100}ms`;
+        card.classList.add('animate');
+      });
+
+      obs.unobserve(section); // 👈 Solo una vez
+    });
+  }, {
+    threshold: 0,
+    rootMargin: '0px 0px -30% 0px' // dispara antes de que el 100% esté en pantalla
+  });
+
+  document.querySelectorAll('.animated_section').forEach(section => {
+    const introElements = section.querySelectorAll(
+      '.section_logo, .section_title, .section_desc'
+    );
+    const cards = section.querySelectorAll('.card_with_image');
+
+    [...introElements, ...cards].forEach(el => {
+      el.classList.add('fade_in');
+    });
+
+    observer.observe(section);
+  });
+}
+
 
 export function getImgElement(fileObj, classnamesForImage) {
   if (!fileObj || !fileObj.file_urls || fileObj.file_urls.length === 0) {
