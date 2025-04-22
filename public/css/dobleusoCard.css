@@ -1,0 +1,102 @@
+.dobleuso_product_card {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  border: 1px solid #ccc;
+  background: var(--green-cream-color, #d7d9c1);
+  max-width: 275px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  color: inherit;
+  margin: 0 auto;
+  width: 100%;
+  height: 60vh;
+  position: relative;
+  border-radius: 1rem;
+}
+
+.dobleuso_product_image_container {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+}
+
+.dobleuso_product_image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dobleuso_product_info {
+  padding: 15px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dobleuso_product_name {
+  font-size: 1rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+.dobleuso_price_container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+.dobleuso_price_original {
+  text-decoration: line-through;
+  color: #999;
+  font-size: 0.85rem;
+}
+
+.dobleuso_price_discounted {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #000;
+}
+
+.dobleuso_discount_label {
+  font-size: 0.9rem;
+    color: var(--dark-grey-color);
+    font-weight: 500;
+}
+
+.dobleuso_product_price {
+  font-size: 1.1rem;
+  margin: 0;
+  font-weight: 500;
+}
+
+.dobleuso_product_button {
+  background: var(--green-color);
+  color: #000;
+  padding: 10px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.dobleuso_badge {
+    position: absolute;
+    top: 6%;
+    left: 0;
+    background-color: var(--green-color);
+    color: #000;
+    font-size: 1.25rem;
+    padding: 2px 6px;
+    border-radius: 0px;
+    opacity: 0.95;
+    z-index: 2;
+    pointer-events: none;
+    font-weight: 500;
+    letter-spacing: 0.75px;
+}  
