@@ -38,6 +38,7 @@
     width: fit-content;
     left: 50%;
     transform: translateX(-50%);
+    aspect-ratio: 1/.4;
 }
 @media(min-width: 768px){
     .section_wrapper_card.brand_card{
