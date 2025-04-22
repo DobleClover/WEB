@@ -1,0 +1,39 @@
+.product_cards_wrapper_section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(1, 1fr);
+    gap: 20px; /* Espacio entre las tarjetas */
+    width: 100%;
+    justify-content: center;
+    padding: 20px;
+  }
+  .load_more_container {
+    text-align: center;
+    margin: .5rem auto;
+    margin-bottom: 5rem;
+  }
+  
+  .load_more_btn {
+    background: var(--green-color);
+    color: var(--cream-color);
+    border: none;
+    padding: 10px 20px;
+    font-size: 1.1rem;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  @media (min-width: 768px) {
+    .product_cards_wrapper_section {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  @media (min-width: 1024px) {
+    .product_cards_wrapper_section {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }

@@ -69,10 +69,10 @@ import {
 
 export function createProductCard(props) {
   let { id, name, brand, price, files, discount } = props;
-  
+
   // Crear elementos
   const card = document.createElement("a");
-  card.className = `card product_card ${discount ? "discount_card" : ""}`;//animated_element
+  card.className = `card product_card ${discount ? "discount_card" : ""}`; //animated_element
   card.href = `/producto/${id}`;
 
   const imagesWrapper = document.createElement("div");
@@ -83,12 +83,16 @@ export function createProductCard(props) {
 
   const mainImageObj = files.find((file) => file.main_file) || files[0];
   cardImage.style.backgroundImage = `url(${mainImageObj.thumb_url})`;
-  let mainImage
+  let mainImage;
   if (mainImageObj && mainImageObj.file_urls) {
-    mainImage = getImgElement(mainImageObj,'product_card_image product_card_main_image product_card_active_img') 
+    mainImage = getImgElement(
+      mainImageObj,
+      "product_card_image product_card_main_image product_card_active_img"
+    );
   }
   const hoveredImage = document.createElement("img");
-  hoveredImage.className = "card_alternative_image product_card_main_image card_image_active";
+  hoveredImage.className =
+    "card_alternative_image product_card_main_image card_image_active";
   hoveredImage.alt = "Alt Image";
 
   cardImage.appendChild(mainImage);
@@ -104,7 +108,7 @@ export function createProductCard(props) {
 
   files.forEach((file) => {
     if (file.main_file) return;
-    const otherImage = getImgElement(file,'product_card_image');
+    const otherImage = getImgElement(file, "product_card_image");
     otherImagesContainer.appendChild(otherImage);
   });
 
@@ -129,7 +133,7 @@ export function createProductCard(props) {
   if (discount) {
     discountedPrice = document.createElement("div");
     discountedPrice.className = `card_price product_card_price discount_price`;
-    let priceWithDiscount = (1 - (parseInt(discount)/100)) * parseFloat(price)
+    let priceWithDiscount = (1 - parseInt(discount) / 100) * parseFloat(price);
     discountedPrice.textContent = `$${displayPriceNumber(priceWithDiscount)}`;
     cardPrice.textContent = "";
     const originalPrice = document.createElement("span");
@@ -149,6 +153,79 @@ export function createProductCard(props) {
 
   card.appendChild(imagesWrapper);
   card.appendChild(cardInfo);
+
+  return card;
+}
+
+export function createDobleusoProductCard(props) {
+  let { id, name, price, files, discount } = props;
+
+  const card = document.createElement("a");
+  card.href = `/producto/${id}`;
+  card.className = "dobleuso_product_card";
+
+  const badge = document.createElement("div");
+  badge.className = "dobleuso_badge";
+  badge.textContent = "DobleUso";
+  card.appendChild(badge);
+
+  const imageContainer = document.createElement("div");
+  imageContainer.className = "dobleuso_product_image_container";
+
+  const mainImageObj = files.find((file) => file.main_file) || files[0];
+  const img = document.createElement("img");
+  img.src =
+    mainImageObj.file_urls?.find((f) => f.size === "1x")?.url ||
+    mainImageObj.thumb_url;
+  img.alt = name;
+  img.className = "dobleuso_product_image";
+
+  imageContainer.appendChild(img);
+  card.appendChild(imageContainer);
+
+  const info = document.createElement("div");
+  info.className = "dobleuso_product_info";
+
+  const productName = document.createElement("h3");
+  productName.className = "dobleuso_product_name";
+  productName.textContent = name;
+
+  const priceContainer = document.createElement("div");
+  priceContainer.className = "dobleuso_price_container";
+  const priceInARS = displayPriceNumber(price);
+  if (discount) {
+    const originalPrice = document.createElement("span");
+    originalPrice.className = "dobleuso_price_original";
+    originalPrice.textContent = `$${priceInARS}`;
+
+    const discountedValue = price * (1 - discount / 100);
+    const discountedPrice = document.createElement("span");
+    discountedPrice.className = "dobleuso_price_discounted";
+    discountedPrice.textContent = `$${displayPriceNumber(discountedValue)}`;
+
+    const discountLabel = document.createElement("span");
+    discountLabel.className = "dobleuso_discount_label";
+    discountLabel.textContent = `${discount}% OFF`;
+
+    priceContainer.appendChild(originalPrice);
+    priceContainer.appendChild(discountedPrice);
+    priceContainer.appendChild(discountLabel);
+  } else {
+    const productPrice = document.createElement("p");
+    productPrice.className = "dobleuso_product_price";
+    productPrice.textContent = `$${priceInARS}`;
+    priceContainer.appendChild(productPrice);
+  }
+
+  const productButton = document.createElement("div");
+  productButton.className = "dobleuso_product_button";
+  productButton.innerHTML = "<span class='icon'>✔</span> SELECCIONAR OPCIONES";
+
+  info.appendChild(productName);
+  info.appendChild(priceContainer);
+  info.appendChild(productButton);
+
+  card.appendChild(info);
 
   return card;
 }
@@ -2783,11 +2860,23 @@ export async function createProductModal(product = undefined) {
     formClassName: "",
     formFields: [
       {
-        type: "toggle",
-        name: "product_active",
-        labelForToggle: "Activo",
-        containerClassName: "margin_field",
-        checked: product ? product?.active : false,
+        type: "two-fields",
+        fields: [
+          {
+            type: "toggle",
+            name: "product_active",
+            labelForToggle: "Activo",
+            containerClassName: "margin_field",
+            checked: product ? product?.active : false,
+          },
+          {
+            type: "toggle",
+            name: "product_is_dobleuso",
+            labelForToggle: "DobleUso",
+            containerClassName: "margin_field",
+            checked: product ? product?.is_dobleuso : false,
+          },
+        ],
       },
       {
         type: "two-fields",
@@ -3367,7 +3456,7 @@ export function generateDashboardSettings(settings) {
 export function createBrandCard(brand) {
   // Crear el elemento <a> principal
   const card = document.createElement("a");
-  card.classList.add("brand_card", "card_with_image", "section_wrapper_card");//"animated_element"
+  card.classList.add("brand_card", "card_with_image", "section_wrapper_card"); //"animated_element"
   card.href = `/marcas/${brand.id}`; // Enlace vacío (puedes modificarlo si necesitas redirigir a otra página)
 
   // Contenedor de imágenes de productos
@@ -3381,20 +3470,15 @@ export function createBrandCard(brand) {
 
   // Obtener las imágenes principales de los productos con srcset
   const productsMainFile = brand.products
-  .map(
-    (product) =>
-      product.files?.find((file) => file.main_file === 1)).filter(Boolean); // Filtrar valores nulos
-  const productImages = productsMainFile
-    .map(
-      (productMainFile) =>
-        productMainFile?.file_urls
-    );
-    const productThumb =  productsMainFile
-    .map(
-      (productMainFile) =>
-        productMainFile?.thumb_url
-    );
-    
+    .map((product) => product.files?.find((file) => file.main_file === 1))
+    .filter(Boolean); // Filtrar valores nulos
+  const productImages = productsMainFile.map(
+    (productMainFile) => productMainFile?.file_urls
+  );
+  const productThumb = productsMainFile.map(
+    (productMainFile) => productMainFile?.thumb_url
+  );
+
   productWrapper.style.backgroundImage = `url(${productThumb[0]})`;
 
   // Agregar imágenes al contenedor con srcset
@@ -3448,7 +3532,11 @@ export function createBrandCard(brand) {
 export function createDropCard(drop) {
   // Crear el elemento <a> de la tarjeta
   const dropCard = document.createElement("a");
-  dropCard.classList.add("drop_card", "card_with_image", "section_wrapper_card");//,"animated_element"
+  dropCard.classList.add(
+    "drop_card",
+    "card_with_image",
+    "section_wrapper_card"
+  ); //,"animated_element"
   dropCard.href = `/drop/${drop.id}`;
 
   // Crear el contenedor de imágenes
@@ -3463,20 +3551,24 @@ export function createDropCard(drop) {
   // Obtener imágenes de `cardImages`
   const images = drop.cardImages || [];
   images.forEach((image, index) => {
-      if (!image.file_urls || image.file_urls.length === 0) return;
+    if (!image.file_urls || image.file_urls.length === 0) return;
 
-      const img = document.createElement("img");
-      img.classList.add("card_image");
-      img.alt = `Imagen de ${drop.name}`;
-      img.loading = "lazy";
-      // Construir el atributo srcset con diferentes tamaños
-      img.srcset = image.file_urls.map(file => `${file.url} ${file.size}`).join(", ");
+    const img = document.createElement("img");
+    img.classList.add("card_image");
+    img.alt = `Imagen de ${drop.name}`;
+    img.loading = "lazy";
+    // Construir el atributo srcset con diferentes tamaños
+    img.srcset = image.file_urls
+      .map((file) => `${file.url} ${file.size}`)
+      .join(", ");
 
-      // Usar la imagen de menor tamaño como fallback
-      img.src = image.file_urls.find(file => file.size === "1x")?.url || image.file_urls[0]?.url;
+    // Usar la imagen de menor tamaño como fallback
+    img.src =
+      image.file_urls.find((file) => file.size === "1x")?.url ||
+      image.file_urls[0]?.url;
 
-      // Activar la segunda imagen por defecto
-      // La primera imagen se activa por defecto
+    // Activar la segunda imagen por defecto
+    // La primera imagen se activa por defecto
     if (index === 0) {
       if (img.complete) {
         img.classList.add("card_image_active");
@@ -3488,7 +3580,7 @@ export function createDropCard(drop) {
       }
     }
 
-      imageWrapper.appendChild(img);
+    imageWrapper.appendChild(img);
   });
 
   // Crear el contenedor de contenido
@@ -3510,20 +3602,27 @@ export function createDropCard(drop) {
   // Cantidad de productos
   const dropProducts = document.createElement("p");
   dropProducts.classList.add("drop_data", "drop_products_length");
-  dropProducts.textContent = `${drop.products?.length} producto${drop.products.length > 1 ? 's':''}`;
+  dropProducts.textContent = `${drop.products?.length} producto${
+    drop.products.length > 1 ? "s" : ""
+  }`;
   contentWrapper.appendChild(dropProducts);
-  
-  let availableProducts = drop.products?.filter(prod=>prod.totalStock > 0)?.length || undefined;
-  const pluralLetter = availableProducts > 1 ? 's':''
+
+  let availableProducts =
+    drop.products?.filter((prod) => prod.totalStock > 0)?.length || undefined;
+  const pluralLetter = availableProducts > 1 ? "s" : "";
   const dropProductsAvailable = document.createElement("p");
   dropProductsAvailable.classList.add("drop_data", "drop_products_length");
-  dropProductsAvailable.textContent = availableProducts > 2 ? `${ availableProducts } disponibles` : `Último${pluralLetter}${availableProducts > 1 ? ` ${availableProducts}` : ''} disponible${pluralLetter}`;
+  dropProductsAvailable.textContent =
+    availableProducts > 2
+      ? `${availableProducts} disponibles`
+      : `Último${pluralLetter}${
+          availableProducts > 1 ? ` ${availableProducts}` : ""
+        } disponible${pluralLetter}`;
   availableProducts && contentWrapper.appendChild(dropProductsAvailable);
-  
+
   // Agregar todos los elementos al dropCard
   dropCard.appendChild(imageWrapper);
   dropCard.appendChild(contentWrapper);
 
   return dropCard;
 }
-

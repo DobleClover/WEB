@@ -16,6 +16,11 @@ export default (sequelize, dataTypes) => {
     categories_id: { type: dataTypes.INTEGER },
     discount: { type: dataTypes.INTEGER },
     brands_id: { type: dataTypes.STRING(36) },
+    is_dobleuso: {
+      type: dataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
   };
 
   let config = {

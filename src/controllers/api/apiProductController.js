@@ -50,10 +50,13 @@ const PRODUCTS_FOLDER_NAME = "products";
 const controller = {
   handleGetAllProducts: async (req, res) => {
     try {
-      let { categoryId, productId, limit, offset } = req.query;
+      let { categoryId, productId, limit, offset, is_dobleuso } = req.query;
       if (limit) limit = parseInt(limit);
       if (categoryId) categoryId = parseInt(categoryId);
       if (offset) offset = parseInt(offset);
+      if (typeof is_dobleuso !== "undefined") {
+        is_dobleuso = is_dobleuso === "1";
+      }
       let products;
       // Aca esta buscando uno/varios pero puntuales
       if (productId) {
@@ -81,19 +84,21 @@ const controller = {
           withImages: true,
           limit,
           offset,
+          is_dobleuso,
         });
-        if (!productsFetched?.length) {
-          return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
-            ok: false,
-            msg: fetchFailed,
-            data: [],
-          });
-        }
         products = productsFetched;
       }
+
+      const totalCount = await getProductsCountFromDB({
+        categoryId,
+        is_dobleuso,
+      });
+      const hasMore = offset + products?.length < totalCount;
+
       return res.status(HTTP_STATUS.OK.code).json({
         ok: true,
-        data: products,
+        data: products || [],
+        hasMore,
       });
     } catch (error) {
       console.log(`error in handleGetAllProducts:`);
@@ -110,7 +115,7 @@ const controller = {
       if (!errors.isEmpty()) {
         let { errorsParams, errorsMapped } = getMappedErrors(errors);
         console.log(errors);
-        
+
         return res.status(HTTP_STATUS.BAD_REQUEST.code).json({
           ok: false,
           msg: createFailed,
@@ -125,6 +130,7 @@ const controller = {
         price,
         discount,
         active,
+        is_dobleuso,
         categories_id,
         brands_id,
         variations,
@@ -140,6 +146,7 @@ const controller = {
         active,
         categories_id,
         brands_id: brands_id || null,
+        is_dobleuso,
       };
 
       const [isCreated, newProductId] = await insertProductInDb(bodyToCreate);
@@ -231,6 +238,7 @@ const controller = {
         price,
         discount,
         active,
+        is_dobleuso,
         categories_id,
         brands_id,
         variations,
@@ -246,6 +254,7 @@ const controller = {
         active,
         categories_id,
         brands_id,
+        is_dobleuso,
       };
       const isUpdateSuccessful = await updateProductInDb(bodyToUpdate, id);
       if (!isUpdateSuccessful) {
@@ -417,19 +426,24 @@ const controller = {
 
 export default controller;
 
-export let productIncludeArray = ["files", "variations","brand","drops"];
+export let productIncludeArray = ["files", "variations", "brand", "drops"];
 
 export async function getProductsFromDB({
   id = null,
   categoryId = null,
   dropId = null,
+  is_dobleuso = null,
   withImages = false,
   limit,
   offset,
 }) {
   try {
+    let where = {};
+    if (categoryId) where.categories_id = categoryId;
+    if (typeof is_dobleuso === "boolean") where.is_dobleuso = is_dobleuso;
+
     let productsToReturn, productToReturn;
-    // Condición si id es un string
+
     if (typeof id === "string") {
       productToReturn = await db.Product.findByPk(id, {
         include: productIncludeArray,
@@ -442,36 +456,27 @@ export async function getProductsFromDB({
         product: productToReturn,
         withImages: withImages,
         withVariations: true,
-      }); //Setea las keys para devolver front
+      });
       return productToReturn;
     } else if (Array.isArray(id)) {
-      // Condición si id es un array
       productsToReturn = await db.Product.findAll({
-        where: {
-          id: id, // id es un array, se hace un WHERE id IN (id)
-        },
-        include: productIncludeArray,
-        limit,
-        offset,
-      });
-    } else if (categoryId) {
-      productsToReturn = await Product.findAll({
-        where: {
-          categories_id: categoryId,
-        },
+        where: { id },
         include: productIncludeArray,
         limit,
         offset,
       });
     } else {
       productsToReturn = await Product.findAll({
+        where,
         include: productIncludeArray,
         limit,
         offset,
       });
     }
+
     if (!productToReturn && (!productsToReturn || !productsToReturn.length))
       return null;
+
     productsToReturn = getDeepCopy(productsToReturn);
     for (let i = 0; i < productsToReturn.length; i++) {
       const prod = productsToReturn[i];
@@ -481,6 +486,7 @@ export async function getProductsFromDB({
         withVariations: true,
       });
     }
+
     return productsToReturn;
   } catch (error) {
     console.log(`error finding products in db: ${error}`);
@@ -601,13 +607,17 @@ export async function setProductKeysToReturn({
     product.category = categories.find(
       (cat) => cat.id == product.categories_id
     );
-    product.brand.name = capitalizeFirstLetter(product.brand.name)
+    product.brand.name = capitalizeFirstLetter(product.brand.name);
     if (withVariations) {
       const dbColors = await db.Color.findAll();
-      product.variations = populateVariations(product.variations,dbColors);
+      product.variations = populateVariations(product.variations, dbColors);
     }
     product.price = minDecimalPlaces(product.price);
-    product.totalStock = product.variations?.reduce((sum, variation) => sum + variation.quantity, 0) || 0;
+    product.totalStock =
+      product.variations?.reduce(
+        (sum, variation) => sum + variation.quantity,
+        0
+      ) || 0;
     if (withImages && product.files?.length) {
       await getFilesFromAWS({
         folderName: PRODUCTS_FOLDER_NAME,
@@ -665,5 +675,21 @@ async function handleProductFilesDestroy(files = []) {
   } catch (error) {
     console.log(error);
     return false;
+  }
+}
+
+export async function getProductsCountFromDB({
+  categoryId = null,
+  is_dobleuso = null,
+}) {
+  try {
+    const where = {};
+    if (categoryId) where.categories_id = categoryId;
+    if (typeof is_dobleuso === "boolean") where.is_dobleuso = is_dobleuso;
+
+    return await db.Product.count({ where });
+  } catch (error) {
+    console.error("Error counting products:", error);
+    return 0;
   }
 }

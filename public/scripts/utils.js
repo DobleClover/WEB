@@ -3,6 +3,7 @@ import { checkForUserLogged, userLogged } from "./checkForUserLogged.js";
 import {
   closeModal,
   createAddressModal,
+  createDobleusoProductCard,
   createPhoneModal,
   createProductCard,
   createUserSignUpModal,
@@ -643,6 +644,7 @@ export function buildProductBodyData(form) {
     description: form["product_description"]?.value,
     categories_id: form["product_categories_id"]?.value,
     active: form["product_active"]?.checked,
+    is_dobleuso: form["product_is_dobleuso"]?.checked,
     brands_id: form["product_brands_id"]?.value,
     variations: [],
     images: [],
@@ -1781,23 +1783,31 @@ export function formatStringForTextarea(text) {
   return text ? text.replace(/\r\n|\r|\n/g, "<br>") : "";
 }
 
-export async function paintProductCardsInList(products = []) {
+export async function paintProductCardsInList(products = [], wrapper = null) {
   await setSettings();
-  !products.length && await setProductsFromDB();
-  const productsToIterate = products.length ? [...products] : [...productsFromDB]
-  let productCardWrapper = document.querySelector(
-    ".product_cards_wrapper_section"
-  );
+  if (!products.length) await setProductsFromDB({});
+
+  const productsToIterate = products.length ? [...products] : [...productsFromDB];
+
+  const productCardWrapper =
+    wrapper || document.querySelector(".product_cards_wrapper_section");
+
   productCardWrapper.innerHTML = "";
+
   productsToIterate.forEach((prod) => {
-    const productCard = createProductCard(prod);
+    const productCard = prod.is_dobleuso
+      ? createDobleusoProductCard(prod)
+      : createProductCard(prod);
+
     productCardWrapper.appendChild(productCard);
   });
+
   listenToProductCards();
-  // Lo redefino
-  productCardWrapper = document.querySelector(".product_cards_wrapper_section");
+
+  // Aplicar animaciones
   setTimeout(() => animateSectionElements(productCardWrapper, 0.05), 500);
 }
+
 
 
 export function getIdFromUrl() {

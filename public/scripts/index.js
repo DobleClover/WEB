@@ -26,17 +26,17 @@ window.addEventListener("load", async () => {
     const hero = document.querySelector(".hero");
     setTimeout(() => {
       hero.classList.add("show_overlay"); // Aparece el overlay
-    }, 150); // Se muestra el overlay poco después de cargar la imagen
+    }, 0); // Se muestra el overlay poco después de cargar la imagen
   
     // Después de un tiempo, mostramos el título
     setTimeout(() => {
       hero.classList.add("show_title"); // Muestra el título
-    }, 450);
+    }, 250);
   
     // Luego de un pequeño retraso, mostramos los botones
     setTimeout(() => {
       hero.classList.add("show_buttons"); // Muestra los botones
-    }, 750);
+    }, 450);
 
     await setDrops();
 

@@ -43,7 +43,7 @@ body{
 .brand_btn img {
   transition: filter 0.4s;
 }
-.brand_btn:hover > {
+.brand_btn:hover > img{
   filter: invert(1);
 }
 .product_list_btn.brand_btn {
@@ -53,15 +53,7 @@ body{
   padding: 7.5px 10px;
 }
 
-.product_cards_wrapper_section {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  grid-template-columns: repeat(1, 1fr);
-  gap: 20px; /* Espacio entre las tarjetas */
-  width: 80%;
-  justify-content: center;
-  padding: 20px;
-}
+
 .ecommerce_banner_rotator {
     height: 20vh;
     width: 100%;
@@ -129,6 +121,61 @@ body{
     font-size: 1.5rem;
     margin-bottom: 5px;
   }
+  .product_section {
+    width: 100%;
+    padding: 5vh 5vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .product_section_title {
+    text-align: center;
+    margin-bottom: 3vh;
+  }
+  
+  .product_section_title h2 {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .product_section_title p {
+    font-size: 1rem;
+    color: #666;
+  }
+  .product_filter_wrapper {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 3vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .product_filter_select {
+    border: none;
+    padding: 10px 15px;
+    font-size: 1.1rem;
+    border-radius: 10px;
+    font-family: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    width: fit-content;
+    margin-top: 2.5vh;
+  }
+  
+  .product_filter_select:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--cream-color);
+  }
+  
+  .filter_label {
+    font-weight: 600;
+    font-size: 1.25rem;
+    margin-right: 8px;
+    color: #000;
+  }
   
 @media (min-width: 768px) {
   .main {
@@ -139,7 +186,7 @@ body{
   }
   .product_list_buttons_container{
     width: 30%;
-    padding-top: 2.5vh;
+    padding-top: 5vh;
   }
   .product_list_btn.brand_btn {
     width: 80px;
@@ -150,8 +197,10 @@ body{
     margin-top: 0;
   }
   .product_cards_wrapper_section {
-    width: 65%;
     grid-template-columns: repeat(3, 1fr);
+  }
+  .product_section{
+    width: 65%;
   }
 }
 @media (min-width: 1024px) {
