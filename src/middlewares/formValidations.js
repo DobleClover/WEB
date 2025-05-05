@@ -3,8 +3,9 @@ import validatePasswordString from "../utils/helpers/validatePasswordString.js";
 import isJson from "../utils/helpers/isJson.js";
 import db from "../database/models/index.js";
 import provinces from "../utils/staticDB/provinces.js";
-import { getVariationsFromDB } from "../controllers/api/apiProductController.js";
+import { getVariationsFromDB } from "../controllers/api/apiVariationsController.js";
 import getOnlyNumbers from "../utils/helpers/getOnlyNumbers.js";
+import countries from "../utils/staticDB/countries.js";
 export default {
   productFields: [
     body(["name", "price"])
@@ -190,16 +191,20 @@ export default {
         req.body.variationsFromDB = variationsFromDB; //Ya que busque a db le paso para no hacer 2 consultas
         return true;
       }),
-    body(["phoneObj", "billingAddress", "shippingAddress"]) //Me fijo que los paises esten en db
+    body(["billingAddress", "shippingAddress"]) //Me fijo que los paises esten en db
       .custom(async (value, { req }) => {
-        let countryFromDB = countries.find(
-          (country) => country.id == value?.country_id
-        ); //TODO: armar archivo depaises comunes con su country code
-        if (value && !countryFromDB) throw new Error("Pais no encontrado");
+        let provinceFromDB = provinces.find(
+          (dbProv) => dbProv.id == value?.provinces_id
+        ); 
+        if (value && !provinceFromDB) throw new Error("Provincia no encontrado");
         return true;
       }),
     body(["phoneObj"]) //Saco los nros con el regex
       .custom(async (value, { req }) => {
+        let countryFromDB = countries.find(
+          (country) => country.id == value?.countries_id
+        ); 
+        if (value && !countryFromDB) throw new Error("Pais no encontrado");
         //Le saco cualquier cosa que no sea un numero al phone number
         value.phone_number = getOnlyNumbers(value.phone_number);
         return true;

@@ -541,61 +541,6 @@ async function updateProductInDb(body, productId) {
   }
 }
 
-export async function getVariationsFromDB(id) {
-  try {
-    let includeObj = ["product"];
-    // Condición si id es un string
-    if (typeof id === "string") {
-      let variationToReturn = await db.Variation.findByPk(id, {
-        include: includeObj,
-      });
-      if (!variationToReturn) return null;
-      variationToReturn = variationToReturn && getDeepCopy(variationToReturn);
-      //Aca le agrego los tacos y eso
-      setVariationObjToReturn(variationToReturn);
-      return variationToReturn;
-    }
-    // Condición si id es un array
-    if (Array.isArray(id)) {
-      let variationsToReturn = await db.Variation.findAll({
-        where: {
-          id: id, // id es un array, se hace un WHERE id IN (id)
-        },
-        include: includeObj,
-      });
-      if (!variationsToReturn.length) return null;
-      variationsToReturn = getDeepCopy(variationsToReturn);
-      //Aca le agrego los tacos y eso
-      variationsToReturn.forEach((variation) =>
-        setVariationObjToReturn(variation)
-      );
-      return variationsToReturn;
-    }
-
-    // Condición si id es undefined
-    if (id === undefined) {
-      let variationsToReturn = await db.Variation.findAll({
-        include: includeObj,
-      });
-      if (!variationsToReturn.length) return null;
-      variationsToReturn = getDeepCopy(variationsToReturn);
-      //Aca le agrego los tacos y eso
-      variationsToReturn.forEach((variation) =>
-        setVariationObjToReturn(variation)
-      );
-      return variationsToReturn;
-    }
-  } catch (error) {
-    console.log("Falle en getVariationsFromDB");
-    console.error(error);
-    return null;
-  }
-}
-//compra 3 productos ==>
-function setVariationObjToReturn(variation) {
-  variation.taco = tacos.find((taco) => taco.id == variation.taco_id);
-  variation.size = sizes.find((size) => size.id == variation.sizes_id);
-}
 
 export async function setProductKeysToReturn({
   product,
@@ -624,7 +569,8 @@ export async function setProductKeysToReturn({
         files: product.files,
       });
       product.files?.sort((a, b) => a.position - b.position);
-    }
+    };
+    product.discounted_price = product.discount > 0 ? product.price * (1 - product.discount / 100) : null;
   } catch (error) {
     console.log("falle");
     return console.log(error);

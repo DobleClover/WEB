@@ -10,7 +10,7 @@ async function sendOrderMails(order) {
   // Contenido del correo
   let userMailContentDeliveryMethod = ``;
   let operatorMailContentDeliveryMethod = ``;
-  if (order.shipping_type_id == 1) {
+  if (order.shipping_types_id == 1) {
     //Domicilio
     let addressTitleRow = `<p style="font-weight:600;">Envío a domicilio</p>`;
     userMailContentDeliveryMethod += addressTitleRow;
@@ -24,7 +24,7 @@ async function sendOrderMails(order) {
                 `;
     userMailContentDeliveryMethod += addressRow;
     operatorMailContentDeliveryMethod += addressRow;
-  } else if (order.shipping_type_id == 2) {
+  } else if (order.shipping_types_id == 2) {
     //Retiro por local
     let pickupTitle = `<p style="font-weight:600;">Tipo de envio:</p>`;
     let pickUpRow = `<p>Retiro por CABA</p>`;
@@ -78,7 +78,7 @@ async function sendOrderMails(order) {
       ${tableContent}
     </table>
     ${
-      order.shipping_type_id == 1
+      order.shipping_types_id == 1
         ? `<p style="font-size:18px;margin-top:30px;color:#222;">Envio: $${shippingPrice}</p>`
         : ""
     }
@@ -113,7 +113,7 @@ async function sendOrderMails(order) {
       ${tableContent}
     </table>
     ${
-      order.shipping_type_id == 1
+      order.shipping_types_id == 1
         ? `<p style="font-size:18px;margin-top:30px;color:#222;">Envio: $${shippingPrice}</p>`
         : ""
     }

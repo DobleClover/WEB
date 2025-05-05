@@ -140,6 +140,8 @@
     width: 45%;
     height: 70vh;
     margin-top: 0;
+    border-radius: .5rem;
+    overflow: hidden;
   }
   .product_detail_section {
     width: 45%;

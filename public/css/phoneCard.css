@@ -1,4 +1,11 @@
 .phone_card{
+    position: relative;
+    display: flex;
+    box-shadow: 2px 5px 3px var(--box-shadow-color);
+    border-radius: 1rem;
+    height: auto;
+    background-color: #fff;
+    overflow: hidden;
     width: 80%;
     max-width: 300px;
     flex-direction: column;

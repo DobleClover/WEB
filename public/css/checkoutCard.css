@@ -1,0 +1,103 @@
+.checkout-card{
+    position: relative;
+    display: flex;
+    box-shadow: 2px 5px 3px var(--box-shadow-color);
+    border-radius: .5rem;
+    background-color: #fff;
+    overflow: hidden;
+    width: 90vw;
+    height: 32vh;
+    max-width: 450px;
+    max-height: 160px;
+    box-shadow: none;
+    border: 1px solid rgb(0 0 0 / 37%);
+}
+.card-content {
+    padding: 10px!important;
+}
+.checkout-card .card-image{
+    width: 40%;
+    max-width: 140px;
+    padding: 0;
+    margin-right: 10px;
+}
+.checkout-card .card-image img{
+    object-fit: cover;
+}
+.checkout-card .card-header{
+    font-size: clamp(1.15rem, 2vw + .2rem, 1.35rem);
+}
+.number_button{
+    background: none;
+    width: fit-content;
+    height: fit-content;
+    padding: 0 !important;
+}
+.card_amount_container{
+    width: 100%;
+    max-width: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: none;
+    border: 1px solid;
+    height: fit-content;
+    padding: 5px !important;
+}
+.card_amount_container *{
+    margin: 0 !important;
+    background: none !important;
+}
+.trash.remove_card_btn{
+    font-size: 1.25rem;
+    color: #000;
+    cursor: pointer;
+    height: fit-content;
+    width: fit-content;
+}
+.card_product_amount{
+    font-size: clamp(1.2rem, 2vw + .25rem, 1.5rem);
+}
+.card_content {
+    width: 60%;
+    height: 100%;
+    padding: 5px 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.discounted_card .original_price {
+    text-decoration: line-through;
+    color: #888;
+    margin-right: 8px;
+  }
+  
+  .discounted_card .discounted_price {
+    color: green;
+    font-weight: bold;
+  }
+  
+  .price_wrapper {
+    display: flex;
+    align-items: center;
+  }
+  
+@media(min-width:1024px){
+    .checkout-card{
+        height: 35vh;
+    }
+    .checkout-card .card-image{
+        width: 30%;
+    }
+    .card_amount_container{
+        max-width: 120px;
+       
+        padding: 10px !important;
+    }
+    .checkout-card .card-content{
+        padding: 18px;
+    }
+    .checkout-card .card-image{
+        max-width: 160px;
+    }
+}

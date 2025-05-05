@@ -65,7 +65,7 @@ const controller = {
         return res
           .status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code)
           .json({ msg: HTTP_STATUS.INTERNAL_SERVER_ERROR.message });
-
+      createdAddress = await getAddresesFromDB(createdAddress.id);
       // Le  mando ok con el redirect al email verification view
       return res.status(HTTP_STATUS.CREATED.code).json({
         meta: {
@@ -243,9 +243,9 @@ export function generateAddressObject(address) {
     street,
     label,
     detail,
-    zip_code,
     city,
     provinces_id,
+    zip_code,
     defaultAddress,
   } = address;
 

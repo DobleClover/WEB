@@ -129,7 +129,7 @@ const controller = {
           return res.redirect(`/cancelar-orden?token=${checkedPaymentId}`);
         }
         if (paymentResponse.status === "COMPLETED") {
-          let updatedStatus = orderFromDb.shipping_type_id == 1 ? 2 : 3;
+          let updatedStatus = orderFromDb.shipping_types_id == 1 ? 2 : 3;
           // ✅ Marcar la orden como pagada en tu base de datos
           await db.Order.update(
             {
@@ -145,7 +145,7 @@ const controller = {
           // Envio el mail para el usuario y a nosotros
           await sendOrderMails(orderFromDb);
           return res.redirect(
-            `/post-compra?orderId=${orderFromDb.tra_id}&shippingTypeId=${orderFromDb.shipping_type_id}`
+            `/post-compra?orderId=${orderFromDb.tra_id}&shippingTypeId=${orderFromDb.shipping_types_id}`
           );
         } else {
           // ❌ Manejar error de pago
@@ -159,7 +159,7 @@ const controller = {
         if (!orderFromDb) {
           return res.redirect(`/cancelar-orden?token=${checkedPaymentId}`);
         }
-        let updatedStatus = orderFromDb.shipping_type_id == 1 ? 2 : 3;
+        let updatedStatus = orderFromDb.shipping_types_id == 1 ? 2 : 3;
         paymentResponse = await captureMercadoPagoPayment(payment_id);
         if (!paymentResponse) {
           return res.redirect(`/cancelar-orden/${orderFromDb.id}`);
@@ -188,7 +188,7 @@ const controller = {
         });
       }
       return res.redirect(
-        `/post-compra?orderId=${orderFromDb.tra_id}&shippingTypeId=${orderFromDb.shipping_type_id}`
+        `/post-compra?orderId=${orderFromDb.tra_id}&shippingTypeId=${orderFromDb.shipping_types_id}`
       );
     } catch (error) {
       console.error("Error capturing entity payment payment:", error);

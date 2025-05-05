@@ -21,7 +21,7 @@
   padding: 2.5vh 5vw;
   margin-top: 15vh;
   flex-direction: row;
-  align-items: flex-start;
+  align-items: unset;
 }
 .main_content_wrapper {
   display: flex;

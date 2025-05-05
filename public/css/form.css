@@ -1,7 +1,9 @@
 .custom_form {
     width: 100%;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
 }
 
 .input_container {
@@ -10,19 +12,19 @@
 
 .input_container input {
     width: 100%;
-    padding: 5%;
-    outline: 0;
-    border: 0;
-    border: 1px solid var(--grey-color);
-    border-radius: 5px;
+    padding: 15px;
+    
 }
 
 .form_container select{
     padding: 7.5px;
-    outline: none;
-    border: none;
-    border-radius: 5px;
+}
+.form_container input,
+.form_container select{
+    outline: 0;
     margin-top: 5px;
+    border-radius: 5px;
+    border: 1px solid var(--dark-grey-color);
 }
 .form_container .button_container{
     margin-top: 2.5vh;
@@ -30,3 +32,15 @@
     display: flex;
     justify-content: center;
 }
+.form_container .input_container {
+    margin: 10px 0;
+    display: flex;
+    flex-direction: column;
+}
+.form_warning {
+    color: #d9534f;
+    font-size: 0.9rem;
+    margin-top: 12px;
+    text-align: center;
+  }
+  

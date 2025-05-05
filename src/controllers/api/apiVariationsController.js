@@ -23,8 +23,8 @@ const controller = {
           msg: "No variation id was provided",
         });
       }
-      const variations = await getVariationsFromDB(variationId);
-      if (!variations) {
+      const variations = await getVariationsFromDB(variationId);      
+      if (!variations || !variations.length) {
         return res.status(HTTP_STATUS.NOT_FOUND.code).json({
           ok: false,
           msg: "Variation not found",
@@ -50,7 +50,7 @@ export default controller;
 let variationIncludeArray = [
   {
     association: "product",
-    include: ["files"],
+    include: ["files","brand"],
   },
   "orderItems",
 ];
@@ -58,7 +58,6 @@ let variationIncludeArray = [
 export const getVariationsFromDB = async (variationsID) => {
   try {
     if (!variationsID) return [];
-    let variationsArrayToReturn = [];
     let variationsFromDB = await Variation.findAll({
       where: {
         id: variationsID,
@@ -67,7 +66,7 @@ export const getVariationsFromDB = async (variationsID) => {
     });
     variationsFromDB = getDeepCopy(variationsFromDB);
     variationsFromDB = await handleVariationsToReturn(variationsFromDB);
-    return variationsArrayToReturn;
+    return variationsFromDB;
   } catch (error) {
     console.log(`Error finding variations in db: ${error}`);
     console.log(error);
@@ -78,7 +77,8 @@ export const getVariationsFromDB = async (variationsID) => {
 async function handleVariationsToReturn(variations = []) {
   try {
     if (!variations.length) return;
-    let populatedVariations = populateVariations(variations);
+    const dbColors = await db.Color.findAll();
+    let populatedVariations = populateVariations(variations,dbColors);
     for (let i = 0; i < populatedVariations.length; i++) {
       const variation = populatedVariations[i];
       let { product } = variation;
@@ -87,7 +87,7 @@ async function handleVariationsToReturn(variations = []) {
         withImages: true,
         withVariations: false,
       });
-    }
+    }    
     return populatedVariations;
   } catch (error) {
     return console.log(error);

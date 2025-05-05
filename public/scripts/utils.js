@@ -1,4 +1,4 @@
-// import { cartExportObj } from "./cart.js";
+import { cartExportObj } from "./cart.js";
 import { checkForUserLogged, userLogged } from "./checkForUserLogged.js";
 import {
   closeModal,
@@ -16,6 +16,7 @@ import {
   colorsFromDB,
   countriesFromDB,
   dropsFromDB,
+  provincesFromDB,
   setSettings,
   settingsFromDB,
   sizesFromDB,
@@ -615,7 +616,7 @@ export function isInMobile() {
 //Arma los body data de las entidades
 export function buildPhoneBodyData(form) {
   return {
-    country_id: form.phone_country_id?.value,
+    countries_id: form.phone_countries_id?.value,
     phone_number: form.phone_number?.value,
     id: userLogged ? undefined : generateRandomString(10),
     defaultPhone: form["phone_default"]?.checked,
@@ -624,13 +625,12 @@ export function buildPhoneBodyData(form) {
 
 export function buildAddressBodyData(form) {
   return {
-    label: form["address-label"]?.value,
-    street: form["address-street"]?.value,
-    detail: form["address-detail"]?.value,
-    city: form["address-city"]?.value,
-    province: form["address-province"]?.value,
-    country_id: form["address-country-id"]?.value,
-    zip_code: form["address-zip"]?.value,
+    street: form["address_street"]?.value,
+    label: form["address_label"]?.value,
+    detail: form["address_detail"]?.value,
+    city: form["address_city"]?.value,
+    provinces_id: form["address_provinces_id"]?.value,
+    zip_code: form["address_zip"]?.value,
     id: userLogged ? undefined : generateRandomString(10),
     defaultAddress: form["address-default"]?.checked,
   };
@@ -951,7 +951,9 @@ export async function updateDropTable() {
 
 //Crea y actualiza los valores de phone & address del usuario loggeado (se supone que solo creamos phone & address de los usuarios)
 export async function handlePhoneFetch(bodyData, method) {
-  let response = await fetch("/api/phone", {
+  let fetchURL =
+      method == "POST" ? `/api/phone` : `/api/phone/${bodyData.id}`;
+  let response = await fetch(fetchURL, {
     method: method,
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(bodyData),
@@ -970,7 +972,7 @@ export async function handlePhoneFetch(bodyData, method) {
       );
       if (phoneToChangeIndex < 0) return;
       bodyData.country = countriesFromDB.find(
-        (counFromDB) => counFromDB.id == bodyData.country_id
+        (counFromDB) => counFromDB.id == bodyData.countries_id
       ); // Esto es para que me lleve la entidad y poder pintar el nombre del pais
       userLogged.phones[phoneToChangeIndex] = bodyData;
     }
@@ -981,7 +983,9 @@ export async function handlePhoneFetch(bodyData, method) {
   return false;
 }
 export async function handleAddressFetch(bodyData, method) {
-  let response = await fetch("/api/address", {
+  let fetchURL =
+      method == "POST" ? `/api/address` : `/api/address/${bodyData.id}`;
+  let response = await fetch(fetchURL, {
     method: method,
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(bodyData),
@@ -999,6 +1003,7 @@ export async function handleAddressFetch(bodyData, method) {
         (addressFromDB) => addressFromDB.id == bodyData.id
       );
       if (addressToChangeIndex < 0) return;
+      bodyData.province = provincesFromDB.find(prov=>prov.id == bodyData.provinces_id)
       userLogged.addresses[addressToChangeIndex] = bodyData;
     }
     let responseMsg = response.msg;
@@ -1245,12 +1250,12 @@ export const handleRemoveAddressButtonClick = async (address) => {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     // Hago el fetch para borrar
-    let response = await fetch(`/api/address/`, {
+    let response = await fetch(`/api/address/${address.id}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ address_id: address.id }),
+      body: JSON.stringify({}),
     });
     if (response.ok) {
       response = await response.json();
@@ -1277,12 +1282,12 @@ export const handleRemovePhoneButtonClick = async (phone) => {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     // Hago el fetch para borrar
-    let response = await fetch(`/api/phone/`, {
+    let response = await fetch(`/api/phone/${phone.id}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ phone_id: phone.id }),
+      body: JSON.stringify({}),
     });
     if (response.ok) {
       response = await response.json();
@@ -1773,6 +1778,7 @@ export function getImgElement(fileObj, classnamesForImage) {
 export function displayPriceNumber(price) {
   let dolarPrice =
     settingsFromDB.find((set) => set.setting_types_id == 1)?.value || 2000;
+    
   return minDecimalPlaces(
     displayBigNumbers(parseFloat(price) * parseFloat(dolarPrice), 2),
     2
@@ -1814,4 +1820,28 @@ export function getIdFromUrl() {
   const currentUrl = window.location.pathname; // Obtiene el path de la URL
   const segments = currentUrl.split("/"); // Divide el path en segmentos
   return segments[segments.length - 1]; // Retorna el último segmento (el product id)
+}
+
+export function emulateEvent(element = undefined, event = undefined){
+  if(!element || !event) return
+  return element.dispatchEvent(new Event(event));
+}
+
+export function handleFormWarningDetail(show) {
+  const containers = document.querySelectorAll(".cart_detail_container");
+
+  containers.forEach((container) => {
+    let warning = container.querySelector(".form_warning");
+
+    if (show) {
+      if (!warning) {
+        warning = document.createElement("p");
+        warning.className = "form_warning";
+        warning.textContent = "Por favor completá el formulario correctamente.";
+        container.appendChild(warning);
+      }
+    } else {
+      if (warning) warning.remove();
+    }
+  });
 }
