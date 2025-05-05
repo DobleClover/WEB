@@ -66,9 +66,7 @@ window.addEventListener("load", async () => {
       if (productHasDiscount) {
         productRealPrice = document.createElement("p");
         productRealPrice.className = `product_price`;
-        const productPriceWithDiscount = displayPriceNumber(
-          (1 - productData.discount / 100) * productData.price
-        );
+        const productPriceWithDiscount = displayPriceNumber(productData.discounted_price);
         productRealPrice.innerHTML = `$${productPriceWithDiscount}`;
       }
       const productDescription = document.createElement("p");
@@ -314,12 +312,12 @@ window.addEventListener("load", async () => {
     }
     async function handleAddProductToCart() {
       const cartObject = {
-        variation_id: variationSelected.id,
+        variations_id: variationSelected.id,
         quantity: 1,
       };
 
       if (userLogged !== null) {
-        cartObject.user_id = userLogged.id;
+        cartObject.users_id = userLogged.id;
         let response = await fetch(`/api/cart/${userLogged.id}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -358,7 +356,7 @@ window.addEventListener("load", async () => {
       }
 
       const variationIsInCartIndex = cartItems.findIndex(
-        (item) => item.variation_id == variationSelected.id
+        (item) => item.variations_id == variationSelected.id
       );
       if (variationIsInCartIndex < 0) return false;
       return true;

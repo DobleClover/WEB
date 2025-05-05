@@ -20,7 +20,7 @@ import apiUserRouter from "./routes/api/apiUserRouter.js";
 import apiTypeRouter from "./routes/api/apiTypeRouter.js";
 import apiSettingRouter from "./routes/api/apiSettingRouter.js";
 // import userRouter from './routes/userRouter.js';
-// import apiCartRouter from './routes/api/apiCartRouter.js'
+import apiCartRouter from './routes/api/apiCartRouter.js'
 // import apiShippingRouter from './routes/api/apiShippingRouter.js';
 // import apiPaymentRouter from './routes/api/apiPaymentRouter.js';
 import unverifiedUser from "./middlewares/unverifiedUser.js";
@@ -103,7 +103,7 @@ app.use("/api/drop", apiDropRouter);
 app.use("/api/user", apiUserRouter);
 app.use("/api/type", apiTypeRouter);
 app.use("/api/setting", apiSettingRouter);
-// app.use('/api/cart', apiCartRouter);
+app.use('/api/cart', apiCartRouter);
 // app.use('/api/shipping', apiShippingRouter);
 // app.use('/api/shipping', apiShippingRouter);
 // app.use('/api/payment', apiPaymentRouter);

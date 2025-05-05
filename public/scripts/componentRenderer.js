@@ -6,10 +6,12 @@ import {
   countriesFromDB,
   dropsFromDB,
   paymentTypesFromDB,
+  provincesFromDB,
   setBrands,
   setCategories,
   setColors,
   setCountries,
+  setProvinces,
   setSizes,
   settingsFromDB,
   sizesFromDB,
@@ -686,7 +688,7 @@ export function checkoutCard(props) {
   props.quantity = props.quantity || 1;
   const container = document.createElement("div");
   container.className = "card checkout-card";
-  container.dataset.variation_id = props.variation_id;
+  container.dataset.variations_id = props.variations_id;
   const productPrice = productFromDB.price;
   // Image section
   const imageDiv = document.createElement("div");
@@ -735,15 +737,38 @@ export function checkoutCard(props) {
   metaVariationDiv.className = "meta";
   categorySpan = document.createElement("span");
   categorySpan.className = "card_desc";
-  categorySpan.textContent = `Taco: ${props.tacoFromDB?.name} ||Talle: ${props.sizeFromDB?.size}`;
+  categorySpan.textContent = `Color: ${props.colorFromDB?.name} ||Talle: ${props.sizeFromDB?.size}`;
   metaVariationDiv.appendChild(categorySpan);
 
   // Price
-  const priceSpan = document.createElement("span");
-  priceSpan.className = "card_price";
-  priceSpan.textContent = `$${displayBigNumbers(
-    parseInt(props.quantity) * parseFloat(productPrice)
-  )}`;
+  // Price
+  let hasDiscount = productFromDB.discount > 0;
+  let priceWrapper, priceSpan;
+
+  if (hasDiscount) {
+    container.classList.add("discounted_card");
+
+    const originalPrice = document.createElement("span");
+    originalPrice.className = "card_price original_price";
+    originalPrice.textContent = `$${displayPriceNumber(productFromDB.price)}`;
+
+    const discountedPrice = document.createElement("span");
+    discountedPrice.className = "card_price discounted_price";
+    discountedPrice.textContent = `$${displayPriceNumber(
+      productFromDB.discounted_price
+    )}`;
+
+    priceWrapper = document.createElement("div");
+    priceWrapper.className = "price_wrapper";
+    priceWrapper.appendChild(originalPrice);
+    priceWrapper.appendChild(discountedPrice);
+    contentDiv.appendChild(priceWrapper);
+  } else {
+    priceSpan = document.createElement("span");
+    priceSpan.className = "card_price";
+    priceSpan.textContent = `$${displayPriceNumber(productFromDB.price)}`;
+    contentDiv.appendChild(priceSpan);
+  }
 
   // Amount container
   const amountContainer = document.createElement("div");
@@ -783,7 +808,7 @@ export function checkoutCard(props) {
   contentDiv.appendChild(header);
   contentDiv.appendChild(metaCategoryDiv);
   contentDiv.appendChild(metaVariationDiv);
-  contentDiv.appendChild(priceSpan);
+  contentDiv.appendChild(hasDiscount ? priceWrapper : priceSpan);
   contentDiv.appendChild(amountContainer);
 
   // Append all to container
@@ -853,17 +878,13 @@ export function addressCard(props) {
 
   const city = document.createElement("p");
   city.className = "card_text address_city";
-  city.textContent = props.city;
+  city.textContent = `${props.city}, ${props.province?.name || ''}`;
 
-  const country = document.createElement("p");
-  country.className = "card_text address_country";
-  country.textContent = props.country;
 
   cardContent.appendChild(street);
   cardContent.appendChild(detail);
   cardContent.appendChild(zip);
   cardContent.appendChild(city);
-  cardContent.appendChild(country);
 
   // Crear la sección inferior de la tarjeta
   const cardBottomContainer = document.createElement("div");
@@ -1188,6 +1209,7 @@ export function form(props) {
         optionElement.value = option.value || "";
         optionElement.textContent = option.label || "";
         optionElement.selected = option.selected;
+        optionElement.disabled = option.disabled;
         inputElement.appendChild(optionElement);
       });
     } else {
@@ -1351,10 +1373,10 @@ export async function createPhoneModal(phone) {
             {
               label: "Codigo de area",
               type: "select",
-              name: "phone_country_id",
+              name: "phone_countries_id",
               className:
                 "ui search dropdown country_code_search_input form_search_dropdown",
-              value: phone ? phone.country_id : "",
+              value: phone ? phone.countries_id : "",
               required: true,
             },
             {
@@ -1379,7 +1401,7 @@ export async function createPhoneModal(phone) {
       buttons: [
         {
           text: buttonText,
-          className: "ui button submit negative send-modal-form-btn",
+          className: "ui button submit green send-modal-form-btn",
           onClick: async () => await handlePhoneModalActions(phone),
         },
       ],
@@ -1429,7 +1451,7 @@ export async function createAddressModal(address = undefined) {
         {
           label: "Etiqueta",
           type: "text",
-          name: "address-label",
+          name: "address_label",
           className: "",
           required: true,
           value: address ? address.label : "",
@@ -1438,7 +1460,7 @@ export async function createAddressModal(address = undefined) {
         {
           label: "Direccion",
           type: "text",
-          name: "address-street",
+          name: "address_street",
           className: "",
           required: true,
           value: address ? address.street : "",
@@ -1447,7 +1469,7 @@ export async function createAddressModal(address = undefined) {
         {
           label: "Detalle",
           type: "text",
-          name: "address-detail",
+          name: "address_detail",
           className: "",
           required: false,
           value: address ? address.detail || "" : "",
@@ -1456,7 +1478,7 @@ export async function createAddressModal(address = undefined) {
         {
           label: "Codigo Postal",
           type: "text",
-          name: "address-zip",
+          name: "address_zip",
           className: "short-input",
           required: true,
           value: address ? address.zip_code : "",
@@ -1465,7 +1487,7 @@ export async function createAddressModal(address = undefined) {
         {
           label: "Ciudad",
           type: "text",
-          name: "address-city",
+          name: "address_city",
           className: "",
           required: true,
           value: address ? address.city : "",
@@ -1473,22 +1495,13 @@ export async function createAddressModal(address = undefined) {
         },
         {
           label: "Provincia",
-          type: "text",
-          name: "address-province",
-          className: "",
-          required: true,
-          value: address ? address.province : "",
-          placeHolder: "Provincia",
-        },
-        {
-          label: "Pais",
           type: "select",
-          name: "address-country-id",
+          name: "address_provinces_id",
           className:
-            "ui search dropdown country_search_input form_search_dropdown",
+            "ui search dropdown province_search_input form_search_dropdown",
           required: true,
-          value: address ? address.country_id : "",
-          placeHolder: "Elegi un pais",
+          value: address ? address.provinces_id : "",
+          placeHolder: "Elegi una provinicia",
         },
         {
           label: "Direccion predeterminada",
@@ -1503,7 +1516,7 @@ export async function createAddressModal(address = undefined) {
       buttons: [
         {
           text: buttonText,
-          className: "ui button submit negative send-modal-form-btn",
+          className: "ui button submit green send-modal-form-btn",
           onClick: async () => await handleAddressModalActions(address),
         },
       ],
@@ -1511,22 +1524,22 @@ export async function createAddressModal(address = undefined) {
     });
     activateCheckboxTogglers();
     //Una vez creado el modal, activo con los paises
-    if (!countriesFromDB.length) {
-      await setCountries();
+    if (!provincesFromDB.length) {
+      await setProvinces();
     }
     //Aca los paises van solo nombre
-    let arrayToActivateInDropdown = countriesFromDB.map((country) => ({
-      id: country.id,
-      name: country.name,
+    let arrayToActivateInDropdown = provincesFromDB.map((dbProv) => ({
+      id: dbProv.id,
+      name: dbProv.name,
     }));
     let classToActivate =
-      ".ui.search.dropdown.country_search_input.form_search_dropdown";
+      ".ui.search.dropdown.province_search_input.form_search_dropdown";
     // Ahora activo el select
     activateDropdown({
       className: classToActivate,
       array: arrayToActivateInDropdown,
-      placeHolder: "Elegi un pais",
-      values: address ? [address.country_id] : [],
+      placeHolder: "Elegi una provincia",
+      values: address ? [address.provinces_id] : [],
     });
   } catch (error) {
     console.log("falle");
@@ -2639,33 +2652,24 @@ export function disableColorModal(color = undefined) {
 }
 
 export function generatePaymentButtonElement() {
-  const paymentTypeID = userLogged
-    ? userLogged.payment_type_id
-    : getLocalStorageItem("payment_type_id");
-  const paymentType = paymentTypesFromDB.find(
-    (type) => type.id == paymentTypeID
-  );
+  const paymentTypeID = document.querySelector('select[name="payment_types_id"]')?.value || null;
+  const paymentType = paymentTypesFromDB.find((type) => type.id == paymentTypeID);
 
-  let button;
-  button = document.createElement("button");
-  if (paymentTypeID == 2) {
-    //Aca es paypal, armo el boton de paypal
-    button.className =
-      "paypal-button pay-button ui button finalize-order-button section-handler-button";
-    // Crear botón
-    button.innerHTML = `
-    <span>Check out with</span><img src="/img/logo/${paymentType.bigFilename}" alt="PayPal">
-    `;
-  } else {
-    button.className =
-      "mercadopago-button pay-button ui button finalize-order-button section-handler-button";
-    //MP
-    button.innerHTML = `
-        <img src="/img/logo/${paymentType.bigFilename}" alt="mercadoPago"><span>Pagar con Mercado Pago</span>
-     `;
-  }
+  const button = document.createElement("button");
+  button.className = `pay_button ui button finalize_order_button section_handler_button ${paymentTypeID == 1 ? `mercadopago_button` : `other_button`}`;
+
+  // Usar logo grande si existe, sino el común
+  const logoFilename = paymentType?.bigFilename || paymentType?.filename || "";
+  const buttonText = paymentType?.checkoutButtonText || "Finalizar compra";
+
+  button.innerHTML = `
+    ${logoFilename ? `<img src="/img/logo/${logoFilename}" alt="${paymentType?.type}" />` : ""}
+    <span>${buttonText}</span>
+  `;
+
   return button;
 }
+
 
 export function generatePostOrderCard(traId, shippingTypeId) {
   // Crear el contenedor principal
@@ -2714,7 +2718,7 @@ export function generatePostOrderCard(traId, shippingTypeId) {
 
   const homeButton = document.createElement("a");
   homeButton.href = "/";
-  homeButton.classList.add("ui", "button", "negative", "card-button", "small");
+  homeButton.classList.add("ui", "button", "green", "card-button", "small");
   homeButton.innerHTML =
     "<i class='bx bx-home-alt-2'></i><p class='button-text'>" +
     "Inicio" +
@@ -2725,7 +2729,7 @@ export function generatePostOrderCard(traId, shippingTypeId) {
   purchasesButton.classList.add(
     "ui",
     "button",
-    "negative",
+    "green",
     "card-button",
     "small"
   );

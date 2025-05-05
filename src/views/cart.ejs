@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('./partials/head.ejs') %>
+    <link rel="stylesheet" href="/css/form.css" />
+    <link rel="stylesheet" href="/css/checkoutCard.css" />
+    <link rel="stylesheet" href="/css/cart.css" />
+    <link rel="stylesheet" href="/css/invertedHeader.css">
+    <script type="module" src="/scripts/cart.js"></script>
+    <title>Carro</title>
+  </head>
+  <body data-page_name="cart">
+    <%- include('./partials/header.ejs') %>
+    <main class="main main_sections_wrapper">
+      <section class="cart_section">
+        <div class="cart_products_container">
+          <h1 class="cart_products_title page_title">
+            <div class="ui placeholder">
+              <div class="line"></div>
+            </div>
+          </h1>
+          <div class="cart_products_cards_wrapper">
+            <div class="ui placeholder">
+              <div class="image header">
+                <div class="line"></div>
+                <div class="line"></div>
+              </div>
+              <div class="paragraph">
+                <div class="medium line"></div>
+                <div class="short line"></div>
+              </div>
+            </div>
+            <div class="ui placeholder">
+              <div class="image header">
+                <div class="line"></div>
+                <div class="line"></div>
+              </div>
+              <div class="paragraph">
+                <div class="medium line"></div>
+                <div class="short line"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cart_detail_rail_container">
+          <div class="detail_placeholder_container">
+            <div class="ui placeholder">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="checkout_section">
+        <div class="back_to_cart_button_container">
+          <button
+            class="back_to_cart_button section_handler_button"
+            type="button"
+          >
+            <i class="bx bx-arrow-back"></i>
+          </button>
+        </div>
+        <div class="form_wrapper">
+          <div class="form_placeholder_container">
+            <div class="ui placeholder">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </div>
+          <div class="form_placeholder_container">
+            <div class="ui placeholder">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </div>
+          <div class="form_placeholder_container">
+            <div class="ui placeholder">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          </div>
+        </div>
+        <div class="cart_detail_rail_container"></div>
+      </section>
+    </main>
+    <%- include('./partials/footer.ejs') %>
+  </body>
+</html>

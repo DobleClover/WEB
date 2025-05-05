@@ -1,4 +1,4 @@
-import { buildBrandBodyData, buildColorBodyData, buildDropBodyData, buildProductBodyData, buildUserLoginBodyData, buildUserSignUpBodyData, handleBrandFetch, handleColorFetch, handleDropFetch, handleModalCreation, handleProductFetch, handleUserLoginFetch, handleUserSignUpFetch, updateBrandTable, updateColorTable, updateDropTable, updateProductTable } from "./utils.js";
+import { buildAddressBodyData, buildBrandBodyData, buildColorBodyData, buildDropBodyData, buildPhoneBodyData, buildProductBodyData, buildUserLoginBodyData, buildUserSignUpBodyData, handleAddressFetch, handleBrandFetch, handleColorFetch, handleDropFetch, handleModalCreation, handlePhoneFetch, handleProductFetch, handleUserLoginFetch, handleUserSignUpFetch, updateAddressElements, updateBrandTable, updateColorTable, updateDropTable, updatePhoneElements, updateProductTable } from "./utils.js";
 import { setLocalStorageItem } from "./localStorage.js";
 import { validateUserSignUpForm } from "./formValidators.js";
 import { paintUserIconOrLetter } from "./header.js";
@@ -50,7 +50,7 @@ try {
         method: address ? "PUT" : "POST",
         buildBodyData: buildAddressBodyData,
         saveGuestEntity: (bodyData) => setLocalStorageItem("guestAddresses", bodyData, true), //El true es porque es array
-        updateElements: updateAddressElements, // Funcion que actualiza el select de phones
+        updateElements: updateAddressElements, // Funcion que actualiza el select de address
         postToDatabase: handleAddressFetch
       })//hago el fetch para crear esa address
 } catch (error) {

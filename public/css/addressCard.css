@@ -1,4 +1,10 @@
 .address_card{
+    position: relative;
+    display: flex;
+    box-shadow: 2px 5px 3px var(--box-shadow-color);
+    height: auto;
+    background-color: #fff;
+    overflow: hidden;
     width: 90vw;
     max-width: 250px;
     max-height: 200px;
@@ -9,8 +15,12 @@
     justify-content: space-between;
 }
 
-
-
+.address_card .card_top_content{
+    padding-left: 0;
+}
+.address_card .card_text {
+    margin-bottom: 2.5px;
+}
 @media(min-width:768px){
     .address_card.card_empty{
         padding: 0;

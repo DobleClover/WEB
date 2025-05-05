@@ -10,7 +10,7 @@
   font-weight: 700;
   margin-top: 1px;
   padding: 7.5px;
-  background-color: var(--green-color);
+  background-color: var(--green-color) !important;
   border-radius: 50%;
   color: #fff !important;
 }

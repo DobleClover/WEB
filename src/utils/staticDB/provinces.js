@@ -1,5 +1,5 @@
 export default [
-  { id: 1, name: 'Ciudad Autonoma de Buenos Aires', value: 'Ciudad Autonoma de Buenos Aires', CSCode: 'C'},
+  { id: 1, name: 'Ciudad Autonoma de Buenos Aires (CABA)', value: 'Ciudad Autonoma de Buenos Aires', CSCode: 'C'},
   { id: 2, name: 'Buenos Aires', value: 'Buenos Aires' , CSCode: 'B'},
   { id: 3, name: 'Catamarca', value: 'Catamarca', CSCode: 'K'},
   { id: 4, name: 'Chaco', value: 'Chaco', CSCode: 'H'},

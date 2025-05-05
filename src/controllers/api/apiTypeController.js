@@ -7,6 +7,7 @@ import genders from '../../utils/staticDB/genders.js';
 import ordersStatuses from '../../utils/staticDB/ordersStatuses.js';
 import { categories } from '../../utils/staticDB/categories.js';
 import { HTTP_STATUS } from '../../utils/staticDB/httpStatusCodes.js';
+import provinces from '../../utils/staticDB/provinces.js';
 
 
 
@@ -52,6 +53,21 @@ const controller = {
             })
         } catch (error) {
             console.log(`error in getCountries:`);
+            console.log(error);
+            return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
+                ok: false,
+                msg: fetchFailed
+            })
+        }
+    },
+    getProvinces: async (req, res) => {
+        try {
+            return res.status(HTTP_STATUS.OK.code).json({
+                ok: true,
+                data: provinces
+            })
+        } catch (error) {
+            console.log(`error in getProvinces:`);
             console.log(error);
             return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
                 ok: false,

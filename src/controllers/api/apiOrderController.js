@@ -27,10 +27,8 @@ import {
   insertAddressToDB,
 } from "./apiAddressController.js";
 
-import {
-  getProductsFromDB,
-  getVariationsFromDB,
-} from "./apiProductController.js";
+import { getProductsFromDB } from "./apiProductController.js";
+import { getVariationsFromDB } from "./apiVariationsController.js";
 import generateRandomNumber from "../../utils/helpers/generateRandomNumber.js";
 import {
   generatePhoneObject,
@@ -51,6 +49,7 @@ import {
 import { MercadoPagoConfig } from "mercadopago";
 import { HTTP_STATUS } from "../../utils/staticDB/httpStatusCodes.js";
 import { deleteSensitiveUserData } from "./apiUserController.js";
+import { getSettingsFromDB } from "./apiSettingController.js";
 
 // Agrega credenciales
 const mpClient = new MercadoPagoConfig({
@@ -181,32 +180,20 @@ const controller = {
         phoneObj, //{}
         billingAddress,
         shippingAddress,
-        order_status_id: 5, //Aca es pendiente de pago
+        order_statuses_id: 5, //Aca es pendiente de pago
         shipping_types_id,
         payment_types_id,
       };
-      // Tema total price
-      let orderTotalPrice = 0;
-      // Tema shipping. Si es envio a domicilio le tengo que sumar el coste de shipping por el country
-      if (orderDataToDB.shipping_types_id == 1) {
-        //Envio a domicilio
-        let zoneCountryToCheckPrice = orderDataToDB.shippingAddress.country_id;
-        let dbCountry = countries.find(
-          (count) => count.id == zoneCountryToCheckPrice
-        );
-        let shippingZonePrices = await getZonePricesFromDB({
-          id: dbCountry.zone_id,
-        });
-        //Le sumo al totalPrice
-        orderTotalPrice +=
-          orderDataToDB.payment_type_id == 1
-            ? parseFloat(shippingZonePrices.ars_price)
-            : parseFloat(shippingZonePrices.usd_price);
-      }
       createOrderEntitiesSnapshot(orderDataToDB); //Funcion que saca "foto" de las entidades
 
+      // Tema total price
+      let orderTotalPrice = 0;
       // armo los orderItems
       let orderItemsToDB = [];
+      const settingsFromDB = await getSettingsFromDB();
+      const dolarPrice = settingsFromDB.find(
+        (dbSetting) => dbSetting.setting_types_id == 1
+      );
       // Voy por las variaciones para restar stock
       variations.forEach((variation) => {
         let { quantityRequested, id } = variation; //Tengo que chequear con esa variacion
@@ -221,7 +208,7 @@ const controller = {
         //Hago el snapshot del  precio y nombre
         let orderItemName = variationFromDB.product?.name;
         //Si pago en mp entonces es precio pesos, sino precio usd
-        let orderItemPrice = variationFromDB.product?.price;
+        let orderItemPrice = parseFloat(variationFromDB.product?.price) * parseFloat(dolarPrice);
 
         orderItemPrice = orderItemPrice && parseFloat(orderItemPrice);
         let orderItemQuantity = parseInt(quantityRequested);
@@ -229,7 +216,7 @@ const controller = {
         let orderItemData = {
           id: uuidv4(),
           order_id: orderDataToDB.id,
-          variation_id: variationFromDB.id,
+          variations_id: variationFromDB.id,
           name: orderItemName,
           price: orderItemPrice,
           quantity: orderItemQuantity,
@@ -560,12 +547,12 @@ export async function getOneOrderFromDB(searchCriteria) {
 //En db necesitamos almacenar los datos que perduren, ej si se cambia la address tiene que
 //salir la misma que se compro no puede salir la actualizada, mismo con nombre de item,phone,etc
 function createOrderEntitiesSnapshot(obj) {
-  let { billingAddress, shippingAddress, phoneObj, shipping_type_id } = obj;
+  let { billingAddress, shippingAddress, phoneObj, shipping_types_id } = obj;
   let billingAddressProvinceName = provinces?.find(
     (dbProvince) => dbProvince.id == billingAddress.provinces_id
   )?.name;
   let shippingAddressProvinceName =
-    shipping_type_id == 1
+    shipping_types_id == 1
       ? provinces?.find(
           (dbProvince) => dbProvince.id == shippingAddress?.provinces_id
         )?.name
@@ -578,7 +565,7 @@ function createOrderEntitiesSnapshot(obj) {
   obj.billing_address_zip_code = billingAddress.zip_code || "";
   obj.billing_address_label = billingAddress.label || "";
   //Mismo con shippingAddress
-  const shippingAddressNotRequired = shipping_type_id == 2; //Retiro por local
+  const shippingAddressNotRequired = shipping_types_id == 2; //Retiro por local
   obj.shipping_address_street = shippingAddressNotRequired
     ? null
     : shippingAddress.street || "";
@@ -590,7 +577,7 @@ function createOrderEntitiesSnapshot(obj) {
     : shippingAddress.city || "";
   obj.shipping_address_province = shippingAddressNotRequired
     ? null
-    : shippingAddress.shippingAddressProvinceName || "";
+    : shippingAddressProvinceName || "";
   obj.shipping_address_zip_code = shippingAddressNotRequired
     ? null
     : shippingAddress.zip_code || "";
@@ -617,7 +604,7 @@ function setOrderKeysToReturn(order) {
     (payType) => payType.id == order.payment_type_id
   );
   order.shippingType = shippingTypes.find(
-    (shipType) => shipType.id == order.shipping_type_id
+    (shipType) => shipType.id == order.shipping_types_id
   );
   order.currencyType = currencies?.find(
     (curType) => curType.id == order.currency_id
@@ -742,7 +729,7 @@ export async function checkOrderPaymentExpiration(order) {
         return false;
       }
       if (paymentResponse.status === "COMPLETED") {
-        let updatedStatus = order.shipping_type_id == 1 ? 2 : 3;
+        let updatedStatus = order.shipping_types_id == 1 ? 2 : 3;
         // ✅ Marcar la orden como pagada en tu base de datos
         await db.Order.update(
           {

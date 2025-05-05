@@ -32,6 +32,7 @@ import mailConfig from "../../utils/staticDB/mailConfig.js";
 const { User } = db;
 import { HTTP_STATUS } from "../../utils/staticDB/httpStatusCodes.js";
 import generateHexCode from "../../utils/helpers/generateHexCode.js";
+import countries from "../../utils/staticDB/countries.js";
 
 const { verify } = jwt;
 
@@ -672,7 +673,10 @@ export async function insertUserToDB(obj) {
 
 function setUserKeysToReturn(user) {
   user.phones?.forEach((phone) => {
-    phone.country = countries.find((country) => country.id == phone.country_id);
+    phone.country = countries.find((country) => country.id == phone.countries_id);
+  });
+  user.addresses?.forEach((phone) => {
+    phone.province = provinces.find((dbProv) => dbProv.id == phone.provinces_id);
   });
   const firstNameLetter = user.first_name.split("")[0];
   const lastNameLetter = user.last_name.split("")[0];

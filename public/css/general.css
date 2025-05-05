@@ -22,7 +22,9 @@ html, body {
   min-height: 100%;
   height: auto;
 }
-
+body{
+  position: relative;
+}
 .hidden {
   display: none !important;
 }
@@ -264,8 +266,8 @@ label {
   pointer-events: none !important;
 }
 /* LOS BOTONES DE PAGO */
-.pay-button,
-.ui.button.pay-button {
+.pay_button,
+.ui.button.pay_button {
   width: 100%;
   border: none;
   padding: 10px 20px;
@@ -276,47 +278,36 @@ label {
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   transition: background-color 0.3s ease;
+  color: #fff;
+  background-color: var(--green-color);
 }
-.pay-button span {
+.pay_button span {
   font-size: large;
   font-weight: 600;
 }
-.paypal-button span {
-  color: #000;
-}
-.mercadopago-button span {
-  color: #fff;
-}
 
-.paypal-button,
-.ui.button.paypal-button {
-  background-color: #ffc439;
-}
-.paypal-button:hover {
-  background-color: #ffb300;
-}
-.mercadopago-button,
-.ui.button.mercadopago-button {
+
+.mercadopago_button,
+.ui.button.mercadopago_button {
   background-color: #2fb2fe;
   color: #fff;
 }
-.mercadopago-button:hover {
+.mercadopago_button:hover {
   background-color: #4ebeff;
 }
-.paypal-button img {
-  margin-left: 8px;
-  height: 30px;
-}
-.mercadopago-button img {
+
+.pay_button img {
+  width: auto;
   height: 35px;
   margin-right: 8px;
+  filter: invert(1);
 }
-.pay-button img {
-  width: auto;
+.mercadopago_button img{
+filter: none;
 }
-input.error-input,
-select.error-input {
-  border: 1px solid var(--red-color) !important;
+input.error_input,
+select.error_input {
+  border: 1.5px solid var(--red-color) !important;
   background-color: var(--red-color-rgba);
 }
 .ui.message.copy_p_msg {

@@ -327,7 +327,7 @@ window.addEventListener("load", async () => {
       buttonProps: [
         {
           type: "button",
-          className: "negative send-form-btn",
+          className: "green send_form_btn",
           text: "Actualizar",
           onClick: async () => await handleUserUpdateFetch(),
         },
@@ -339,13 +339,12 @@ window.addEventListener("load", async () => {
   async function handleUserUpdateFetch() {
     const bodyData = {};
     const form = document.querySelector(".form_container .user-info-form");
-    const sendButton = form.querySelector(".send-form-btn");
+    const sendButton = form.querySelector(".send_form_btn");
     bodyData.first_name = form.first_name?.value;
     bodyData.last_name = form.last_name?.value;
     bodyData.genders_id = form.genders_id?.value;
-    bodyData.user_id = userLogged.id;
     sendButton.classList.add("loading");
-    let response = await fetch("/api/user/", {
+    let response = await fetch(`/api/user/${userLogged.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(bodyData),

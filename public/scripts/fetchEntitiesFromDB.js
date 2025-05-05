@@ -37,6 +37,19 @@ export async function setCountries(){
     }
 }
 
+export let provincesFromDB = [];
+export async function setProvinces(){
+    try {
+        let array = (
+            await (await fetch(`${window.location.origin}/api/type/province`)).json()
+          ).data || [];
+          provincesFromDB = array;
+    } catch (error) {
+        console.log("Falle");
+        return console.log(error);        
+    }
+}
+
 export let sizesFromDB = [];
 export async function setSizes(){
     try {

@@ -185,7 +185,7 @@ export async function destroySettingFromDB(id) {
   }
 }
 
-async function getSettingsFromDB(id = undefined) {
+export async function getSettingsFromDB(id = undefined) {
   try {
     let settingsToReturn, settingToReturn;
     // Condición si id es un string
