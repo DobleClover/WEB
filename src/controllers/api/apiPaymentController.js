@@ -127,10 +127,10 @@ export async function handleCreateMercadoPagoOrder(orderItemsToDb, mpClient) {
     };
     orderItemsToDb.forEach((item) => {
       const mercadoPagoItemObject = {
-        title: item.es_name,
+        title: item.name,
         quantity: Number(item.quantity),
         unit_price: Number(item.price),
-        currency_id: "ARS",
+        // currency_id: "ARS",
       };
       body.items.push(mercadoPagoItemObject);
     });

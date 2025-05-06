@@ -54,7 +54,7 @@ import { getSettingsFromDB } from "./apiSettingController.js";
 // Agrega credenciales
 const mpClient = new MercadoPagoConfig({
   accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN,
-  sandbox: !process.env.NODE_ENV == "production",
+  // sandbox: !process.env.NODE_ENV == "production",
 });
 // ENV
 const webTokenSecret = process.env.JSONWEBTOKEN_SECRET;
