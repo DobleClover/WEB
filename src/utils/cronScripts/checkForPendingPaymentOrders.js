@@ -9,7 +9,7 @@ export default cron.schedule('0 */6 * * *', async () => { //Cada 6hs
     // Busco las ordenes con orderStatus 5
     const ordersWithPendingPayment = await db.Order.findAll({
         where: {
-            order_status_id: 5
+            order_statuses_id: 5
         }
     });
     if(!ordersWithPendingPayment.length)return

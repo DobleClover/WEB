@@ -1449,9 +1449,13 @@ export function isOnPage(path) {
 export async function scriptInitiator() {
   try {
     await checkForUserLogged();
+    await setSettings();
     headerExportObject.headerScriptInitiator();
     let payingOrder = handleOrderInLocalStorage({ type: 2 });
+    console.log(payingOrder,userLogged);
+    
     if (payingOrder && !isOnPage("post-compra")) {
+      return
       //Aca tengo que dar de baja la orden
       let response = await fetch(`/api/order/paymentFailed/${payingOrder}`, {
         method: "DELETE",

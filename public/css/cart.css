@@ -168,7 +168,7 @@
 .detail_placeholder_container .ui.ui.placeholder {
   height: 45vh;
 }
-.card-header:hover {
+.card_header:hover {
   color: var(--green-color);
 }
 .mp-button-container {

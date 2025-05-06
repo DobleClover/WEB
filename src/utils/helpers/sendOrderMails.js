@@ -77,11 +77,7 @@ async function sendOrderMails(order) {
       </tr>
       ${tableContent}
     </table>
-    ${
-      order.shipping_types_id == 1
-        ? `<p style="font-size:18px;margin-top:30px;color:#222;">Envio: $${shippingPrice}</p>`
-        : ""
-    }
+
     <p style="font-size:18px;margin-top:30px;color:#222;">Total: $${
       order.total
     }</p>
@@ -124,14 +120,14 @@ async function sendOrderMails(order) {
   `;
   // Opciones del correo
   const userMailOptions = {
-    from: "contacto@neotangoshoes.com",
+    from: "dobleclover@gmail.com",
     to: order.email,
     subject:  "¡Gracias por tu compra!",
     html: userMailContent,
   };
   const operatorMailOptions = {
-    from: "contacto@neotangoshoes.com",
-    to: "contacto@neotangoshoes.com",
+    from: "dobleclover@gmail.com",
+    to: "dobleclover@gmail.com",
     subject: `Venta online - ${order.tra_id}`,
     html: operatorMailContent,
   };

@@ -310,6 +310,13 @@ select.error_input {
   border: 1.5px solid var(--red-color) !important;
   background-color: var(--red-color-rgba);
 }
+.strike {
+  text-decoration: line-through;
+  opacity: 0.75;
+}
+.faded{
+  opacity: .55;
+}
 .ui.message.copy_p_msg {
   position: fixed;
   bottom: -50%;

@@ -74,6 +74,8 @@ window.addEventListener("load", async () => {
         setDetailContainer();
         //Ahora escucho los botones
         checkCheckoutCardButtons();
+        // Actualizo el carro porlas de que se haya borrado el unico producto que tenia
+        await updateUserCart(); 
         return;
       } catch (error) {
         return console.log(error);
@@ -139,31 +141,8 @@ window.addEventListener("load", async () => {
               if (sectionIndex == 0) {
                 sectionIndex++;
                 btn.classList.add("loading");
-                let checkoutCards = Array.from(
-                  document.querySelectorAll(".checkout-card")
-                );
-                checkoutCards = checkoutCards.map((card) => {
-                  return {
-                    id: card.dataset?.variations_id,
-                    quantity: card.querySelector(".card_product_amount")
-                      .innerText,
-                  };
-                });
-                if (userLogged) {
-                  //Aca tengo que actualizar el carro
-                  let response = await fetch(`/api/cart/${userLogged.id}`, {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ tempCartItems: checkoutCards }),
-                  });
-                  if (!response.ok) {
-                    //Aca ver que hacer si da error TODO:
-                  }
-                  response = await response.json();
-                  userLogged.tempCartItems = response.updatedCardItems;
-                } else {
-                  updateGuestCart();
-                }
+                // Actualizo el carro
+                await updateUserCart();
                 btn.classList.remove("loading");
                 main.classList.add("active");
                 cartExportObj.pageConstructor();
@@ -926,24 +905,7 @@ window.addEventListener("load", async () => {
 
       return;
     }
-    function updateGuestCart() {
-      const checkoutCards = Array.from(
-        document.querySelectorAll(".checkout-card")
-      );
-      // Aca borro y vuelvo a armar el local
-      deleteLocalStorageItem("cartItems");
-      checkoutCards.forEach((card) => {
-        let cartProduct = cartProducts.find(
-          (cartItem) => cartItem.variations_id == card.dataset.variations_id
-        );
-        if (!cartProduct) return;
-        cartProduct.quantity = card.querySelector(
-          ".card_product_amount"
-        ).innerText;
-        delete cartProduct.productFromDB;
-        setLocalStorageItem("cartItems", cartProduct, true);
-      });
-    }
+    
 
     function setShippingCost() {
       const shippingTypeSelect = document.querySelector(
@@ -958,12 +920,12 @@ window.addEventListener("load", async () => {
 
     function generateCheckoutFormBodyToFetch(form) {
       let bodyData = {
-        user_id: userLogged ? userLogged.id : null,
+        users_id: userLogged ? userLogged.id : null,
         first_name: form["first_name"].value,
         last_name: form["last_name"].value,
         email: form["email"].value,
         dni: form["dni"].value,
-        payment_types_id: form["shipping_types_id"].value, 
+        payment_types_id: form["payment_types_id"].value,
         shipping_types_id: form["shipping_types_id"].value,
         variations: [],
       };
@@ -1067,4 +1029,54 @@ function disableAllSectionButtons() {
     ".section_handler_button"
   );
   sectionHandlerBtns.forEach((btn) => btn.classList.add("disabled"));
+}
+
+async function updateUserCart() {
+  try {
+    let checkoutCards = Array.from(document.querySelectorAll(".checkout-card"));
+    checkoutCards = checkoutCards.map((card) => {
+      return {
+        id: card.dataset?.variations_id,
+        quantity: card.querySelector(".card_product_amount").innerText,
+      };
+    });
+    if (userLogged) {
+      //Aca tengo que actualizar el carro
+      let response = await fetch(`/api/cart/${userLogged.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tempCartItems: checkoutCards }),
+      });
+      if (!response.ok) {
+        //Aca ver que hacer si da error TODO:
+      }
+      response = await response.json();
+      userLogged.tempCartItems = response.updatedCardItems;
+    } else {
+      updateGuestCart();
+    }
+  } catch (error) {
+    console.log("Falle");
+    console.log(error);
+    return;
+  }
+}
+
+function updateGuestCart() {
+  const checkoutCards = Array.from(
+    document.querySelectorAll(".checkout-card")
+  );
+  // Aca borro y vuelvo a armar el local
+  deleteLocalStorageItem("cartItems");
+  checkoutCards.forEach((card) => {
+    let cartProduct = cartProducts.find(
+      (cartItem) => cartItem.variations_id == card.dataset.variations_id
+    );
+    if (!cartProduct) return;
+    cartProduct.quantity = card.querySelector(
+      ".card_product_amount"
+    ).innerText;
+    delete cartProduct.productFromDB;
+    setLocalStorageItem("cartItems", cartProduct, true);
+  });
 }

@@ -104,8 +104,9 @@ async function loadMoreProducts({ isDobleUso = false, initialLoad = false }) {
     newProducts.forEach((prod) => {
       const card = isDobleUso ? createDobleusoProductCard(prod) : createProductCard(prod);
       wrapper.appendChild(card);
+      
     });
-
+    listenToProductCards();
     // Mostrar u ocultar el botón
     if (!data.hasMore || newProducts.length === 0) {
       loadMoreBtn.style.display = "none";

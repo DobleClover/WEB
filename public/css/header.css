@@ -210,6 +210,21 @@ font-size: 1.15rem;
     list-style: none;
     
 }
+.coming_soon_link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.header_element .coming_soon_badge {
+  font-size: 0.7rem;
+  background-color: var(--green-color) !important; /* o var(--red-color) */
+  color: white !important;
+  padding: 2px 6px;
+  border-radius: 5px;
+  text-transform: uppercase;
+}
 
 @media(min-width:768px){
   

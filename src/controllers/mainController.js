@@ -6,8 +6,15 @@ import getDeepCopy from "../utils/helpers/getDeepCopy.js";
 import { getBrandsLogos } from "./api/apiBrandController.js";
 import { getProductsFromDB } from "./api/apiProductController.js";
 import sizes from "../utils/staticDB/sizes.js";
-import { getDropImages, getDropsFromDB, setDropLaunchDateString } from "./api/apiDropController.js";
+import {
+  getDropImages,
+  getDropsFromDB,
+  setDropLaunchDateString,
+} from "./api/apiDropController.js";
 import clearUserSession from "../utils/helpers/clearUserSession.js";
+import { disableCreatedOrder, getOneOrderFromDB } from "./api/apiOrderController.js";
+import { captureMercadoPagoPayment } from "./api/apiPaymentController.js";
+import sendOrderMails from "../utils/helpers/sendOrderMails.js";
 // Obtener la ruta absoluta del archivo
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -30,26 +37,26 @@ const controller = {
     return res.render("productList", { dropsFromDB, brandsFromDB });
   },
   brandProductList: async (req, res) => {
-    let {brandId} = req.params
+    let { brandId } = req.params;
     // Los pido asi porque unicamente son para pintar los botones
-    let brandFromDB = await db.Brand.findByPk(brandId,{
+    let brandFromDB = await db.Brand.findByPk(brandId, {
       include: ["files"],
     });
-    brandFromDB = getDeepCopy(brandFromDB)
+    brandFromDB = getDeepCopy(brandFromDB);
     await getBrandsLogos([brandFromDB]);
     // return res.send([brandFromDB]);
     return res.render("brandProductList", { brandFromDB });
   },
   dropList: async (req, res) => {
-    let {id} = req.params;
-    if(!id)return res.redirect('/tienda')
+    let { id } = req.params;
+    if (!id) return res.redirect("/tienda");
     // Los pido asi porque unicamente son para pintar los botones
     let dropFromDB = await db.Drop.findByPk(id, {
-      include: ['files']
+      include: ["files"],
     });
     dropFromDB = getDeepCopy(dropFromDB);
-    setDropLaunchDateString(dropFromDB)
-    await getDropImages(dropFromDB)
+    setDropLaunchDateString(dropFromDB);
+    await getDropImages(dropFromDB);
     // return res.send(dropFromDB);
     return res.render("dropDetail", { dropFromDB });
   },
@@ -102,108 +109,104 @@ const controller = {
     return res.render("postOrder");
   },
   completePayment: async (req, res) => {
-    const queryParams = req.query;
-    const { token, payment_id } = queryParams; // payment_id mercado pago, token para paypal
-    if (!token && !payment_id) {
-      console.log("Either the token or the payment id were not provided");
+    const { payment_id, preference_id } = req.query;
+  
+    if (!payment_id) {
+      console.log("⚠️ No se proporcionó payment_id");
       return res.redirect("/cart");
     }
-
+  
     let orderFromDb;
-    let paymentResponse;
-    const checkedPaymentId = token ?? payment_id;
     try {
-      if (token) {
-        orderFromDb = await getOneOrderFromDB({ entity_payment_id: token });
-        if (!orderFromDb) {
-          console.error("Orden no encontrada en la base de datos");
-          return res.redirect("/cart");
-        }
-        paymentResponse = await capturePaypalPayment(token);
-        if (!paymentResponse || !paymentResponse.status) {
-          console.error(
-            "Error inesperado en la captura de pago de PayPal",
-            paymentResponse
-          );
-
-          return res.redirect(`/cancelar-orden?token=${checkedPaymentId}`);
-        }
-        if (paymentResponse.status === "COMPLETED") {
-          let updatedStatus = orderFromDb.shipping_types_id == 1 ? 2 : 3;
-          // ✅ Marcar la orden como pagada en tu base de datos
-          await db.Order.update(
-            {
-              order_status_id: updatedStatus, //2 es pendiente de envio, 3 de recoleccion
-            },
-            {
-              where: {
-                id: orderFromDb.id,
-              },
-            }
-          );
-          orderFromDb.order_status_id = updatedStatus;
-          // Envio el mail para el usuario y a nosotros
-          await sendOrderMails(orderFromDb);
+      console.log(`🔍 Buscando orden con preference_id: ${preference_id}`);
+  
+      orderFromDb = await getOneOrderFromDB({
+        entity_payments_id: preference_id,
+      });
+  
+      if (!orderFromDb) {
+        console.warn("⚠️ No se encontró una orden con ese preference_id");
+        return res.redirect(`/cancelar-orden?token=${payment_id}`);
+      }
+  
+      console.log(`📦 Orden encontrada: ID ${orderFromDb.id}, estado actual: ${orderFromDb.order_statuses_id}`);
+  
+      // Evaluar el estado actual de la orden
+      switch (orderFromDb.order_statuses_id) {
+        case 5: // Pendiente de Pago → continuar con procesamiento
+          console.log("✅ Orden pendiente de pago, se procede a capturar el pago");
+          break;
+  
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+          console.log("ℹ️ La orden ya fue procesada previamente. Redirigiendo a post-compra.");
           return res.redirect(
-            `/post-compra?orderId=${orderFromDb.tra_id}&shippingTypeId=${orderFromDb.shipping_types_id}`
+            `/post-compra?orderId=${orderFromDb.tra_id}&shippingTypeId=${orderFromDb.shipping_types_id}&paymentTypeId=${orderFromDb.payment_types_id}`
           );
-        } else {
-          // ❌ Manejar error de pago
-          res.redirect(`/cancelar-orden?token=${checkedPaymentId}`); //Redirijo para cancelar la orden
-        }
-      } else {
-        const { preference_id } = queryParams;
-        orderFromDb = await getOneOrderFromDB({
-          entity_payment_id: preference_id,
-        });
-        if (!orderFromDb) {
-          return res.redirect(`/cancelar-orden?token=${checkedPaymentId}`);
-        }
-        let updatedStatus = orderFromDb.shipping_types_id == 1 ? 2 : 3;
-        paymentResponse = await captureMercadoPagoPayment(payment_id);
-        if (!paymentResponse) {
-          return res.redirect(`/cancelar-orden/${orderFromDb.id}`);
-        }
-        // ✅ Marcar la orden como pagada en tu base de datos
-        await db.Order.update(
-          {
-            order_status_id: updatedStatus,
-            entity_payment_id: payment_id,
-          },
-          {
-            where: {
-              id: orderFromDb.id,
-            },
-          }
-        );
-        orderFromDb.order_status_id = updatedStatus;
+  
+        case 6:
+        default:
+          console.warn("❌ La orden está cancelada o en un estado inválido para procesar pago");
+          return res.redirect("/cart");
       }
+  
+      console.log(`💰 Intentando capturar pago con Mercado Pago (payment_id: ${payment_id})`);
+  
+      const paymentResponse = await captureMercadoPagoPayment(payment_id);
+  
+      if (!paymentResponse || paymentResponse.status !== "approved") {
+        console.error(`❌ Pago no aprobado. Estado recibido: ${paymentResponse?.status}`);
+        return res.redirect(`/cancelar-orden/${orderFromDb.id}`);
+      }
+  
+      console.log("✅ Pago aprobado por Mercado Pago");
+  
+      const updatedStatus = orderFromDb.shipping_types_id === 1 ? 2 : 3;
+      console.log(`📦 Nuevo estado asignado a la orden: ${updatedStatus === 2 ? "Pendiente de envío" : "Pendiente de recolección"}`);
+  
+      await db.Order.update(
+        {
+          order_statuses_id: updatedStatus,
+          entity_payments_id: payment_id,
+        },
+        {
+          where: { id: orderFromDb.id },
+        }
+      );
+  
+      console.log(`📝 Orden actualizada en la base de datos con payment_id: ${payment_id}`);
+  
+      orderFromDb.order_statuses_id = updatedStatus;
+  
       await sendOrderMails(orderFromDb);
-      // Borro los temp items si es que viene usuario loggeado
-      if (orderFromDb.user_id) {
+      console.log("📧 Mails de confirmación enviados correctamente");
+  
+      if (orderFromDb.users_id) {
         await db.TempCartItem.destroy({
-          where: {
-            user_id: orderFromDb.user_id,
-          },
+          where: { users_id: orderFromDb.users_id },
         });
+        console.log("🧹 Carrito temporal del usuario eliminado");
       }
+  
+      console.log("➡️ Redirigiendo a post-compra");
       return res.redirect(
-        `/post-compra?orderId=${orderFromDb.tra_id}&shippingTypeId=${orderFromDb.shipping_types_id}`
+        `/post-compra?orderId=${orderFromDb.tra_id}&shippingTypeId=${orderFromDb.shipping_types_id}&paymentTypeId=${orderFromDb.payment_types_id}`
       );
     } catch (error) {
-      console.error("Error capturing entity payment payment:", error);
-      console.error(error);
-      return res.redirect(`/cancelar-orden?token=${token}`); //Redirijo para cancelar la orden
+      console.error("❌ Error al capturar el pago:", error);
+      return res.redirect(`/cancelar-orden?preference_id=${preference_id}`);
     }
-  },
+  },  
   cancelOrder: async (req, res) => {
     try {
-      let { token, preference_id } = req.query;
-      if (!token && !preference_id) return res.redirect("/");
-      let entityPaymentID = token || preference_id;
+      let { preference_id } = req.query;
+      if (!preference_id) return res.redirect("/");
+      let entityPaymentID = preference_id;
       //PAYPAL
       const orderCreatedToDisable = await getOneOrderFromDB({
-        entity_payment_id: entityPaymentID,
+        entity_payments_id: entityPaymentID,
       });
       if (orderCreatedToDisable) {
         await disableCreatedOrder(orderCreatedToDisable.id);
@@ -217,7 +220,7 @@ const controller = {
   },
   logout: (req, res) => {
     let pathToReturn = req.session.returnTo;
-    clearUserSession(req,res)
+    clearUserSession(req, res);
     return res.redirect(`${pathToReturn}`);
   },
 };

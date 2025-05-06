@@ -20,89 +20,7 @@ const controller = {};
 
 export default controller;
 
-async function generatePaypalAccessToken() {
-  const response = await axios({
-    url: process.env.PAYPAL_BASE_URL + "/v1/oauth2/token",
-    method: "POST",
-    data: "grant_type=client_credentials",
-    auth: {
-      username: process.env.PAYPAL_CLIENT_ID,
-      password: process.env.PAYPAL_SECRET_ID,
-    },
-  });
-  return response.data.access_token;
-}
 
-export async function createPaypalOrder(order) {
-  const accessToken = await generatePaypalAccessToken();
-  let itemsTotal = 0;
-  const itemsArray = order.orderItemsToDb?.map((orderItem) => {
-    itemsTotal += parseFloat(orderItem.price) * parseInt(orderItem.quantity);
-    return {
-      name: orderItem.eng_name,
-      description: "",
-      unit_amount: {
-        currency_code: "USD",
-        value: parseFloat(orderItem.price) /* Valor unitario*/,
-      },
-      quantity: orderItem.quantity,
-      category: "",
-      sku: orderItem.sku,
-    };
-  });
-
-  const response = await axios({
-    url: process.env.PAYPAL_BASE_URL + "/v2/checkout/orders",
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
-    data: JSON.stringify({
-      intent: "CAPTURE",
-      purchase_units: [
-        {
-          items: itemsArray,
-          amount: {
-            currency_code: "USD",
-            value: order.total, //Total de compra
-            breakdown: {
-              item_total: { currency_code: "USD", value: itemsTotal }, //Solo productos
-              shipping: { currency_code: "USD", value:  (order.total - itemsTotal)}, //Solo shipping
-            },
-          },
-        },
-      ],
-      application_context: {
-        return_url: process.env.BASE_URL + "/completar-pago",
-        cancel_url: process.env.BASE_URL + "/cancelar-orden",
-        shipping_preference: "NO_SHIPPING",
-        user_action: "PAY_NOW",
-        brand_name: "neotango",
-      },
-    }),
-  });
-  return (
-    response?.data?.links?.find((link) => link.rel === "approve")?.href ||
-    undefined
-  );
-}
-
-export async function capturePaypalPayment(paypalOrderId) {
-  const accessToken = await generatePaypalAccessToken();
-  const response = await axios({
-    url:
-      process.env.PAYPAL_BASE_URL +
-      `/v2/checkout/orders/${paypalOrderId}/capture`,
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-
-  return response.data;
-}
 
 export function getTokenFromUrl(url) {
   const parsedUrl = new URL(url);
@@ -111,13 +29,14 @@ export function getTokenFromUrl(url) {
 
 export async function handleCreateMercadoPagoOrder(orderItemsToDb, mpClient) {
   try {
+    console.log("✅ BACK URL SUCCESS:", process.env.BASE_URL + "/completar-pago");
     let body = {
       items: [],
       back_urls: {
         success: process.env.BASE_URL + '/completar-pago',
         failure: process.env.BASE_URL + '/cancelar-orden',
       },
-      auto_return: "approved",
+      // auto_return: "approved", //TODO: Activar
       payment_methods: {
         excluded_payment_types: [
           { id: "ticket" }, // Eliminar pagos en efectivo

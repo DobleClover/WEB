@@ -40,12 +40,7 @@ import { getMappedErrors } from "../../utils/helpers/getMappedErrors.js";
 import currencies from "../../utils/staticDB/currencies.js";
 import { paymentTypes } from "../../utils/staticDB/paymentTypes.js";
 import { shippingTypes } from "../../utils/staticDB/shippingTypes.js";
-import {
-  capturePaypalPayment,
-  createPaypalOrder,
-  getTokenFromUrl,
-  handleCreateMercadoPagoOrder,
-} from "./apiPaymentController.js";
+import { handleCreateMercadoPagoOrder } from "./apiPaymentController.js";
 import { MercadoPagoConfig } from "mercadopago";
 import { HTTP_STATUS } from "../../utils/staticDB/httpStatusCodes.js";
 import { deleteSensitiveUserData } from "./apiUserController.js";
@@ -193,7 +188,8 @@ const controller = {
       const settingsFromDB = await getSettingsFromDB();
       const dolarPrice = settingsFromDB.find(
         (dbSetting) => dbSetting.setting_types_id == 1
-      );
+      )?.value || undefined;
+      
       // Voy por las variaciones para restar stock
       variations.forEach((variation) => {
         let { quantityRequested, id } = variation; //Tengo que chequear con esa variacion
@@ -208,7 +204,8 @@ const controller = {
         //Hago el snapshot del  precio y nombre
         let orderItemName = variationFromDB.product?.name;
         //Si pago en mp entonces es precio pesos, sino precio usd
-        let orderItemPrice = parseFloat(variationFromDB.product?.price) * parseFloat(dolarPrice);
+        
+        let orderItemPrice = parseFloat(variationFromDB.product?.discounted_price || variationFromDB.product?.price) * parseFloat(dolarPrice);
 
         orderItemPrice = orderItemPrice && parseFloat(orderItemPrice);
         let orderItemQuantity = parseInt(quantityRequested);
@@ -276,12 +273,12 @@ const controller = {
       } else {
         // EFECTIVO || TRANSFERENCIA
         paymentOrderId = null;
-        paymentURL = "/post-compra";
+        paymentURL = `/post-compra?orderId=${orderDataToDB.tra_id}&shippingTypeId=${orderDataToDB.shipping_types_id}&paymentTypeId=${orderDataToDB.payment_types_id}`;
       }
-      orderDataToDB.entity_payment_id = paymentOrderId;
+      orderDataToDB.entity_payments_id = paymentOrderId;
       // Le actualizo el paypal_rder_id en db
       await db.Order.update(
-        { entity_payment_id: paymentOrderId },
+        { entity_payments_id: paymentOrderId },
         { where: { id: orderDataToDB.id } }
       );
 
@@ -328,7 +325,7 @@ const controller = {
       }
 
       // Datos del body
-      let { order_id, order_status_id } = req.body;
+      let { order_id, order_statuses_id } = req.body;
 
       let orderFromDB = await getOrdersFromDB({ id: order_id });
       if (!orderFromDB)
@@ -337,7 +334,7 @@ const controller = {
           .json({ ok: false, msg: systemMessages.orderMsg.updateFailed });
 
       let keysToUpdate = {
-        order_status_id,
+        order_statuses_id,
       };
 
       await db.Order.update(keysToUpdate, {
@@ -598,17 +595,15 @@ function createOrderEntitiesSnapshot(obj) {
 
 function setOrderKeysToReturn(order) {
   order.orderStatus = ordersStatuses.find(
-    (status) => status.id == order.order_status_id
+    (status) => status.id == order.order_statuses_id
   );
   order.paymentType = paymentTypes.find(
-    (payType) => payType.id == order.payment_type_id
+    (payType) => payType.id == order.payment_types_id
   );
   order.shippingType = shippingTypes.find(
     (shipType) => shipType.id == order.shipping_types_id
   );
-  order.currencyType = currencies?.find(
-    (curType) => curType.id == order.currency_id
-  );
+ 
   order.orderItemsPurchased = order.orderItems.reduce((acum, item) => {
     return acum + item.quantity;
   }, 0);
@@ -619,16 +614,16 @@ function setOrderKeysToReturn(order) {
   deleteSensitiveUserData(order.user);
 }
 
-const restoreStock = async (order) => {
+const restoreStock = async (dbOrder) => {
   try {
-    if (order.orderItems && order.orderItems.length > 0) {
-      const OrderItemsToRestore = order.orderItems.map((orderItem) => ({
+    if (dbOrder.orderItems && dbOrder.orderItems.length > 0) {
+      const OrderItemsToRestore = dbOrder.orderItems.map((orderItem) => ({
         id: orderItem.variations_id,
         quantity: orderItem.quantity,
       }));
       for (const item of OrderItemsToRestore) {
         await db.Variation.increment("quantity", {
-          by: item.quantity, // Aumenta el stock en 10
+          by: item.quantity, // Aumenta el stock en x
           where: { id: item.id }, // Filtra por el ID del producto
         });
       }
@@ -638,10 +633,10 @@ const restoreStock = async (order) => {
     console.error("Error restaurando stock:", error);
   }
 };
-export const discountStockFromDB = async (order) => {
+export const discountStockFromDB = async (dbOrder) => {
   try {
-    if (order.orderItems && order.orderItems.length > 0) {
-      const orderItemsToRestore = order.orderItems.map((orderItem) => ({
+    if (dbOrder.orderItems && dbOrder.orderItems.length > 0) {
+      const orderItemsToRestore = dbOrder.orderItems.map((orderItem) => ({
         id: orderItem.variations_id,
         quantity: orderItem.quantity,
       }));
@@ -681,11 +676,11 @@ export const discountStockFromDB = async (order) => {
 export async function disableCreatedOrder(orderID) {
   try {
     let orderFromDB = await getOrdersFromDB({ id: orderID });
-    if (!orderFromDB || orderFromDB.order_status_id == 6) return false;
+    if (!orderFromDB || orderFromDB.order_statuses_id == 6) return false;
     //La deshabilito
     await db.Order.update(
       {
-        order_status_id: 6,
+        order_statuses_id: 6,
       },
       {
         where: {
@@ -714,36 +709,6 @@ export async function checkOrderPaymentExpiration(order) {
   if (diffMinutes > 20) {
     await disableCreatedOrder(order.id);
     return { type: 1 }; //1 es para cancelacion
-  } else {
-    //Esta dentro del periodo de compra ==> veo si puedo 're-capturar' el pago que hizo (SOLO PAYPAL)
-    if (order.entity_payment_id && order.payment_type_id == 2) {
-      const token = order.entity_payment_id;
-      //Aca ya capturo un pago, trato de capturarlo
-      const paymentResponse = await capturePaypalPayment(token);
-      if (!paymentResponse || !paymentResponse.status) {
-        console.error(
-          "Error inesperado en la captura de pago de PayPal",
-          paymentResponse
-        );
-
-        return false;
-      }
-      if (paymentResponse.status === "COMPLETED") {
-        let updatedStatus = order.shipping_types_id == 1 ? 2 : 3;
-        // ✅ Marcar la orden como pagada en tu base de datos
-        await db.Order.update(
-          {
-            order_status_id: updatedStatus, //2 es pendiente de envio, 3 de recoleccion
-          },
-          {
-            where: {
-              id: order.id,
-            },
-          }
-        );
-        return { type: 2 }; //2 es para confirmacion de compra;
-      }
-    }
-  }
+  } 
   return false;
 }

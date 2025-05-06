@@ -17,7 +17,7 @@ router.get('/faq',mainController.faq);
 router.get('/contacto',mainController.contact);
 router.get('/post-compra',mainController.postOrder);
 router.get('/logout',getLastURL,mainController.logout);
-// PAYPAL
+// MERCADOPAGO
 router.get('/completar-pago',mainController.completePayment);
 router.get('/cancelar-orden',mainController.cancelOrder);
 

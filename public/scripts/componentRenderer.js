@@ -878,8 +878,7 @@ export function addressCard(props) {
 
   const city = document.createElement("p");
   city.className = "card_text address_city";
-  city.textContent = `${props.city}, ${props.province?.name || ''}`;
-
+  city.textContent = `${props.city}, ${props.province?.name || ""}`;
 
   cardContent.appendChild(street);
   cardContent.appendChild(detail);
@@ -1004,13 +1003,13 @@ export function orderCard(order) {
   topContentDiv.className = "card_top_content";
 
   const dateParagraph = document.createElement("p");
-  dateParagraph.className = "card-date";
+  dateParagraph.className = "card_date";
   const orderDateString = getDateString(order.createdAt);
 
   dateParagraph.textContent = orderDateString;
 
   const statusParagraph = document.createElement("p");
-  statusParagraph.className = `card-status ${order.orderStatus.class}`;
+  statusParagraph.className = `card_status ${order.orderStatus.class}`;
   statusParagraph.textContent = order.orderStatus?.status; // Función para convertir el ID de estado en texto
 
   topContentDiv.appendChild(dateParagraph);
@@ -1018,11 +1017,11 @@ export function orderCard(order) {
 
   // Items de la orden
   const itemsContainer = document.createElement("div");
-  itemsContainer.className = "card-items-container";
+  itemsContainer.className = "card_items_container";
 
   order.orderItems?.forEach((orderItem, i) => {
     const itemContainer = document.createElement("div");
-    itemContainer.className = "card-order_item_container";
+    itemContainer.className = "card_order_item_container";
 
     // Imagen del producto
     const imageDiv = document.createElement("div");
@@ -1065,16 +1064,16 @@ export function orderCard(order) {
     metaVariationDiv.className = "meta";
     const variationSpan = document.createElement("span");
     variationSpan.className = "card_desc";
-    variationSpan.textContent = `Taco: ${orderItem.taco || "N/A"} || Talle: ${
+    variationSpan.textContent = `Color: ${orderItem.color || "N/A"} || Talle: ${
       orderItem.size || "N/A"
     }`;
     metaVariationDiv.appendChild(variationSpan);
 
     const priceSpan = document.createElement("span");
     priceSpan.className = "card_price";
-    priceSpan.textContent = `$${(orderItem.quantity * orderItem.price).toFixed(
+    priceSpan.textContent = `$${displayBigNumbers((orderItem.quantity * orderItem.price).toFixed(
       2
-    )}`;
+    ),2)}`;
 
     // Agregar todos los elementos al contenedor de contenido
     contentDiv.appendChild(header);
@@ -2059,26 +2058,18 @@ export function generateOrderDetailModal(order, isAdminModal = false) {
         <div class="modal_card_content_row">
             <span class="modal-card_content-span">${
               order.orderItemsPurchased
-            } ${"productos"}</span>
+            } producto${order.orderItemsPurchased > 1 ? "s":""}</span>
             <span class="modal-card_content-span">$${
-              order.orderItemsPurchasedPrice
+              displayBigNumbers(order.orderItemsPurchasedPrice,2)
             }</span>
         </div>
         </div>`;
   }
   orderCard.innerHTML += `
-          <div class="content">
-          <div class="modal_card_content_row no-margin">
-              <span class="modal-card_content-span">${"Envio"}</span>
-              <span class="modal-card_content-span">$${
-                order.shippingCost
-              }</span>
-          </div>
-          </div>
       <div class="content">
           <span class="modal_card_content_row">
               <span class="modal-card_content-span bold">Total</span>
-              <span class="modal-card_content-span bold">$${order.total}</span>
+              <span class="modal-card_content-span bold">$${displayBigNumbers(order.total,2)}</span>
           </span>
       </div>
   `;
@@ -2087,11 +2078,11 @@ export function generateOrderDetailModal(order, isAdminModal = false) {
     // Sección Detalle de Pago
     orderStatusSection = document.createElement("section");
     orderStatusSection.classList.add(
-      "card-status-detail",
+      "card_status-detail",
       "order_detail_card_section"
     );
     orderStatusSection.innerHTML = `
-        <label class="card_label label">"Estado de orden"</label>
+        <label class="card_label label">Estado de orden</label>
  <select class="ui select ${
    order.orderStatus.id == 6 ? "disabled" : ""
  }" id="orderStatusSelect">
@@ -2101,7 +2092,7 @@ export function generateOrderDetailModal(order, isAdminModal = false) {
               <option value="${status.id}" ${
                   status.id === order.orderStatus.id ? "selected" : ""
                 }>
-                ${status.status.es}
+                ${status.status}
               </option>
             `
               )
@@ -2116,8 +2107,9 @@ export function generateOrderDetailModal(order, isAdminModal = false) {
     "card-payment-detail",
     "order_detail_card_section"
   );
+  
   paymentSection.innerHTML = `
-      <label class="card_label label"> "Detalle del pago"</label>
+      <label class="card_label label">Detalle del pago</label>
       <div class="ui card">
           <div class="payment-logo-container card_logo_container">
               <img src="./img/logo/${order.paymentType?.filename}" alt="payment-logo">
@@ -2137,7 +2129,7 @@ export function generateOrderDetailModal(order, isAdminModal = false) {
   if (order.shippingType == 2) {
   }
   shippingSection.innerHTML = `
-      <label class="card_label label">"Detalle del envio"</label>
+      <label class="card_label label">Detalle del envio</label>
       <div class="ui card">
           <div class="shipping-logo-container card_logo_container">
               <i class="${
@@ -2152,27 +2144,23 @@ export function generateOrderDetailModal(order, isAdminModal = false) {
               <p class="card_desc grey no-margin">${
                 order.shippingType.id == 1
                   ? order.shipping_address_street
-                  : "Sarmiento 1938"
+                  : "A coordinar"
               }</p>
               <p class="card_desc grey no-margin">${
                 order.shippingType.id == 1
                   ? order.shipping_address_detail || ""
                   : ""
               }</p>
-               <p class="card_desc grey no-margin">"CP":${
+               <p class="card_desc grey no-margin">${
                  order.shippingType.id == 1
-                   ? order.shipping_address_zip_code
-                   : "1044"
+                   ? `CP: ${order.shipping_address_zip_code}`
+                   : ""
                }</p>
               <p class="card_desc grey no-margin">${
                 order.shippingType.id == 1
-                  ? order.shipping_address_city
-                  : "CABA"
-              }, ${
-    order.shippingType.id == 1
-      ? order.shipping_address_province
-      : "Buenos Aires"
-  }</p>
+                  ? `${order.shipping_address_city}, ${order.shipping_address_province}`
+                  : ""
+              }</p>
           </div>
       </div>
   `;
@@ -2190,7 +2178,8 @@ export function generateOrderDetailModal(order, isAdminModal = false) {
           <p class="card_label grey no-margin">Cliente</p>
               <p class="card_desc grey no-margin">${order.first_name} ${order.last_name}</p>
               <p class="card_desc grey no-margin">DNI: ${order.dni}</p>
-              <p class="card_desc grey">Email: ${order.email}</p>
+              <p class="card_desc grey no-margin">Email: ${order.email}</p>
+              <p class="card_desc grey">Telefono: +${order.phone_code}${order.phone_number}</p>
               <p class="card_label grey no-margin">Direccion</p>
               <p class="card_desc grey no-margin">${order.billing_address_street}</p>
               <p class="card_desc grey no-margin">${order.billing_address_detail}</p>
@@ -2652,29 +2641,37 @@ export function disableColorModal(color = undefined) {
 }
 
 export function generatePaymentButtonElement() {
-  const paymentTypeID = document.querySelector('select[name="payment_types_id"]')?.value || null;
-  const paymentType = paymentTypesFromDB.find((type) => type.id == paymentTypeID);
+  const paymentTypeID =
+    document.querySelector('select[name="payment_types_id"]')?.value || null;
+  const paymentType = paymentTypesFromDB.find(
+    (type) => type.id == paymentTypeID
+  );
 
   const button = document.createElement("button");
-  button.className = `pay_button ui button finalize_order_button section_handler_button ${paymentTypeID == 1 ? `mercadopago_button` : `other_button`}`;
+  button.className = `pay_button ui button finalize_order_button section_handler_button ${
+    paymentTypeID == 1 ? `mercadopago_button` : `other_button`
+  }`;
 
   // Usar logo grande si existe, sino el común
   const logoFilename = paymentType?.bigFilename || paymentType?.filename || "";
   const buttonText = paymentType?.checkoutButtonText || "Finalizar compra";
 
   button.innerHTML = `
-    ${logoFilename ? `<img src="/img/logo/${logoFilename}" alt="${paymentType?.type}" />` : ""}
+    ${
+      logoFilename
+        ? `<img src="/img/logo/${logoFilename}" alt="${paymentType?.type}" />`
+        : ""
+    }
     <span>${buttonText}</span>
   `;
 
   return button;
 }
 
-
-export function generatePostOrderCard(traId, shippingTypeId) {
+export function generatePostOrderCard(traId, shippingTypeId, paymentTypeId) {
   // Crear el contenedor principal
   const card = document.createElement("div");
-  card.classList.add("ui", "card", "post-order_card");
+  card.classList.add("ui", "card", "post_order_card");
 
   // Crear elementos dentro de la tarjeta
   const header = document.createElement("h1");
@@ -2682,45 +2679,53 @@ export function generatePostOrderCard(traId, shippingTypeId) {
   header.textContent = "¡Gracias por tu compra!";
 
   const orderEmailInfo = document.createElement("p");
-  orderEmailInfo.classList.add("order-status-p");
+  orderEmailInfo.classList.add("order_status_p");
   orderEmailInfo.textContent =
     "Se te ha enviado un email con toda la informacion de la compra";
 
   const subHeader = document.createElement("p");
-  subHeader.classList.add("card-sub-header");
+  subHeader.classList.add("card_sub_header");
   subHeader.textContent = "Tu número de orden es";
 
   const orderNumberContainer = document.createElement("div");
-  orderNumberContainer.classList.add("order-number-container");
+  orderNumberContainer.classList.add("order_number_container");
 
   const orderNumber = document.createElement("p");
-  orderNumber.classList.add("card-order-number");
+  orderNumber.classList.add("card_order_number");
   orderNumber.textContent = `#${traId}`;
 
   const copyIcon = document.createElement("i");
-  copyIcon.classList.add("bx", "bx-copy", "copy-order-number-btn");
+  copyIcon.classList.add("bx", "bx-copy", "copy_order_number_btn");
 
   orderNumberContainer.appendChild(orderNumber);
   orderNumberContainer.appendChild(copyIcon);
 
   const orderStatus = document.createElement("p");
-  orderStatus.classList.add("order-status-p");
-  if (shippingTypeId == 1) {
-    orderStatus.textContent =
-      "Tu pedido ya está siendo preparado para ser despachado.";
+  orderStatus.classList.add("order_status_p");
+
+  if (paymentTypeId == 1) {
+    // Mercado Pago
+    if (shippingTypeId == 1) {
+      orderStatus.textContent =
+        "Tu pedido ya está siendo preparado para ser despachado.";
+    } else {
+      orderStatus.textContent =
+        "Tu pedido ya se encuentra disponible para ser recolectado.";
+    }
   } else {
+    // Transferencia o Efectivo
     orderStatus.textContent =
-      "Tu pedido ya se encuentra disponible para ser recolectado.";
+      "En el email encontrarás la información necesaria para realizar el pago.";
   }
 
   const buttonsContainer = document.createElement("div");
-  buttonsContainer.classList.add("card-buttons-container");
+  buttonsContainer.classList.add("card_buttons_container");
 
   const homeButton = document.createElement("a");
   homeButton.href = "/";
-  homeButton.classList.add("ui", "button", "green", "card-button", "small");
+  homeButton.classList.add("ui", "button", "green", "card_button", "small");
   homeButton.innerHTML =
-    "<i class='bx bx-home-alt-2'></i><p class='button-text'>" +
+    "<i class='bx bx-home-alt-2'></i><p class='button_text'>" +
     "Inicio" +
     "</p>";
 
@@ -2730,11 +2735,11 @@ export function generatePostOrderCard(traId, shippingTypeId) {
     "ui",
     "button",
     "green",
-    "card-button",
+    "card_button",
     "small"
   );
   purchasesButton.innerHTML =
-    "<i class='bx bx-home-alt-2'></i><p class='button-text'>" +
+    "<i class='bx bx-spreadsheet'></i><p class='button_text'>" +
     "Mis compras" +
     "</p>";
 
@@ -2745,8 +2750,8 @@ export function generatePostOrderCard(traId, shippingTypeId) {
   logoContainer.classList.add("card_logo_container");
 
   const logo = document.createElement("img");
-  logo.src = "/img/logo/logo.jpg";
-  logo.alt = "card-logo";
+  logo.src = "/img/logo/branding/Variante_Verde/Logo_Icono.png";
+  logo.alt = "card_logo";
 
   logoContainer.appendChild(logo);
 

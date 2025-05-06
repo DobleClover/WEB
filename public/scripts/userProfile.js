@@ -64,7 +64,7 @@ let userProfileExportObj = {
 
 window.addEventListener("load", async () => {
   if (!isOnPage("/perfil")) return;
-  await scriptInitiator(); //Inicio userLogged 
+  await scriptInitiator(); //Inicio userLogged
   if (!userLogged) return (window.location.href = "/");
   typeOfPanel = userLogged?.user_roles_id || 1;
   await setOrderStatuses();
@@ -138,7 +138,9 @@ window.addEventListener("load", async () => {
             : await paintAdminBrandsAndDrops();
           break;
         case 3: //Order History | settings
-          typeOfPanel === 2 ? paintUserOrders() : await paintAdminSettings();
+          typeOfPanel === 2
+            ? await paintUserOrders()
+            : await paintAdminSettings();
           break;
         default:
           break;
@@ -267,19 +269,25 @@ window.addEventListener("load", async () => {
     }
   }
   async function paintUserOrders() {
-    //le seteo las clases
-    mainContentWrapper.className = "main_content_wrapper user_orders_wrapper";
-    //Recien aca cargo las ordenes
-    if (!userOrders.length) userOrders = await getUserOrders();
-    userOrders.forEach((order) => {
-      const orderCardElement = orderCard(order);
-      orderCardElement.addEventListener("click", () => {
-        let orderModalElement = generateOrderDetailModal(order);
-        document.body.appendChild(orderModalElement);
-        handlePageModal(true);
+    try {
+      //le seteo las clases
+      mainContentWrapper.className = "main_content_wrapper user_orders_wrapper";
+      //Recien aca cargo las ordenes
+      if (!userOrders.length) userOrders = await getUserOrders();
+      userOrders.forEach((order) => {
+        const orderCardElement = orderCard(order);
+        orderCardElement.addEventListener("click", () => {
+          let orderModalElement = generateOrderDetailModal(order);
+          document.body.appendChild(orderModalElement);
+          handlePageModal(true);
+        });
+        mainContentWrapper.appendChild(orderCardElement);
       });
-      mainContentWrapper.appendChild(orderCardElement);
-    });
+    } catch (error) {
+      console.log(error);
+      return
+      
+    }
   }
   function createUserProfileComponent() {
     const userInfoComponentElement = userInfoComponent(userLogged);
@@ -390,17 +398,19 @@ const paintAdminSales = async () => {
       apellido: order.last_name,
       items: order.orderItems.length,
       fecha: sanitizeDate(order.createdAt),
-      estado: order.orderStatus.status.es,
+      estado: order.orderStatus.status,
+      'Tipo de envio': order.shippingType.type,
     };
     rowsData.push(rowObject);
   });
   const gridData = {
     columnDefs: [
-      { field: "identificador", flex: 1 },
+      { field: "identificador", flex: .8 },
       { field: "nombre", flex: 0.8 },
       { field: "apellido", flex: 1 },
       { field: "items", flex: 0.5, filter: "agNumberColumnFilter" },
       { field: "estado", flex: 1 },
+      { field: "Tipo de envio", flex: 0.6 },
       { field: "fecha", flex: 0.6 },
     ],
     domLayout: "autoHeight",
@@ -525,15 +535,21 @@ const paintAdminProducts = async () => {
   productsFromDB.forEach((prod) => {
     const { id, files, name, brand, totalStock, active, discount, price } =
       prod;
-      console.log(prod);
-      
+    console.log(prod);
+
     const productMainFile = files?.length && files[0];
     const rowObject = {
       id,
-      imagen: productMainFile?.file_urls ? productMainFile?.file_urls[0]?.url : '',
+      imagen: productMainFile?.file_urls
+        ? productMainFile?.file_urls[0]?.url
+        : "",
       nombre: name,
-      marca: brand?.name || '-',
-      precio: `${price ? `U$S ${minDecimalPlaces(displayBigNumbers(price))}` : 'Sin precio'}`,
+      marca: brand?.name || "-",
+      precio: `${
+        price
+          ? `U$S ${minDecimalPlaces(displayBigNumbers(price))}`
+          : "Sin precio"
+      }`,
       descuento: `${discount ? `${discount}%` : "-"}`,
       stock: totalStock,
       publicado: active ? "si" : "no",
@@ -582,7 +598,7 @@ const handleOrderRowClick = async (order) => {
   handlePageModal(true);
   addOrderStatusSelectEventListener(order);
   // Ahora busco los orderItems y sus fotos
-  let idsToFetch = order.orderItems?.map((item) => item.variation?.product_id);
+  let idsToFetch = order.orderItems?.map((item) => item.variation?.products_id);
 
   let productsAlreadyFetched = productsFromDB?.map((prod) => prod.id);
   let productsAlreadyFetchedSet = new Set(productsAlreadyFetched);
@@ -608,11 +624,11 @@ const handleOrderRowClick = async (order) => {
   //Ahora pinto en la tabla de products
   order.orderItems.forEach((orderItem) => {
     orderItem.product =
-      productsMap.get(orderItem.variation?.product_id) || null;
+      productsMap.get(orderItem.variation?.products_id) || null;
     // Armo el html de la fila
     // Obtener la imagen del producto o la default
     let productImage = "./img/product/default.png";
-    let srcset = "";
+    let srcset = "";    
     if (orderItem.product?.files?.length) {
       const firstFile = orderItem.product.files[0];
       productImage =
@@ -638,7 +654,7 @@ const handleOrderRowClick = async (order) => {
             <div class="order_item_description">
                 <span class="product-name">${orderItem.name}</span>
                 <span class="product-details grey">${orderItem.color} - ${orderItem.size}</span>
-                <span class="product-quantity grey">"Cantidad": ${orderItem.quantity}</span>
+                <span class="product-quantity grey">Cantidad: ${orderItem.quantity}</span>
             </div>
 
             <!-- Columna Precio -->
@@ -676,7 +692,7 @@ const handleChangeOrderStatus = async (e, order) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ order_status_id: newOrderStatus }),
+      body: JSON.stringify({ order_statuses_id: newOrderStatus }),
     });
     activateContainerLoader(modal, false);
 
@@ -688,7 +704,7 @@ const handleChangeOrderStatus = async (e, order) => {
         (status) => status.id == newOrderStatus
       );
       ordersFromDB[orderIndexToModify].orderStatus = newOrderStatusObj;
-      ordersFromDB[orderIndexToModify].order_status_id = newOrderStatus;
+      ordersFromDB[orderIndexToModify].order_statuses_id = newOrderStatus;
 
       return userProfileExportObj.pageConstructor();
     }
@@ -716,7 +732,7 @@ async function getUserOrders() {
     (
       await (
         await fetch(
-          `${window.location.origin}/api/user/order?userLoggedId=${userLogged.id}`
+          `${window.location.origin}/api/user/order?users_id=${userLogged.id}`
         )
       ).json()
     ).data || [];
@@ -736,9 +752,8 @@ const paintAdminSettings = async () => {
   if (!settingsFromDB.length) await setSettings();
   const mainWrapper = document.querySelector(".main_content_wrapper");
   const adminSettingsComponent = generateDashboardSettings(settingsFromDB);
-  mainWrapper.innerHTML = '';
-  mainWrapper.appendChild(adminSettingsComponent)
-  
+  mainWrapper.innerHTML = "";
+  mainWrapper.appendChild(adminSettingsComponent);
 };
 let selectedEntityIndex = 0;
 const paintAdminBrandsAndDrops = async () => {
@@ -782,7 +797,7 @@ const paintAdminBrandsAndDrops = async () => {
       await entityTableHandler();
     },
   });
-  
+
   const addEntityIcon = document.querySelector(".add_entity_icon");
   addEntityIcon.addEventListener("click", async () => {
     switch (selectedEntityIndex) {
@@ -854,7 +869,7 @@ async function entityTableHandler() {
             productos: row.products?.length,
             publicado: row.active ? "si" : "no",
             unico: row.unique ? "si" : "no",
-            lanzamiento: getDateString(row.launch_date,true),
+            lanzamiento: getDateString(row.launch_date, true),
           };
         });
         gridData = {
@@ -929,7 +944,9 @@ function updatePositionSelects() {
     const select = box.querySelector(".image_position_select");
 
     // Guardar la posición actual si existe
-    let currentPosition = select.dataset.selected ? parseInt(select.dataset.selected) : null;
+    let currentPosition = select.dataset.selected
+      ? parseInt(select.dataset.selected)
+      : null;
 
     // Limpiar opciones antes de agregar nuevas
     select.innerHTML = "";
@@ -950,7 +967,7 @@ function updatePositionSelects() {
       // Seleccionar la opción si coincide con la posición guardada
       if (currentPosition === i) {
         option.selected = true;
-      } 
+      }
 
       select.appendChild(option);
     }
@@ -1034,7 +1051,7 @@ export function paintImgInContainer(container, src) {
 export function listenToFileInput(inputName, updateFunction) {
   const input = document.querySelector(`input[name="${inputName}"]`);
   if (!input) return;
-  
+
   input.addEventListener("change", (e) => {
     handleFileInputChange(e, updateFunction);
   });
@@ -1045,7 +1062,9 @@ export function updateImages(fileData, containerSelector) {
   if (!container) return;
 
   // Borrar solo imágenes nuevas (input-file) antes de agregar las nuevas
-  container.querySelectorAll(".image_box.input-file").forEach((el) => el.remove());
+  container
+    .querySelectorAll(".image_box.input-file")
+    .forEach((el) => el.remove());
 
   fileData.forEach(({ src, filename }) => {
     const imageObj = { filename };
@@ -1062,7 +1081,11 @@ function addImageToContainer(src, container, isExisting = true, image) {
   const id = image?.id || undefined;
 
   const imageBox = document.createElement("div");
-  imageBox.classList.add("field", "image_box", isExisting ? "old_file" : "input-file");
+  imageBox.classList.add(
+    "field",
+    "image_box",
+    isExisting ? "old_file" : "input-file"
+  );
 
   imageBox.setAttribute("data-filename", filename);
   if (isExisting) {
@@ -1070,11 +1093,17 @@ function addImageToContainer(src, container, isExisting = true, image) {
   }
 
   imageBox.innerHTML = `
-      ${isExisting ? '<p class="remove_image_box_anchor no-margin">Remove</p>' : ""}
+      ${
+        isExisting
+          ? '<p class="remove_image_box_anchor no-margin">Remove</p>'
+          : ""
+      }
       <div class="image_container">
           <img src="${src}" class="image_to_select_main">
       </div>
-      <select name="image_position" class="image_position_select required" required data-selected="${position || ""}">
+      <select name="image_position" class="image_position_select required" required data-selected="${
+        position || ""
+      }">
       </select>
   `;
 
@@ -1103,6 +1132,5 @@ export function loadExistingImages(existingImages, containerSelector) {
 
   updatePositionSelects(); // Asegurar que los selects se actualicen correctamente
 }
-
 
 export { userProfileExportObj };

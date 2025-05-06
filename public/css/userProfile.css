@@ -19,7 +19,7 @@
 .main {
   min-height: 70vh;
   padding: 2.5vh 5vw;
-  margin-top: 15vh;
+  margin: 15vh 0;
   flex-direction: row;
   align-items: unset;
 }
@@ -29,7 +29,7 @@
   gap: 20px;
   flex-wrap: wrap;
   justify-content: center;
-  padding-top: 15px;
+  padding: 5vh 2.5vw;
 }
 .main_content_wrapper h1 {
   margin: 0 !important;
