@@ -1849,7 +1849,7 @@ export function handleFormWarningDetail(show) {
 export function removeDoblecloverOverlay() {
   const loader = document.getElementById("brand_loader");
   if (!loader) return;
-
+  document.body.classList.remove("noScroll"); // habilita el scroll nuevamente
   loader.classList.add("hide");
   setTimeout(() => {
     loader.remove();
