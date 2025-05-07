@@ -12,7 +12,7 @@ import {
   setDropLaunchDateString,
 } from "./api/apiDropController.js";
 import clearUserSession from "../utils/helpers/clearUserSession.js";
-import { disableCreatedOrder, getOneOrderFromDB } from "./api/apiOrderController.js";
+import { disableCreatedOrder, getOneOrderFromDB, getOrdersFromDB } from "./api/apiOrderController.js";
 import { captureMercadoPagoPayment } from "./api/apiPaymentController.js";
 import sendOrderMails from "../utils/helpers/sendOrderMails.js";
 // Obtener la ruta absoluta del archivo
@@ -21,6 +21,8 @@ const __dirname = path.dirname(__filename);
 const filePath = path.join(__dirname, "../utils/staticDB/countries.js");
 const controller = {
   index: (req, res) => {
+    console.log("ESTOY EN EL CONTROLADOR DEL MAIN");
+    
     return res.render("index");
   },
   productList: async (req, res) => {

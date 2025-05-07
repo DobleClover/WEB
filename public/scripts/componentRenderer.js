@@ -1138,7 +1138,7 @@ export function homeLabel(props) {
     const ul = document.createElement("ul");
     props.desc.forEach((item) => {
       const li = document.createElement("li");
-      li.textContent = item;
+      li.innerHTML = item;
       ul.appendChild(li);
     });
     const paragraph = document.createElement("p");

@@ -185,7 +185,6 @@ body{
     flex-wrap: wrap;
   }
   .product_list_buttons_container{
-    width: 30%;
     padding-top: 5vh;
   }
   .product_list_btn.brand_btn {
@@ -198,9 +197,6 @@ body{
   }
   .product_cards_wrapper_section {
     grid-template-columns: repeat(3, 1fr);
-  }
-  .product_section{
-    width: 65%;
   }
 }
 @media (min-width: 1024px) {

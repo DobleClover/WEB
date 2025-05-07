@@ -9,7 +9,6 @@
         "footer_nav_container"
         "footer_contact_container"
         "footer_media_container";
-    gap: 1rem; /* Espaciado entre elementos */
     padding: 5vh 15vw;
     position: relative;
     z-index: 1000;

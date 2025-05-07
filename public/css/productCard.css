@@ -129,5 +129,6 @@
 @media (min-width: 1024px) {
   .product_card {
     width: 30vw;
+    max-height: 480px;
   }
 }

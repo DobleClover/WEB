@@ -26,8 +26,9 @@ window.addEventListener("load", async() => {
           "Descuentos únicos solo para miembros.",
           "Posibilidad de votar ideas para nuevos productos.",
           "Conexión directa con nuestro equipo y otras personas que comparten tus gustos.",
+          `<a href="https://chat.whatsapp.com/B5EvmPMeMvnIfKT273Ihr7" target="_blank" style="color: #1c7ed6; text-decoration: underline;">Unite a la comunidad acá</a>`,
         ],
-      },
+      },      
       {
         name: "Packaging",
         desc: "Todas las compras vienen con stickers y envueltas en una bolsa e-commerce de nuestra marca, cuidando cada detalle para que tu experiencia sea única desde que recibís el paquete.",
