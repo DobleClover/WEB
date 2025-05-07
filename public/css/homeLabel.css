@@ -1,0 +1,16 @@
+.home_label{
+    border-left: 10px solid var(--green-color);
+    margin-bottom: 2.5vh;
+    background-color: #fff;
+}
+.home_label ul{
+    width: 100%;
+    padding: 0px 5px 0 15px;
+}
+.home_label li{
+    margin-bottom: 10px;
+}
+
+@media (min-width: 1024px){
+        
+}

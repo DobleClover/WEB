@@ -1451,9 +1451,7 @@ export async function scriptInitiator() {
     await checkForUserLogged();
     await setSettings();
     headerExportObject.headerScriptInitiator();
-    let payingOrder = handleOrderInLocalStorage({ type: 2 });
-    console.log(payingOrder,userLogged);
-    
+    let payingOrder = handleOrderInLocalStorage({ type: 2 });    
     if (payingOrder && !isOnPage("post-compra")) {
       return
       //Aca tengo que dar de baja la orden
@@ -1818,8 +1816,6 @@ export async function paintProductCardsInList(products = [], wrapper = null) {
   setTimeout(() => animateSectionElements(productCardWrapper, 0.05), 500);
 }
 
-
-
 export function getIdFromUrl() {
   const currentUrl = window.location.pathname; // Obtiene el path de la URL
   const segments = currentUrl.split("/"); // Divide el path en segmentos
@@ -1848,4 +1844,14 @@ export function handleFormWarningDetail(show) {
       if (warning) warning.remove();
     }
   });
+}
+
+export function removeDoblecloverOverlay() {
+  const loader = document.getElementById("brand_loader");
+  if (!loader) return;
+
+  loader.classList.add("hide");
+  setTimeout(() => {
+    loader.remove();
+  }, 500);
 }

@@ -1,0 +1,14 @@
+.main{
+    padding: 25vh 0;
+}
+.section_desc_container{
+    text-align: center;
+}
+.faq_cards_section{
+    width: 80%;
+    max-width: 500px;
+    margin-top: 10vh;
+}
+.section_bg_image{
+    z-index: -1;
+}

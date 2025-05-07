@@ -1,13 +1,11 @@
-import { paintProductCardsInList, scriptInitiator } from "./utils.js";
+import { paintProductCardsInList, removeDoblecloverOverlay, scriptInitiator } from "./utils.js";
 
 window.addEventListener("load", async () => {
   try {
     await scriptInitiator();
-    const loader = document.getElementById("brand_loader");
     const brand = await getBrand();
     // Ocultar loader al terminar
-    loader.classList.add("hide");
-    setTimeout(() => loader.remove(), 500); // Elimina del DOM tras la transición
+    removeDoblecloverOverlay()
     renderBrandSections(brand);
     await paintProductCardsInList(brand.products);
     

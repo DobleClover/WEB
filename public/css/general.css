@@ -372,9 +372,9 @@ select.error_input {
   opacity: 1;
 }
 .section_bg_image {
-  background-image: url('/img/logo/branding/tramado.svg');
+  background-image: url('/img/logo/branding/tramado.webp');
   background-repeat: repeat;
-  background-size: 650px auto; /* o 400px auto si querés controlar la escala */
+  background-size: 850px auto; /* o 400px auto si querés controlar la escala */
   background-position: center;
   opacity: 0.1;
   position: absolute;
@@ -385,7 +385,7 @@ select.error_input {
 
 .section_bg_image.inverted{
   opacity: .25;
-  background-image: url('/img/logo/branding/tramado_invertido.svg');
+  background-image: url('/img/logo/branding/tramado_invertido.webp');
 }
 
 .brand_loader_overlay {
@@ -404,7 +404,29 @@ select.error_input {
   height: auto;
   animation: pulse 1.8s ease-in-out infinite;
 }
-
+.section_title_container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 5vh;
+  padding: 0 2.5vw;
+}
+.section_logo {
+  width: 35px;
+  margin-bottom: 2vh;
+  height: auto;
+}
+.section_title {
+  font-size: clamp(2rem, 2vw + 0.2rem, 2.5rem);
+  margin: 0;
+  text-transform: uppercase;
+  text-align: center;
+}
+.section_desc {
+  font-size: medium;
+  color: #000;
+}
 @keyframes pulse {
   0%, 100% {
     transform: scale(1);
@@ -443,7 +465,6 @@ select.error_input {
   }
   .section_bg_image{
     opacity: 0.1;
-    background-size: 1300px auto;
   }
 }
 
@@ -471,7 +492,7 @@ select.error_input {
   }
   .section_bg_image{
     opacity: .07;
-    background-size: 800px auto;
+    background-size: 1200px auto;
   }
   .section_bg_image.inverted{
     opacity: .2;

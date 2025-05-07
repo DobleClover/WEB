@@ -3,7 +3,7 @@ export default [{
     items:[
         { itemLogo: 'bx bx-line-chart', itemLabel: 'Ventas', itemType: 'sells' },
         { itemLogo: 'bx bx-spreadsheet', itemLabel: 'Productos', itemType: 'products' },
-        { itemLogo: 'bx bxs-truck', itemLabel: 'Envios', itemType: 'shippings' },
+        { itemLogo: 'bx bxs-truck', itemLabel: 'Envíos', itemType: 'shippings' },
       ],
     
 },{

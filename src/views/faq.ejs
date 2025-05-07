@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('./partials/head.ejs') %>
+    <link rel="stylesheet" href="/css/faq.css">
+    <link rel="stylesheet" href="/css/homeLabel.css">
+    <link rel="stylesheet" href="/css/invertedHeader.css">
+    <script type="module" src="/scripts/faq.js"></script>
+    <title>Preguntas Frecuentes</title>
+  </head>
+  <body>
+    <%- include('./partials/header.ejs') %>
+    <main class="main">
+      <div class="section_bg_image" alt="tramado.png"></div>
+      <section class="faq_title_section">
+        <div class="section_title_container">
+          <img
+            src="./img/logo/branding/Variante_Verde/Icono.png"
+            alt=""
+            class="section_logo"
+          />
+          <h4 class="section_title">PREGUNTAS FRECUENTES</h4>
+        </div>
+        <div class="section_divider_line"></div>
+        <div class="section_desc_container" id="drop_section">
+          <p class="section_desc">
+            Te despejamos algunas dudas
+          </p>
+        </div>
+      </section>
+      <section class="faq_cards_section"></section>
+    </main>
+    <%- include('./partials/footer.ejs') %>
+  </body>
+</html>

@@ -399,7 +399,7 @@ const paintAdminSales = async () => {
       items: order.orderItems.length,
       fecha: sanitizeDate(order.createdAt),
       estado: order.orderStatus.status,
-      'Tipo de envio': order.shippingType.type,
+      'Tipo de envío': order.shippingType.type,
     };
     rowsData.push(rowObject);
   });
@@ -410,7 +410,7 @@ const paintAdminSales = async () => {
       { field: "apellido", flex: 1 },
       { field: "items", flex: 0.5, filter: "agNumberColumnFilter" },
       { field: "estado", flex: 1 },
-      { field: "Tipo de envio", flex: 0.6 },
+      { field: "Tipo de envío", flex: 0.6 },
       { field: "fecha", flex: 0.6 },
     ],
     domLayout: "autoHeight",

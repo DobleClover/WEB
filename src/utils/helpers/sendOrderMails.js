@@ -26,7 +26,7 @@ async function sendOrderMails(order) {
     operatorMailContentDeliveryMethod += addressRow;
   } else if (order.shipping_types_id == 2) {
     //Retiro por local
-    let pickupTitle = `<p style="font-weight:600;">Tipo de envio:</p>`;
+    let pickupTitle = `<p style="font-weight:600;">Tipo de envío:</p>`;
     let pickUpRow = `<p>Retiro por CABA</p>`;
     userMailContentDeliveryMethod = `
     ${pickupTitle}
@@ -110,7 +110,7 @@ async function sendOrderMails(order) {
     </table>
     ${
       order.shipping_types_id == 1
-        ? `<p style="font-size:18px;margin-top:30px;color:#222;">Envio: $${shippingPrice}</p>`
+        ? `<p style="font-size:18px;margin-top:30px;color:#222;">Envío: $${shippingPrice}</p>`
         : ""
     }
     <p style="font-size:22px;margin-top:30px;color:#222;">Total: $${

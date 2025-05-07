@@ -798,7 +798,7 @@ window.addEventListener("load", async () => {
 
       const shippingLabel = document.createElement("p");
       shippingLabel.className = "detail_row_p detail_row_shipping";
-      shippingLabel.textContent = "Envio";
+      shippingLabel.textContent = "Envío";
       shippingRow.appendChild(shippingLabel);
 
       const shippingTypeSelect = document.querySelector(
@@ -983,7 +983,7 @@ window.addEventListener("load", async () => {
         billingAddressLabel.textContent = "Dirección de Facturación";
         return;
       }
-      billingAddressLabel.textContent = "Dirección de Facturación & Envio";
+      billingAddressLabel.textContent = "Dirección de Facturación & Envío";
       return;
     }
 

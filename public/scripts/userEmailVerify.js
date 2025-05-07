@@ -88,7 +88,7 @@ window.addEventListener("load", async () => {
             showCardMessage(false, msg);
             return;
           }
-          // Aca dio bien ==> Pinto el mensaje avisando que se envio
+          // Aca dio bien ==> Pinto el mensaje avisando que se envío
           resendCode.classList.remove("loading");
           // Armo tarjeta de success
           msg = response?.msg;

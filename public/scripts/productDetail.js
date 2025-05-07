@@ -13,6 +13,7 @@ import {
   formatStringForTextarea,
   animateSectionElements,
   getIdFromUrl,
+  paintProductCardsInList,
 } from "./utils.js";
 
 let productDetailExportObj = {
@@ -190,10 +191,11 @@ window.addEventListener("load", async () => {
       productsToPaint = productsToPaint
         .filter((product) => product.id !== productId)
         .slice(0, 3);
-      productsToPaint.forEach((prod) => {
-        let cardElement = createProductCard(prod);
-        relatedProductCardWrapper.appendChild(cardElement);
-      });
+      // productsToPaint.forEach((prod) => {
+      //   let cardElement = createProductCard(prod);
+      //   relatedProductCardWrapper.appendChild(cardElement);
+      // });
+      paintProductCardsInList(productsToPaint,relatedProductCardWrapper);
       //   una vez lo pinto, agrego las aniamciones
       relatedProductCardWrapper = document.querySelector(
         ".related_products_section .product_cards_wrapper"

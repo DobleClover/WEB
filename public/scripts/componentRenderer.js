@@ -1616,7 +1616,7 @@ export function generateUserLoggedDropdown() {
     items = [
       { text: "Ventas", href: "/perfil?index=0" },
       { text: "Productos", href: "/perfil?index=1" },
-      { text: "Marcas, Drops & Envios", href: "/perfil?index=2" },
+      { text: "Marcas, Drops & Envíos", href: "/perfil?index=2" },
       { text: "Ajustes", href: "/perfil?index=3" },
       {
         text: "Cerrar sesión",
@@ -2129,7 +2129,7 @@ export function generateOrderDetailModal(order, isAdminModal = false) {
   if (order.shippingType == 2) {
   }
   shippingSection.innerHTML = `
-      <label class="card_label label">Detalle del envio</label>
+      <label class="card_label label">Detalle del envío</label>
       <div class="ui card">
           <div class="shipping-logo-container card_logo_container">
               <i class="${

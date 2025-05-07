@@ -1,7 +1,7 @@
 export let shippingTypes = [
   {
     id: 1,
-    type: "Envio a domicilio",
+    type: "Envío a domicilio",
     iconClass: "bx bxs-truck",
   },
   {

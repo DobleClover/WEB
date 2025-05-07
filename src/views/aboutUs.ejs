@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('./partials/head.ejs') %>
+    <link rel="stylesheet" href="/css/aboutUs.css">
+    <link rel="stylesheet" href="/css/invertedHeader.css">
+    <script type="module" src="/scripts/aboutUs.js"></script>
+    <title>¿Quiénes somos?</title>
+  </head>
+  <body>
+    <%- include('./partials/header.ejs') %>
+    <main class="main">
+        <div class="section_bg_image" alt="tramado.png"></div>
+      
+        <section class="about_us_section">
+          <div class="about_us_content">
+            <div class="about_us_image slideshow">
+                <img src="/img/us/1.jpg" class="active" alt="Jano y Francesco 1" />
+                <img src="/img/us/2.jpg" alt="Jano y Francesco 2" />
+                <img src="/img/us/3.jpg" alt="Jano y Francesco 3" />
+              </div>
+              
+            <div class="about_us_text">
+              <h4>Jano Pereira Kent y Francesco Santi</h4>
+              <h2>¿Quiénes somos?</h2>
+              <p>
+                <strong>Doble Clover</strong>, es un emprendimiento creado por dos amigos, en el cual tenemos como fin darle la posibilidad a conocidos o amigos de poder comprar ropa linda, buen precio y modelos que en nuestro país (Argentina) no suelen ni estar disponibles.
+              </p>
+            </div>
+          </div>
+        </section>
+      </main>
+      
+    <%- include('./partials/footer.ejs') %>
+  </body>
+</html>

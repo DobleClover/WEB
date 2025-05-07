@@ -136,7 +136,7 @@ const controller = {
         billingAddress = await getAddresesFromDB(billingAddress.id);
       }
       if (shipping_types_id == 1) {
-        // Envio a domicilio
+        // Envío a domicilio
         if (shippingAddress && !shippingAddress?.id && users_id) {
           let shippingAddressObjToDB = generateAddressObject(shippingAddress);
           shippingAddressObjToDB.users_id = users_id; //Si hay usuario lo agrego a esta

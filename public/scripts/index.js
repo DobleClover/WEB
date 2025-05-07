@@ -2,7 +2,6 @@ import { changeCardImages } from "./brandCard.js";
 import {
   createBrandCard,
   createDropCard,
-  createProductCard,
 } from "./componentRenderer.js";
 import {
   brandsFromDB,
@@ -11,28 +10,28 @@ import {
   setDrops,
 } from "./fetchEntitiesFromDB.js";
 import {
-  animateElement,
-  animateSectionElements,
   animateSectionsOnce,
-  checkIfIsInScreen,
-  listenToProductCards,
+  removeDoblecloverOverlay,
   scriptInitiator,
 } from "./utils.js";
 
 window.addEventListener("load", async () => {
   try {
+    const hero = document.querySelector(".hero");
+    hero.style.backgroundImage = "url('/img/index.jpg')"; // Carga programática
     await scriptInitiator();
     await setBrands(true);
-    const hero = document.querySelector(".hero");
+    // Ocultar overlay
+    removeDoblecloverOverlay();
     setTimeout(() => {
       hero.classList.add("show_overlay"); // Aparece el overlay
     }, 0); // Se muestra el overlay poco después de cargar la imagen
-  
+
     // Después de un tiempo, mostramos el título
     setTimeout(() => {
       hero.classList.add("show_title"); // Muestra el título
     }, 250);
-  
+
     // Luego de un pequeño retraso, mostramos los botones
     setTimeout(() => {
       hero.classList.add("show_buttons"); // Muestra los botones
@@ -63,5 +62,3 @@ window.addEventListener("load", async () => {
     return;
   }
 });
-
-

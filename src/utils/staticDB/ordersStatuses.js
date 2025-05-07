@@ -6,7 +6,7 @@ export default [
   },
   {
     id: 2,
-    status: "Pendiente de envio",
+    status: "Pendiente de envío",
     class: "yellow-color", //Amarillo
   },
   {
