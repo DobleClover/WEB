@@ -36,6 +36,9 @@
 .logo {
   position: absolute;
   transition: opacity 0.4s;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 120px;
 }
 .logo_dark {
   opacity: 0;
@@ -251,8 +254,6 @@
   }
   .logo {
     max-width: 150px;
-    left: 50%;
-    transform: translateX(-50%);
   }
   .unlogged_user_container {
     border: none;

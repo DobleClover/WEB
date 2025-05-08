@@ -43,6 +43,8 @@ let cartExportObj = {
   paintCheckoutPhoneSelect: null,
   paintCheckoutAddressesSelect: null,
 };
+//seteo los productos
+let cartProducts = [];
 window.addEventListener("load", async () => {
   try {
     if (!isOnPage("/carro")) return;
@@ -51,8 +53,7 @@ window.addEventListener("load", async () => {
     const cartProductsWrapper = document.querySelector(
       ".cart_products_cards_wrapper"
     );
-    //seteo los productos
-    let cartProducts = [];
+    
     let shippingCost = 0; //Esto va cambiando por eso lo seteo aca
     let sectionIndex = 0; //Para ver donde esta parado
     cartExportObj.pageConstructor = async function () {
