@@ -72,15 +72,9 @@ function generateMailContent(order, isUser = true) {
           <td style="text-align: center; background-color: #ffffff10; padding: 15px; border-radius: 8px;">
             <strong style="color: #ffdf7c;">IMPORTANTE:</strong><br/>
             Tu pedido deberá ser abonado dentro de las próximas <strong>24 horas</strong>, de lo contrario se cancelará automáticamente.
-            ${
-              order.paymentType.id === 3
-                ? `
-                  <br/><br/><strong>Datos de Transferencia:</strong><br/>
+            <br/><br/><strong>Datos de Transferencia:</strong><br/>
                   CVU: 0000168300000002703464<br/>
                   Alias: janopereiralemon
-                `
-                : ""
-            }
           </td>
         </tr>
       `
@@ -156,7 +150,11 @@ function generateMailContent(order, isUser = true) {
                     <tr>
                       <td style="padding: 20px 0; text-align: center;">
                         <hr style="border: none; border-top: 1px solid #ffffff30; margin: 20px 0;" />
-                        <h3 style="margin-bottom: 10px;">${isUser ? 'Detalle de tu pedido' : 'Detalle de la orden'}</h3>
+                        <h3 style="margin-bottom: 10px;">${
+                          isUser
+                            ? "Detalle de tu pedido"
+                            : "Detalle de la orden"
+                        }</h3>
                         <table width="100%" style="font-size: 14px; text-align: center;">
                           ${order.orderItems
                             .map(
@@ -192,8 +190,9 @@ function generateMailContent(order, isUser = true) {
                     </tr>
 
                     <tr>
-                      <td style="text-align: center;"><br/>
-                        ${order.paymentType?.type}
+                      <td style="text-align: center;"><strong>Metodo de pago:</strong> ${
+                        order.paymentType?.type
+                      }
                       </td>
                     </tr>
 

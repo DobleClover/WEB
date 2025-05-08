@@ -166,7 +166,7 @@
   justify-content: space-between;
   border-top: 1px solid #fff;
 }
-.unlogged_user_container {
+.mobile_actions > div {
   width: 100%;
   height: fit-content;
   display: flex;
@@ -220,7 +220,7 @@
   gap: 6px;
 }
 
-.header_element .coming_soon_badge {
+.coming_soon_badge {
   font-size: 0.7rem;
   background-color: var(--green-color) !important; /* o var(--red-color) */
   color: white !important;

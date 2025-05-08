@@ -100,9 +100,13 @@ export const paintUserIconOrLetter = () => {
   const unloggedContainers = document.querySelectorAll(
     ".unlogged_user_container"
   );
+  const loggedContainers = document.querySelectorAll(
+    ".logged_user_container"
+  );
 
   if (userLogged) {
     unloggedContainers.forEach((element) => element.classList.add("hidden"));
+    loggedContainers.forEach((element) => element.classList.remove("hidden"));
 
     const userLoggedDropdownToChange = document.querySelector(
       ".user_initials_container"
@@ -121,6 +125,7 @@ export const paintUserIconOrLetter = () => {
     mobileMenuUserLoggedContainer.innerHTML = `<i class="bx bx-user"></i> ${userLogged.name}`;
   } else {
     unloggedContainers.forEach((element) => element.classList.remove("hidden"));
+    loggedContainers.forEach((element) => element.classList.add("hidden"));
   }
 };
 

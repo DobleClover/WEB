@@ -12,12 +12,13 @@
   width: 100%;
   position: relative;
   z-index: 10;
-  overflow: visible;
-  overflow-x: scroll;
-  transition: all 0.6s ease;
+  overflow-x: auto;
+  overflow-y: hidden;
   scroll-snap-type: x mandatory;
-  scrollbar-width: none; /* Ocultar en Firefox */
+  scrollbar-width: none;
   justify-content: flex-start;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch; /* mejora en mobile */
 }
 .images_wrapper::-webkit-scrollbar {
   display: none;
@@ -36,8 +37,10 @@
   flex: 0 0 auto;
   position: relative;
   z-index: 10;
-  scroll-snap-align: center;
+  /* scroll-snap-align: center; */
   object-fit: cover;
+  flex-shrink: 0;
+  scroll-snap-align: start;
 }
 
 .product_detail_section,

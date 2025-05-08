@@ -204,7 +204,7 @@ window.addEventListener("load", async () => {
         const addBtn = card.querySelector(".add_more_product");
         const minusBtn = card.querySelector(".remove_more_product");
         const removeBtn = card.querySelector(".remove_card_btn");
-        const cardPrice = card.querySelector(".card-price");
+        const cardPrice = card.querySelector(".card_price");
         let cardVariationID = card.dataset.variations_id;
         let cartProductFromDB = cartProducts.find(
           (cartItem) => cartItem.variations_id == cardVariationID
@@ -218,36 +218,37 @@ window.addEventListener("load", async () => {
           ) {
             addBtn.classList.add("disabled");
           }
+        
           let actualQuantitySpan = card.querySelector(".card_product_amount");
-          actualQuantitySpan.innerHTML =
-            parseInt(actualQuantitySpan.innerHTML) + 1;
-          if (actualQuantitySpan.innerHTML > 1) {
-            //Si es mas de 1 cambio clases
+          let newQuantity = parseInt(actualQuantitySpan.innerHTML) + 1;
+          actualQuantitySpan.innerHTML = newQuantity;
+        
+          if (newQuantity > 1) {
             minusBtn.classList.remove("hidden");
             removeBtn.classList.add("hidden");
           }
-          cardPrice.innerHTML = `$${displayBigNumbers(
-            parseInt(actualQuantitySpan.innerHTML) * productPrice
-          )}`;
+        
+          updateCardPrices(card, cartProductFromDB, newQuantity);
           modifyDetailList();
         });
+        
         minusBtn.addEventListener("click", () => {
           cartProductFromDB.quantity--;
-          //Activo el + denuevo
           addBtn.classList.remove("disabled");
+        
           let actualQuantitySpan = card.querySelector(".card_product_amount");
-          actualQuantitySpan.innerHTML =
-            parseInt(actualQuantitySpan.innerHTML) - 1;
-          if (actualQuantitySpan.innerHTML == 1) {
-            //Si es 1 cambio clases
+          let newQuantity = parseInt(actualQuantitySpan.innerHTML) - 1;
+          actualQuantitySpan.innerHTML = newQuantity;
+        
+          if (newQuantity == 1) {
             minusBtn.classList.add("hidden");
             removeBtn.classList.remove("hidden");
           }
-          cardPrice.innerHTML = `$${displayBigNumbers(
-            parseInt(actualQuantitySpan.innerHTML) * productPrice
-          )}`;
+        
+          updateCardPrices(card, cartProductFromDB, newQuantity);
           modifyDetailList();
         });
+        
         removeBtn.addEventListener("click", async () => {
           const cardLoader = card.querySelector(".ui.dimmer");
           cardLoader.classList.add("active");
@@ -907,7 +908,6 @@ window.addEventListener("load", async () => {
       return;
     }
     
-
     function setShippingCost() {
       const shippingTypeSelect = document.querySelector(
         'select[name="shipping_types_id"]'
@@ -1008,6 +1008,15 @@ window.addEventListener("load", async () => {
       return formIsOK;
     }
     cartExportObj.pageConstructor();
+    function replacePayButtons() {
+      const oldButtons = document.querySelectorAll(".finalize_order_button");
+      const newButton = generatePaymentButtonElement();
+      oldButtons.forEach((oldButton) => {
+        const clonedButton = newButton.cloneNode(true);
+        oldButton.replaceWith(clonedButton);
+      });
+      checkForSectionButtons();
+    }
   } catch (error) {
     console.log("falle");
     return console.log(error);
@@ -1016,14 +1025,7 @@ window.addEventListener("load", async () => {
 
 export { cartExportObj };
 
-function replacePayButtons() {
-  const oldButtons = document.querySelectorAll(".finalize_order_button");
-  const newButton = generatePaymentButtonElement();
-  oldButtons.forEach((oldButton) => {
-    const clonedButton = newButton.cloneNode(true);
-    oldButton.replaceWith(clonedButton);
-  });
-}
+
 
 function disableAllSectionButtons() {
   const sectionHandlerBtns = document.querySelectorAll(
@@ -1080,4 +1082,22 @@ function updateGuestCart() {
     delete cartProduct.productFromDB;
     setLocalStorageItem("cartItems", cartProduct, true);
   });
+}
+
+function updateCardPrices(card, cartProductFromDB, quantity) {
+  const priceWrapper = card.querySelector(".price_wrapper");
+
+  const originalPriceEl = priceWrapper.querySelector(".original_price");
+  const discountedPriceEl = priceWrapper.querySelector(".discounted_price");
+
+  const unitPrice = parseFloat(cartProductFromDB.product?.price);
+  const hasDiscount = cartProductFromDB.product?.discount > 0;
+  const discountedUnitPrice = parseFloat(cartProductFromDB.product?.discounted_price);
+
+  if (hasDiscount && discountedPriceEl) {
+    originalPriceEl.innerHTML = `$${displayPriceNumber(quantity * unitPrice)}`;
+    discountedPriceEl.innerHTML = `$${displayPriceNumber(quantity * discountedUnitPrice)}`;
+  } else {
+    originalPriceEl.innerHTML = `$${displayPriceNumber(quantity * unitPrice)}`;
+  }
 }

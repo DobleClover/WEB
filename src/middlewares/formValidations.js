@@ -168,47 +168,66 @@ export default {
       .notEmpty()
       .withMessage("Complete todos los campos necesarios")
       .bail(),
-    body(["variations"]) //Me fijo que los productos esten en stock
-      .custom(async (value, { req }) => {
-        let variationIdsToGet = value.map((variation) => variation.id); //Array de ids
-        let variationsFromDB = await getVariationsFromDB(variationIdsToGet); //Obtengo de db las variaciones
-        value.forEach((variation) => {
-          // Agarro el producto de DB
-          let variationFromDBIndex = variationsFromDB.findIndex(
-            (variationFromDB) => variationFromDB.id == variation.id
+    body(["variations"]).custom(async (value, { req }) => {
+      let variationIdsToGet = value.map((variation) => variation.id);
+      let variationsFromDB = await getVariationsFromDB(variationIdsToGet);
+
+      value.forEach((variation) => {
+        let variationFromDBIndex = variationsFromDB.findIndex(
+          (variationFromDB) => variationFromDB.id == variation.id
+        );
+        if (variationFromDBIndex < 0) {
+          console.log(`❌ Variación no encontrada: ${variation.id}`);
+          throw new Error("Variacion no encontrada");
+        }
+        let variationFromDB = variationsFromDB[variationFromDBIndex];
+        let { quantityRequested } = variation;
+        quantityRequested = parseInt(quantityRequested);
+
+        if (quantityRequested > variationFromDB.quantity) {
+          console.log(
+            `❌ Stock insuficiente para variación ${variation.id}: pedido ${quantityRequested}, disponible ${variationFromDB.quantity}`
           );
-          if (variationFromDBIndex < 0) {
-            //Si no viene no sigo (al pedo)
-            throw new Error("Variacion no encontrada");
-          }
-          let variationFromDB = variationsFromDB[variationFromDBIndex];
-          let { quantityRequested } = variation; //Tengo que chequear con esa variacion
-          quantityRequested = parseInt(quantityRequested); //Lo parseo
-          if (quantityRequested > variationFromDB.quantity) {
-            throw new Error("Hay items con stock insuficiente");
-          }
-        });
-        req.body.variationsFromDB = variationsFromDB; //Ya que busque a db le paso para no hacer 2 consultas
-        return true;
-      }),
-    body(["billingAddress", "shippingAddress"]) //Me fijo que los paises esten en db
-      .custom(async (value, { req }) => {
+          throw new Error("Hay items con stock insuficiente");
+        }
+      });
+
+      req.body.variationsFromDB = variationsFromDB;
+      return true;
+    }),
+
+    body(["billingAddress", "shippingAddress"]).custom(
+      async (value, { req }) => {
         let provinceFromDB = provinces.find(
           (dbProv) => dbProv.id == value?.provinces_id
-        ); 
-        if (value && !provinceFromDB) throw new Error("Provincia no encontrado");
+        );
+        if (value && !provinceFromDB) {
+          console.log(
+            `❌ Provincia no encontrada: ID recibido: ${value?.provinces_id}`
+          );
+          throw new Error("Provincia no encontrado");
+        }
         return true;
-      }),
-    body(["phoneObj"]) //Saco los nros con el regex
-      .custom(async (value, { req }) => {
-        let countryFromDB = countries.find(
-          (country) => country.id == value?.countries_id
-        ); 
-        if (value && !countryFromDB) throw new Error("Pais no encontrado");
-        //Le saco cualquier cosa que no sea un numero al phone number
-        value.phone_number = getOnlyNumbers(value.phone_number);
-        return true;
-      }),
+      }
+    ),
+
+    body(["phoneObj"]).custom(async (value, { req }) => {
+      let countryFromDB = countries.find(
+        (country) => country.id == value?.countries_id
+      );
+      if (value && !countryFromDB) {
+        console.log(
+          `❌ País no encontrado: ID recibido: ${value?.countries_id}`
+        );
+        throw new Error("Pais no encontrado");
+      }
+
+      console.log(`📞 Número antes: ${value.phone_number}`);
+      value.phone_number = getOnlyNumbers(value.phone_number);
+      console.log(`📞 Número después: ${value.phone_number}`);
+
+      return true;
+    }),
   ],
   colorFields: [
     body(["name"])

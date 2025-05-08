@@ -45,6 +45,7 @@ import { MercadoPagoConfig } from "mercadopago";
 import { HTTP_STATUS } from "../../utils/staticDB/httpStatusCodes.js";
 import { deleteSensitiveUserData } from "./apiUserController.js";
 import { getSettingsFromDB } from "./apiSettingController.js";
+import sendOrderMails from "../../utils/helpers/sendOrderMails.js";
 
 // Agrega credenciales
 const mpClient = new MercadoPagoConfig({
@@ -274,6 +275,9 @@ const controller = {
         // EFECTIVO || TRANSFERENCIA
         paymentOrderId = null;
         paymentURL = `/post-compra?orderId=${orderDataToDB.tra_id}&shippingTypeId=${orderDataToDB.shipping_types_id}&paymentTypeId=${orderDataToDB.payment_types_id}`;
+        const orderToSendEmails = await getOrdersFromDB({id: orderDataToDB.id});
+        await sendOrderMails(orderToSendEmails);
+        console.log("📧 Mails de confirmación enviados correctamente");
       }
       orderDataToDB.entity_payments_id = paymentOrderId;
       // Le actualizo el paypal_rder_id en db

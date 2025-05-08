@@ -21,8 +21,6 @@ const __dirname = path.dirname(__filename);
 const filePath = path.join(__dirname, "../utils/staticDB/countries.js");
 const controller = {
   index: (req, res) => {
-    console.log("ESTOY EN EL CONTROLADOR DEL MAIN");
-    
     return res.render("index");
   },
   productList: async (req, res) => {

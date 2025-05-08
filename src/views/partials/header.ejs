@@ -46,43 +46,11 @@
 
   <nav class="mobile_nav">
     <ul class="mobile_nav_list">
-      <li><a href="/tienda" class="menu_nav_font">Tienda Online</a></li>
-      <li class="ui inverted segment">
-        <div class="ui inverted accordion">
-          <div class="title">
-            <i class="dropdown icon"></i>
-            <span class="menu_nav_font">Marcas</span>
-          </div>
-          <div class="content">
-            <ul>
-              <li class="item"><a href="#">Jordan</a></li>
-              <li class="item"><a href="#">Nike</a></li>
-              <li class="item"><a href="#">Adidas</a></li>
-              <li class="item"><a href="#">Polo</a></li>
-              <li class="item"><a href="#">Levis</a></li>
-              <li class="item non_style_item margin_top"><a href="#">Ver Todas</a></li>
-            </ul>
-          </div>
-        </div>
-      </li>
-      
-      <li class="ui inverted segment">
-        <div class="ui inverted accordion">
-          <div class="title">
-            <i class="dropdown icon"></i>
-            <span class="menu_nav_font">Drops</span>
-          </div>
-          <div class="content">
-            <ul>
-              <li class="item"><a href="#">Drop 1</a></li>
-              <li class="item"><a href="#">Drop 2</a></li>
-              <li class="item"><a href="#">Drop 3</a></li>
-              <li class="item"><a href="#">Drop 4</a></li>
-              <li class="item"><a href="#">Drop 5</a></li>
-            </ul>
-          </div>
-        </div>
-      </li>
+      <li><a href="/tienda" class="menu_nav_font">Tienda Online</a></li>      
+      <li><a href="/#" class="menu_nav_font">
+        <span class="coming_soon_link faded">Dobleuso</span>
+        <span class="coming_soon_badge">PROXIMAMENTE</span>
+      </a></li>
       <li><a href="/faq" class="menu_nav_font">Preguntas Frecuentes</a></li>
       <li><a href="/nosotros" class="menu_nav_font">¿Quiénes somos?</a></li>
     </ul>
@@ -93,9 +61,13 @@
       <button class="btn_login unlogged_user_icon"><i class="bx bx-user"></i> Iniciar sesión</button>
       <button class="btn_register">Registrarse</button>
     </div>
-    <a
+    <div class="logged_user_container">
+      <a
           class="mobile_menu_logged_container" href="/perfil"
         >
       </a>
+      <a href="/logout">Cerrar Sesion</a>
+    </div>
+    
   </div>
 </div>

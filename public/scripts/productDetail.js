@@ -14,6 +14,7 @@ import {
   animateSectionElements,
   getIdFromUrl,
   paintProductCardsInList,
+  removeDoblecloverOverlay,
 } from "./utils.js";
 
 let productDetailExportObj = {
@@ -67,7 +68,9 @@ window.addEventListener("load", async () => {
       if (productHasDiscount) {
         productRealPrice = document.createElement("p");
         productRealPrice.className = `product_price`;
-        const productPriceWithDiscount = displayPriceNumber(productData.discounted_price);
+        const productPriceWithDiscount = displayPriceNumber(
+          productData.discounted_price
+        );
         productRealPrice.innerHTML = `$${productPriceWithDiscount}`;
       }
       const productDescription = document.createElement("p");
@@ -191,11 +194,7 @@ window.addEventListener("load", async () => {
       productsToPaint = productsToPaint
         .filter((product) => product.id !== productId)
         .slice(0, 3);
-      // productsToPaint.forEach((prod) => {
-      //   let cardElement = createProductCard(prod);
-      //   relatedProductCardWrapper.appendChild(cardElement);
-      // });
-      paintProductCardsInList(productsToPaint,relatedProductCardWrapper);
+      paintProductCardsInList(productsToPaint, relatedProductCardWrapper);
       //   una vez lo pinto, agrego las aniamciones
       relatedProductCardWrapper = document.querySelector(
         ".related_products_section .product_cards_wrapper"
@@ -207,14 +206,13 @@ window.addEventListener("load", async () => {
     scrollToTop();
     //Hago el pedido al fetch de 4 productos y filtrar 3
 
-    
     function createImagesContainer(productFiles) {
       const imagesWrapper = document.createElement("div");
       imagesWrapper.className = "images_wrapper";
-
+    
       const smallImagesContainer = document.createElement("div");
       smallImagesContainer.className = "small_images_container";
-
+    
       productFiles.forEach((file, index) => {
         // Crear imagen grande
         const largeImage = document.createElement("img");
@@ -229,9 +227,9 @@ window.addEventListener("load", async () => {
         largeImage.setAttribute("data-file_id", file.id);
         largeImage.loading = "lazy";
         imagesWrapper.appendChild(largeImage);
-
+    
+        // Crear imagen pequeña
         if (productFiles.length > 1) {
-          // Crear imagen pequeña
           const smallImage = document.createElement("img");
           smallImage.srcset = file.file_urls
             .map((url) => `${url.url} ${url.size}`)
@@ -244,28 +242,30 @@ window.addEventListener("load", async () => {
           smallImagesContainer.appendChild(smallImage);
         }
       });
-
-      // Asegurar que el contenedor comience en la primera imagen
-      setTimeout(() => {
-        if (imagesWrapper.firstChild) {
-          imagesWrapper.firstChild.scrollIntoView({
-            behavior: "auto", // Cambiar a "smooth" si deseas animación
-            block: "nearest",
-            inline: "start",
-          });
-        }
-      }, 0);
-
+    
       // Agregar a la sección product_images_section
-      const productImagesSection = document.querySelector(
-        ".product_images_section"
-      );
-      productImagesSection.innerHTML = ""; //lo limpio
+      const productImagesSection = document.querySelector(".product_images_section");
+      productImagesSection.innerHTML = "";
       if (productImagesSection) {
         productImagesSection.appendChild(imagesWrapper);
         productImagesSection.appendChild(smallImagesContainer);
       }
+    
+      // Asegurar que todas las imágenes hayan cargado antes de mostrar y resetear scroll
+      const allImages = imagesWrapper.querySelectorAll(".image_element");
+      const imagePromises = Array.from(allImages).map((img) => {
+        return new Promise((resolve) => {
+          if (img.complete) return resolve();
+          img.onload = img.onerror = () => resolve();
+        });
+      });
+    
+      Promise.all(imagePromises).then(() => {
+        imagesWrapper.scrollLeft = 0;
+        removeDoblecloverOverlay(); // Oculta loader cuando todo está listo
+      });
     }
+    
 
     // Función para actualizar las opciones de talles
     function updateSizeOptions(sizeSelect, variations, selectedColorId) {

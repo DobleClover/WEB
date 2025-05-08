@@ -310,6 +310,10 @@ select.error_input {
   border: 1.5px solid var(--red-color) !important;
   background-color: var(--red-color-rgba);
 }
+select{
+  color: #000;
+  text-transform: capitalize;
+}
 .strike {
   text-decoration: line-through;
   opacity: 0.75;

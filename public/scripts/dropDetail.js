@@ -1,4 +1,4 @@
-import { animateSectionElements, getIdFromUrl, paintProductCardsInList, scriptInitiator } from "./utils.js";
+import { animateSectionElements, getIdFromUrl, paintProductCardsInList, removeDoblecloverOverlay, scriptInitiator } from "./utils.js";
 
 window.addEventListener("load", async () => {
   try {
@@ -46,6 +46,7 @@ window.addEventListener("load", async () => {
     const dropId= getIdFromUrl();
     const productsFromDrop = await fetchDropProducts(dropId)
     await paintProductCardsInList(productsFromDrop);
+    removeDoblecloverOverlay();
   } catch (error) {
     return console.log(error);
   }

@@ -750,12 +750,12 @@ export function checkoutCard(props) {
 
     const originalPrice = document.createElement("span");
     originalPrice.className = "card_price original_price";
-    originalPrice.textContent = `$${displayPriceNumber(productFromDB.price)}`;
+    originalPrice.textContent = `$${displayPriceNumber(productFromDB.price * props.quantity)}`;
 
     const discountedPrice = document.createElement("span");
     discountedPrice.className = "card_price discounted_price";
     discountedPrice.textContent = `$${displayPriceNumber(
-      productFromDB.discounted_price
+      productFromDB.discounted_price * props.quantity
     )}`;
 
     priceWrapper = document.createElement("div");
@@ -766,7 +766,7 @@ export function checkoutCard(props) {
   } else {
     priceSpan = document.createElement("span");
     priceSpan.className = "card_price";
-    priceSpan.textContent = `$${displayPriceNumber(productFromDB.price)}`;
+    priceSpan.textContent = `$${displayPriceNumber(productFromDB.price * props.quantity)}`;
     contentDiv.appendChild(priceSpan);
   }
 
