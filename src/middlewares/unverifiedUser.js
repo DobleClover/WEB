@@ -4,6 +4,7 @@ import {
   getUsersFromDB,
   verifyUserIsLogged,
 } from "../controllers/api/apiUserController.js";
+import clearUserSession from "../utils/helpers/clearUserSession.js";
 const unverifiedUser = async (req, res, next) => {
   try {
     let userLogged;
