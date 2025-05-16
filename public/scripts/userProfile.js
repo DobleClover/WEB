@@ -16,6 +16,7 @@ import {
   generateOrderDetailModal,
   orderCard,
   phoneCard,
+  renderAdminProductCard,
   userInfoComponent,
 } from "./componentRenderer.js";
 import {
@@ -514,78 +515,45 @@ const getTotalUsdAndPesosAccumulators = (orders) => {
 
 const paintAdminProducts = async () => {
   if (!productsFromDB.length) await setProductsFromDB();
+
   const mainWrapper = document.querySelector(".main_content_wrapper");
+  mainWrapper.innerHTML = ""; // Limpiamos antes de pintar
+
+  // Botón de agregar producto
   const titleAddProductContainer = document.createElement("div");
   titleAddProductContainer.className = "title_add_product_container";
   titleAddProductContainer.innerHTML = `
-        <div class="add_product_container add_entity_container">
-          <i class='bx bx-plus add_product_icon add_icon'></i>
-        </div>
+    <div class="add_product_container add_entity_container">
+      <i class='bx bx-plus add_product_icon add_icon'></i>
+    </div>
   `;
   mainWrapper.appendChild(titleAddProductContainer);
-  const tableContainer = document.createElement("div");
-  tableContainer.classList.add("table_container");
-  const gridTable = document.createElement("div");
-  gridTable.className = "ag-theme-alpine";
-  gridTable.id = "myGrid";
-  tableContainer.appendChild(gridTable);
-  mainWrapper.appendChild(tableContainer);
 
-  const rowsData = [];
+  // Contenedor de tarjetas
+  const cardsWrapper = document.createElement("div");
+  cardsWrapper.className = "products_cards_wrapper";
+  cardsWrapper.style.display = "flex";
+  cardsWrapper.style.flexWrap = "wrap";
+  cardsWrapper.style.gap = "16px";
+
+  const fragment = document.createDocumentFragment();
+
   productsFromDB.forEach((prod) => {
-    const { id, files, name, brand, totalStock, active, discount, price } =
-      prod;
-    console.log(prod);
+    const card = renderAdminProductCard(prod);
 
-    const productMainFile = files?.length && files[0];
-    const rowObject = {
-      id,
-      imagen: productMainFile?.file_urls
-        ? productMainFile?.file_urls[0]?.url
-        : "",
-      nombre: name,
-      marca: brand?.name || "-",
-      precio: `${
-        price
-          ? `U$S ${minDecimalPlaces(displayBigNumbers(price))}`
-          : "Sin precio"
-      }`,
-      descuento: `${discount ? `${discount}%` : "-"}`,
-      stock: totalStock,
-      publicado: active ? "si" : "no",
-    };
-    rowsData.push(rowObject);
+    // Si querés que al hacer clic se abra el detalle, podés agregar esto:
+    card.addEventListener("click", () => handleProductRowClick(prod));
+
+    fragment.appendChild(card);
   });
-  const gridData = {
-    columnDefs: [
-      {
-        field: "imagen",
-        width: 90,
-        headerName: "",
-        cellRenderer: (params) => {
-          return `<img src="${params.value}" width="50" height="50" style="border-radius:5px;"/>`;
-        },
-      },
-      { field: "nombre", flex: 0.8 },
-      { field: "marca", flex: 0.5 },
-      { field: "precio", flex: 0.5 },
-      { field: "descuento", flex: 0.45 },
-      { field: "stock", flex: 0.4 },
-      { field: "publicado", flex: 0.5 },
-    ],
-    onRowClicked: async (event) => {
-      const product = productsFromDB.find(
-        (product) => product.id === event.data.id
-      );
-      await handleProductRowClick(product);
-    },
-  };
-  gridData.rowData = rowsData;
-  const gridDiv = document.querySelector("#myGrid");
-  agGrid.createGrid(gridDiv, gridData);
-  // Una vez lo creo, armo las escuchas
+
+  cardsWrapper.appendChild(fragment);
+  mainWrapper.appendChild(cardsWrapper);
+
+  // Escucha del botón
   listenToAddProductBtn();
 };
+
 
 const handleProductRowClick = async (product) => {
   await createProductModal(product);

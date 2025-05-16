@@ -3635,3 +3635,24 @@ export function createDropCard(drop) {
 
   return dropCard;
 }
+
+export function renderAdminProductCard(product) {
+  const template = document.createElement("template");
+  template.innerHTML = `
+    <div class="admin_product_card">
+      <div class="admin_product_card_image_wrapper">
+        <img src="${product.files[0]?.thumb_url}" alt="${product.name}" />
+        ${product.is_dobleuso ? '<div class="admin_product_card_badge">DobleUso</div>' : ''}
+      </div>
+      <div class="admin_product_card_info">
+        <h3>${product.name}</h3>
+        <p class="admin_product_card_brand">${product.brand?.name || ''}</p>
+        <p class="admin_product_card_drop">Drop 1 - Drop 3</p>
+        <p class="admin_product_card_price">U$$ ${product.price}</p>
+        <p class="admin_product_card_stock">Stock: ${product.totalStock}</p>
+      </div>
+    </div>
+  `.trim();
+  return template.content.firstChild;
+}
+
