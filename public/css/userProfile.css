@@ -466,6 +466,11 @@
   flex-direction: column;
   gap: 30px;
 }
+.products_cards_wrapper{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
 @media (min-width: 768px) {
   .main {
     padding: 0;

@@ -3639,10 +3639,11 @@ export function createDropCard(drop) {
 export function renderAdminProductCard(product) {
   const template = document.createElement("template");
   template.innerHTML = `
-    <div class="admin_product_card">
+    <div class="admin_product_card ${product.active ? "" : "unactive_product_card"}">
+    ${product.is_dobleuso ? '<div class="admin_product_card_badge">DobleUso</div>' : ''}
       <div class="admin_product_card_image_wrapper">
-        <img src="${product.files[0]?.thumb_url}" alt="${product.name}" />
-        ${product.is_dobleuso ? '<div class="admin_product_card_badge">DobleUso</div>' : ''}
+        <img src="${product.files[0]?.file_urls[0]?.url}" alt="${product.name}" />
+        
       </div>
       <div class="admin_product_card_info">
         <h3>${product.name}</h3>
@@ -3656,3 +3657,32 @@ export function renderAdminProductCard(product) {
   return template.content.firstChild;
 }
 
+export function renderAdminProductsToolbar() {
+  const container = document.createElement("div");
+  container.className = "admin_products_toolbar";
+
+  container.innerHTML = `
+    <div class="admin_toolbar_left">
+      <button class="admin_add_product_btn">
+        <i class="bx bx-plus"></i> Agregar producto
+      </button>
+    </div>
+
+    <div class="admin_toolbar_right">
+      <select class="admin_filter_select" id="sort_by">
+        <option value="name">Ordenar por nombre</option>
+        <option value="price">Ordenar por precio</option>
+        <option value="stock">Ordenar por stock</option>
+      </select>
+
+      <select class="admin_filter_select" id="filter_type">
+        <option value="all">Todos los productos</option>
+        <option value="dobleuso">Productos DobleUso</option>
+        <option value="dobleclover">Productos DobleClover</option>
+        <option value="active">Productos activos</option>
+      </select>
+    </div>
+  `;
+
+  return container;
+}

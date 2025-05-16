@@ -17,6 +17,7 @@ import {
   orderCard,
   phoneCard,
   renderAdminProductCard,
+  renderAdminProductsToolbar,
   userInfoComponent,
 } from "./componentRenderer.js";
 import {
@@ -519,40 +520,23 @@ const paintAdminProducts = async () => {
   const mainWrapper = document.querySelector(".main_content_wrapper");
   mainWrapper.innerHTML = ""; // Limpiamos antes de pintar
 
-  // Botón de agregar producto
-  const titleAddProductContainer = document.createElement("div");
-  titleAddProductContainer.className = "title_add_product_container";
-  titleAddProductContainer.innerHTML = `
-    <div class="add_product_container add_entity_container">
-      <i class='bx bx-plus add_product_icon add_icon'></i>
-    </div>
-  `;
-  mainWrapper.appendChild(titleAddProductContainer);
+  // Insertamos toolbar
+  const toolbar = renderAdminProductsToolbar();
+  mainWrapper.appendChild(toolbar);
 
-  // Contenedor de tarjetas
+  // Contenedor de tarjetas (vacío al inicio)
   const cardsWrapper = document.createElement("div");
   cardsWrapper.className = "products_cards_wrapper";
-  cardsWrapper.style.display = "flex";
-  cardsWrapper.style.flexWrap = "wrap";
-  cardsWrapper.style.gap = "16px";
-
-  const fragment = document.createDocumentFragment();
-
-  productsFromDB.forEach((prod) => {
-    const card = renderAdminProductCard(prod);
-
-    // Si querés que al hacer clic se abra el detalle, podés agregar esto:
-    card.addEventListener("click", () => handleProductRowClick(prod));
-
-    fragment.appendChild(card);
-  });
-
-  cardsWrapper.appendChild(fragment);
   mainWrapper.appendChild(cardsWrapper);
 
-  // Escucha del botón
-  listenToAddProductBtn();
+  // Pintar tarjetas iniciales con orden/filtro actual
+  renderFilteredSortedCards();
+
+  // Escuchar botón + selects
+  listenToAdminProductToolbar();
 };
+
+
 
 
 const handleProductRowClick = async (product) => {
@@ -707,15 +691,33 @@ async function getUserOrders() {
   return array;
 }
 
-async function listenToAddProductBtn() {
-  const addProductBtn = document.querySelector(".add_product_icon");
-  if (!addProductBtn.dataset.listened) {
+async function listenToAdminProductToolbar() {
+  const addProductBtn = document.querySelector(".admin_add_product_btn");
+  const sortSelect = document.getElementById("sort_by");
+  const filterSelect = document.getElementById("filter_type");
+
+  if (addProductBtn && !addProductBtn.dataset.listened) {
     addProductBtn.dataset.listened = true;
     addProductBtn.addEventListener("click", async () => {
       await createProductModal();
     });
   }
+
+  if (sortSelect && !sortSelect.dataset.listened) {
+    sortSelect.dataset.listened = true;
+    sortSelect.addEventListener("change", () => {
+      renderFilteredSortedCards();
+    });
+  }
+
+  if (filterSelect && !filterSelect.dataset.listened) {
+    filterSelect.dataset.listened = true;
+    filterSelect.addEventListener("change", () => {
+      renderFilteredSortedCards();
+    });
+  }
 }
+
 const paintAdminSettings = async () => {
   if (!settingsFromDB.length) await setSettings();
   const mainWrapper = document.querySelector(".main_content_wrapper");
@@ -1100,5 +1102,45 @@ export function loadExistingImages(existingImages, containerSelector) {
 
   updatePositionSelects(); // Asegurar que los selects se actualicen correctamente
 }
+
+function renderFilteredSortedCards() {
+  const cardsWrapper = document.querySelector(".products_cards_wrapper");
+  if (!cardsWrapper) return;
+
+  cardsWrapper.innerHTML = "";
+
+  const sortBy = document.getElementById("sort_by")?.value || "name";
+  const filterType = document.getElementById("filter_type")?.value || "all";
+
+  let filtered = [...productsFromDB];
+
+  // Filtros
+  if (filterType === "dobleuso") {
+    filtered = filtered.filter(p => p.is_dobleuso);
+  } else if (filterType === "dobleclover") {
+    filtered = filtered.filter(p => p.brand?.name?.toLowerCase().includes("dobleclover"));
+  } else if (filterType === "active") {
+    filtered = filtered.filter(p => p.active);
+  }
+
+  // Orden
+  filtered.sort((a, b) => {
+    if (sortBy === "name") return a.name.localeCompare(b.name);
+    if (sortBy === "price") return (parseFloat(a.price) || 0) - (parseFloat(b.price) || 0);
+    if (sortBy === "stock") return a.totalStock - b.totalStock;
+    return 0;
+  });
+
+  // Render
+  const fragment = document.createDocumentFragment();
+  filtered.forEach(prod => {
+    const card = renderAdminProductCard(prod);
+    card.addEventListener("click", () => handleProductRowClick(prod));
+    fragment.appendChild(card);
+  });
+
+  cardsWrapper.appendChild(fragment);
+}
+
 
 export { userProfileExportObj };
