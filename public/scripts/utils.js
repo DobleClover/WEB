@@ -3,7 +3,6 @@ import { checkForUserLogged, userLogged } from "./checkForUserLogged.js";
 import {
   closeModal,
   createAddressModal,
-  createDobleusoProductCard,
   createPhoneModal,
   createProductCard,
   createUserSignUpModal,
@@ -131,7 +130,7 @@ export async function handleModalCreation({
   try {
     const modal = document.querySelector(".ui.modal");
     const submitButton = document.querySelector(
-      ".ui.modal .send-modal-form-btn"
+      ".ui.modal .send_modal_form_btn"
     );
     const form = document.querySelector(".ui.form");
     if (!submitButton || !form) {
@@ -142,7 +141,8 @@ export async function handleModalCreation({
     if (validateFormFunction) formIsOK = validateFormFunction(form);
     if (!formIsOK) return;
     //ACa sigo, pinto loading el boton
-    submitButton.classList.add("loading");
+    setSendingBtnLoader(submitButton,true);
+   
     // Armo el bodyData con lo que viene de parametro
     // Construir el bodyData con la función personalizada
     const bodyData = buildBodyData(form);
@@ -161,11 +161,11 @@ export async function handleModalCreation({
           modalResponse = await postToDatabase(bodyData, method);
         } catch (error) {
           console.error(`Error posting ${entityType} to database`, error);
-          submitButton.classList.remove("loading");
+          setSendingBtnLoader(submitButton,false);
           return;
         }
       }
-      submitButton.classList.remove("loading");
+      setSendingBtnLoader(submitButton,false);
       // Cierro el modal
       if (modalResponse) handlePageModal(false);
       if (updateElements) {
@@ -181,10 +181,10 @@ export async function handleModalCreation({
       if (postToDatabase) {
         try {
           fetchResponse = await postToDatabase(bodyData, method);
-          submitButton.classList.remove("loading");
+          setSendingBtnLoader(submitButton,false);
         } catch (error) {
           console.error(`Error posting ${entityType} to database`, error);
-          submitButton.classList.remove("loading");
+          setSendingBtnLoader(submitButton,false);
           return;
         }
       }
@@ -270,7 +270,7 @@ export function toggleInputPasswordType(event) {
 
 // Se fija que el modal este completo
 export function handleModalCheckForComplete() {
-  const submitButton = document.querySelector(".ui.modal .send-modal-form-btn");
+  const submitButton = document.querySelector(".ui.modal .send_modal_form_btn");
   const errorsContainer = document.querySelector(".ui.error.message");
   const modalForm = document.querySelector(".ui.form");
   modalForm.classList.remove("error"); // le saco el error
@@ -387,7 +387,6 @@ export function checkForNumericInputs() {
     });
   });
 }
-
 // Logica para todos los inputs float
 export function checkForFloatInputs() {
   let floatInputs = document.querySelectorAll(".float_only_input");
@@ -1791,8 +1790,8 @@ export function formatStringForTextarea(text) {
   return text ? text.replace(/\r\n|\r|\n/g, "<br>") : "";
 }
 
-export async function paintProductCardsInList(products = [], wrapper = null) {
-  await setSettings();
+export async function paintProductCardsInList(products = [], wrapper = null, append = false) {
+  if (!settingsFromDB.length) await setSettings();
   if (!products.length) await setProductsFromDB({});
 
   const productsToIterate = products.length ? [...products] : [...productsFromDB];
@@ -1800,19 +1799,18 @@ export async function paintProductCardsInList(products = [], wrapper = null) {
   const productCardWrapper =
     wrapper || document.querySelector(".product_cards_wrapper_section");
 
-  productCardWrapper.innerHTML = "";
+  if (!append) {
+    productCardWrapper.innerHTML = ""; // limpiamos solo si no se quiere appending
+  }
 
   productsToIterate.forEach((prod) => {
-    const productCard = prod.is_dobleuso
-      ? createDobleusoProductCard(prod)
-      : createProductCard(prod);
-
+    const productCard = createProductCard(prod);
     productCardWrapper.appendChild(productCard);
   });
 
   listenToProductCards();
 
-  // Aplicar animaciones
+  // Aplicar animaciones (opcional: solo si no es append o si querés que animen igual)
   setTimeout(() => animateSectionElements(productCardWrapper, 0.05), 500);
 }
 
@@ -1854,4 +1852,59 @@ export function removeDoblecloverOverlay() {
   setTimeout(() => {
     loader.remove();
   }, 500);
+}
+
+export async function handleOutOfStockNotification(productData,event) {
+  try {
+    const modal = document.querySelector(".ui.modal.active");
+
+    // Prevenir acción por defecto
+    event?.preventDefault();
+
+    // Validar campos requeridos
+    const isFormValid = handleModalCheckForComplete();
+    if (!isFormValid) return;
+
+    // Obtener valores del formulario
+    const email = modal.querySelector("input[name='email']")?.value?.trim();
+    const phoneCountryID = modal.querySelector("[name='phone_countries_id']")?.value?.trim();
+    const phoneNumber = modal.querySelector("input[name='phone_number']")?.value?.trim();
+    const sizeId = modal.querySelector("select[name='sizes_id']")?.value;
+    const sendingBtn = modal.querySelector('.send_modal_form_btn')
+    setSendingBtnLoader(sendingBtn,true);
+    // Enviar POST al servidor
+    let response = await fetch("/api/stockAlert/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        products_id: productData.id,
+        sizes_id: sizeId,
+        email,
+        phone_number: phoneNumber,
+        phone_countries_id: phoneCountryID,
+      }),
+    });
+    setSendingBtnLoader(sendingBtn,false);
+    closeModal();
+    if(response.ok){
+      showCardMessage(true,"¡Te avisaremos cuando vuelva a estar disponible!");
+    } else {
+      showCardMessage(false,"Hubo un problema al registrar el aviso. Intentá de nuevo.");
+    }
+    return 
+  } catch (error) {
+    console.error("Error al guardar el aviso de stock:", error);
+    showCardMessage(false,"Hubo un problema al registrar el aviso. Intentá de nuevo.");
+    return 
+  }
+}
+
+export function setSendingBtnLoader(btn, isLoading) {
+  if (!btn) return;
+
+  if (isLoading) {
+    btn.classList.add('loading', 'disabled');
+  } else {
+    btn.classList.remove('loading', 'disabled');
+  }
 }

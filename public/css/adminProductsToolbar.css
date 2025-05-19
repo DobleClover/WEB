@@ -1,55 +1,63 @@
 .admin_products_toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-    padding: 16px;
-    background-color: #f7f7f7;
-    border-radius: 12px;
-    margin-bottom: 24px;
-  }
-  
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px;
+  background-color: #f7f7f7;
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+
+.admin_toolbar_left,
+.admin_toolbar_right {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.admin_add_product_btn {
+  background-color: #00aa55;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.2s ease;
+}
+
+.admin_add_product_btn:hover {
+  background-color: #008d47;
+}
+
+.admin_filter_select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: white;
+  font-size: 0.9rem;
+}
+
+.admin_search_input {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+  width: 180px;
+}
+@media (min-width: 768px) {
   .admin_toolbar_left,
   .admin_toolbar_right {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    align-items: center;
+    width: unset;
+    justify-content: unset;
   }
-  
-  .admin_add_product_btn {
-    background-color: #00aa55;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 8px 14px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    font-size: 0.95rem;
-    transition: background 0.2s ease;
-  }
-  
-  .admin_add_product_btn:hover {
-    background-color: #008d47;
-  }
-  
-  .admin_filter_select {
-    padding: 6px 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    background: white;
-    font-size: 0.9rem;
-  }
-  
-  .admin_search_input {
-    padding: 6px 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    font-size: 0.9rem;
-    width: 180px;
-  }
-  
+}

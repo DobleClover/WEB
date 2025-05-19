@@ -125,6 +125,21 @@
   display: flex;
   justify-content: space-between;
 }
+.notify_stock_button {
+  padding: 10px 20px;
+  background-color: var(--green-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.notify_stock_button:hover {
+  background-color: #1e7f46;
+}
+
 @media (min-width: 768px) {
   .product_images_section {
     margin-top: 5vh;

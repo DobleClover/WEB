@@ -1,4 +1,4 @@
-import { createDobleusoProductCard, createProductCard } from "./componentRenderer.js";
+import { createProductCard } from "./componentRenderer.js";
 
 
   

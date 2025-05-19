@@ -19,6 +19,7 @@ import apiDropRouter from "./routes/api/apiDropRouter.js";
 import apiUserRouter from "./routes/api/apiUserRouter.js";
 import apiTypeRouter from "./routes/api/apiTypeRouter.js";
 import apiSettingRouter from "./routes/api/apiSettingRouter.js";
+import apiStockAlertRouter from "./routes/api/apiStockAlertRouter.js";
 // import userRouter from './routes/userRouter.js';
 import apiCartRouter from './routes/api/apiCartRouter.js'
 // import apiShippingRouter from './routes/api/apiShippingRouter.js';
@@ -104,6 +105,7 @@ app.use("/api/user", apiUserRouter);
 app.use("/api/type", apiTypeRouter);
 app.use("/api/setting", apiSettingRouter);
 app.use('/api/cart', apiCartRouter);
+app.use('/api/stockAlert', apiStockAlertRouter);
 // app.use('/api/shipping', apiShippingRouter);
 // app.use('/api/shipping', apiShippingRouter);
 // app.use('/api/payment', apiPaymentRouter);

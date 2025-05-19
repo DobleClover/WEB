@@ -1,4 +1,4 @@
-import { createDobleusoProductCard, createProductCard } from "./componentRenderer.js";
+import { createProductCard } from "./componentRenderer.js";
 import { setSettings } from "./fetchEntitiesFromDB.js";
 import {
   animateSectionElements,
@@ -101,12 +101,8 @@ async function loadMoreProducts({ isDobleUso = false, initialLoad = false }) {
     }
 
     // Pintar productos
-    newProducts.forEach((prod) => {
-      const card = isDobleUso ? createDobleusoProductCard(prod) : createProductCard(prod);
-      wrapper.appendChild(card);
-      
-    });
-    listenToProductCards();
+    await paintProductCardsInList(newProducts,wrapper,true)
+    
     // Mostrar u ocultar el botón
     if (!data.hasMore || newProducts.length === 0) {
       loadMoreBtn.style.display = "none";

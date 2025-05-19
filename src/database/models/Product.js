@@ -31,7 +31,7 @@ export default (sequelize, dataTypes) => {
   const Product = sequelize.define(alias, cols, config);
 
   Product.associate = (models) => {
-    const { File, Variation, Brand, Drop } = models;
+    const { File, Variation, Brand, Drop, StockAlert } = models;
     Product.hasMany(File, {
       as: "files",
       foreignKey: "entities_id",
@@ -51,6 +51,10 @@ export default (sequelize, dataTypes) => {
     Product.belongsTo(Brand, {
       as: "brand",
       foreignKey: "brands_id",
+    });
+    Product.hasMany(StockAlert, {
+      as: "stockAlerts",
+      foreignKey: "products_id",
     });
   };
 

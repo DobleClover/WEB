@@ -17,7 +17,7 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
   display: flex;
-  height: 12rem;
+  height: fit-content;
   max-width: 500px;
   position: relative;
 }
@@ -81,9 +81,26 @@
 .admin_product_card_price,
 .admin_product_card_stock {
   font-size: 0.85rem;
-  margin-top: 4px;
+  margin-top: 2.5px;
 }
 
 .admin_product_card_price {
   font-weight: 600;
+}
+.admin_product_card_link {
+  display: inline-block;
+  margin-top: 4px;
+  color: var(--main-color, #007bff);
+  font-weight: bold;
+  text-decoration: underline;
+  font-size: 0.9rem;
+}
+.admin_product_card_link:hover {
+  text-decoration: none;
+}
+.admin_product_card_discount {
+  font-weight: bold;
+  color: var(--green-color); /* rojo oscuro o el color que uses para descuentos */
+  margin-left: 8px;
+  font-size: 0.9rem;
 }

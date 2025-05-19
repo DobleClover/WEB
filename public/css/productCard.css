@@ -10,6 +10,7 @@
   margin-bottom: 5vh;
   border: 2px solid var(--green-color);
   display: flex;
+  position: relative;
 }
 .card_images_wrapper {
   position: relative;
@@ -97,6 +98,10 @@
   color: #000;
   background: #efefef;
 }
+.dobleuso_card .card_information{
+  background-color: #000;
+  color: var(--green-color);
+}  
 .card_information * {
   text-align: center;
 }
@@ -125,6 +130,43 @@
 .product_card_price{
     font-weight: 600;
     font-size: medium;
+}
+.no_stock_tag {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #555;
+  color: white;
+  padding: 6px 10px;
+  font-weight: bold;
+  font-size: 0.75rem;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
+  z-index: 10;
+}
+
+.no_stock_price {
+  color: #999;
+  font-weight: bold;
+  font-style: italic;
+}
+
+.disabled_card {
+  pointer-events: none;
+  opacity: 0.6;
+}
+.dobleuso_tag {
+  background-color: black;
+  color: var(--green-color);
+  padding: 6px 12px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+  border-top: 1px solid var(--green-color);
+  border-radius: 0 0 8px 8px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 10;
 }
 @media (min-width: 1024px) {
   .product_card {

@@ -67,15 +67,19 @@ import {
   getImgElement,
   minDecimalPlaces,
   displayPriceNumber,
+  handleOutOfStockNotification,
 } from "./utils.js";
 
 export function createProductCard(props) {
-  let { id, name, brand, price, files, discount } = props;
-
-  // Crear elementos
+  let { id, name, brand, price, files, discount, totalStock, is_dobleuso } =
+    props;
+  const productHasStock = !(!totalStock || totalStock == 0);
   const card = document.createElement("a");
-  card.className = `card product_card ${discount ? "discount_card" : ""}`; //animated_element
+  card.className = `card product_card ${discount ? "discount_card" : ""}`;
   card.href = `/producto/${id}`;
+  if (is_dobleuso) {
+    card.classList.add("dobleuso_card");
+  }
 
   const imagesWrapper = document.createElement("div");
   imagesWrapper.className = "card_images_wrapper";
@@ -84,14 +88,18 @@ export function createProductCard(props) {
   cardImage.className = "product_card_image";
 
   const mainImageObj = files.find((file) => file.main_file) || files[0];
-  cardImage.style.backgroundImage = `url(${mainImageObj.thumb_url})`;
+  cardImage.style.backgroundImage = mainImageObj?.thumb_url
+    ? `url(${mainImageObj?.thumb_url})`
+    : "";
+
   let mainImage;
-  if (mainImageObj && mainImageObj.file_urls) {
+  if (mainImageObj && mainImageObj?.file_urls) {
     mainImage = getImgElement(
       mainImageObj,
       "product_card_image product_card_main_image product_card_active_img"
     );
   }
+
   const hoveredImage = document.createElement("img");
   hoveredImage.className =
     "card_alternative_image product_card_main_image card_image_active";
@@ -99,14 +107,21 @@ export function createProductCard(props) {
 
   cardImage.appendChild(mainImage);
   cardImage.appendChild(hoveredImage);
-  if (discount) {
+
+  if (!productHasStock) {
+    const noStockTag = document.createElement("div");
+    noStockTag.className = "no_stock_tag";
+    noStockTag.textContent = "SIN STOCK";
+    cardImage.appendChild(noStockTag);
+  } else if (discount) {
     const saleTag = document.createElement("div");
     saleTag.className = "sale_tag";
     saleTag.textContent = "SALE";
     cardImage.appendChild(saleTag);
   }
+
   const otherImagesContainer = document.createElement("div");
-  otherImagesContainer.className = "product_card_other_image ";
+  otherImagesContainer.className = "product_card_other_image";
 
   files.forEach((file) => {
     if (file.main_file) return;
@@ -127,12 +142,16 @@ export function createProductCard(props) {
   const cardCategory = document.createElement("div");
   cardCategory.className = "product_card_category";
   cardCategory.textContent = brand.name;
-  const priceInARS = displayPriceNumber(price);
+
   const cardPrice = document.createElement("div");
   cardPrice.className = `card_price product_card_price`;
-  cardPrice.textContent = `$${priceInARS}`;
+
   let discountedPrice;
-  if (discount) {
+
+  if (!productHasStock) {
+    cardPrice.textContent = "No disponible";
+    cardPrice.classList.add("no_stock_price");
+  } else if (discount) {
     discountedPrice = document.createElement("div");
     discountedPrice.className = `card_price product_card_price discount_price`;
     let priceWithDiscount = (1 - parseInt(discount) / 100) * parseFloat(price);
@@ -140,94 +159,35 @@ export function createProductCard(props) {
     cardPrice.textContent = "";
     const originalPrice = document.createElement("span");
     originalPrice.className = "original_price";
-    originalPrice.textContent = `$${priceInARS}`;
-    cardPrice.appendChild(originalPrice); // Agregarlo junto al precio original
-    // Crear el elemento para mostrar el porcentaje de descuento
+    originalPrice.textContent = `$${displayPriceNumber(price)}`;
+    cardPrice.appendChild(originalPrice);
     const discountInfo = document.createElement("span");
     discountInfo.className = "discount_info";
     discountInfo.textContent = ` ${discount}% OFF`;
-    cardPrice.appendChild(discountInfo); // Agregarlo junto al precio original
+    cardPrice.appendChild(discountInfo);
+  } else {
+    cardPrice.textContent = `$${displayPriceNumber(price)}`;
   }
+
   cardInfo.appendChild(cardHeader);
   cardInfo.appendChild(cardCategory);
   cardInfo.appendChild(cardPrice);
-  discount ? cardInfo.appendChild(discountedPrice) : null;
+  if (discount && productHasStock) cardInfo.appendChild(discountedPrice);
+  if (is_dobleuso) {
+    const dobleusoTag = document.createElement("div");
+    dobleusoTag.className = "dobleuso_tag";
+    dobleusoTag.textContent = "DobleUso";
+    card.appendChild(dobleusoTag);
+  }
 
   card.appendChild(imagesWrapper);
   card.appendChild(cardInfo);
 
-  return card;
-}
-
-export function createDobleusoProductCard(props) {
-  let { id, name, price, files, discount } = props;
-
-  const card = document.createElement("a");
-  card.href = `/producto/${id}`;
-  card.className = "dobleuso_product_card";
-
-  const badge = document.createElement("div");
-  badge.className = "dobleuso_badge";
-  badge.textContent = "DobleUso";
-  card.appendChild(badge);
-
-  const imageContainer = document.createElement("div");
-  imageContainer.className = "dobleuso_product_image_container";
-
-  const mainImageObj = files.find((file) => file.main_file) || files[0];
-  const img = document.createElement("img");
-  img.src =
-    mainImageObj.file_urls?.find((f) => f.size === "1x")?.url ||
-    mainImageObj.thumb_url;
-  img.alt = name;
-  img.className = "dobleuso_product_image";
-
-  imageContainer.appendChild(img);
-  card.appendChild(imageContainer);
-
-  const info = document.createElement("div");
-  info.className = "dobleuso_product_info";
-
-  const productName = document.createElement("h3");
-  productName.className = "dobleuso_product_name";
-  productName.textContent = name;
-
-  const priceContainer = document.createElement("div");
-  priceContainer.className = "dobleuso_price_container";
-  const priceInARS = displayPriceNumber(price);
-  if (discount) {
-    const originalPrice = document.createElement("span");
-    originalPrice.className = "dobleuso_price_original";
-    originalPrice.textContent = `$${priceInARS}`;
-
-    const discountedValue = price * (1 - discount / 100);
-    const discountedPrice = document.createElement("span");
-    discountedPrice.className = "dobleuso_price_discounted";
-    discountedPrice.textContent = `$${displayPriceNumber(discountedValue)}`;
-
-    const discountLabel = document.createElement("span");
-    discountLabel.className = "dobleuso_discount_label";
-    discountLabel.textContent = `${discount}% OFF`;
-
-    priceContainer.appendChild(originalPrice);
-    priceContainer.appendChild(discountedPrice);
-    priceContainer.appendChild(discountLabel);
-  } else {
-    const productPrice = document.createElement("p");
-    productPrice.className = "dobleuso_product_price";
-    productPrice.textContent = `$${priceInARS}`;
-    priceContainer.appendChild(productPrice);
-  }
-
-  const productButton = document.createElement("div");
-  productButton.className = "dobleuso_product_button";
-  productButton.innerHTML = "<span class='icon'>✔</span> SELECCIONAR OPCIONES";
-
-  info.appendChild(productName);
-  info.appendChild(priceContainer);
-  info.appendChild(productButton);
-
-  card.appendChild(info);
+  // Opcional: desactivar link si no hay stock
+  // if (!productHasStock) {
+  //   card.href = "javascript:void(0)";
+  //   card.classList.add("disabled_card");
+  // }
 
   return card;
 }
@@ -258,7 +218,7 @@ export async function createUserLoginModal() {
         {
           text: "Iniciar Sesión",
           type: "button",
-          className: "ui button submit green send-modal-form-btn",
+          className: "ui button submit green send_modal_form_btn",
           onClick: async () => await handleUserLoginModal(),
         },
         {
@@ -336,7 +296,7 @@ export async function createUserSignUpModal() {
       buttons: [
         {
           text: "Registrarse",
-          className: "ui button submit green send-modal-form-btn",
+          className: "ui button submit green send_modal_form_btn",
           onClick: async () => await handleUserSignUpModal(),
         },
       ],
@@ -750,7 +710,9 @@ export function checkoutCard(props) {
 
     const originalPrice = document.createElement("span");
     originalPrice.className = "card_price original_price";
-    originalPrice.textContent = `$${displayPriceNumber(productFromDB.price * props.quantity)}`;
+    originalPrice.textContent = `$${displayPriceNumber(
+      productFromDB.price * props.quantity
+    )}`;
 
     const discountedPrice = document.createElement("span");
     discountedPrice.className = "card_price discounted_price";
@@ -766,7 +728,9 @@ export function checkoutCard(props) {
   } else {
     priceSpan = document.createElement("span");
     priceSpan.className = "card_price";
-    priceSpan.textContent = `$${displayPriceNumber(productFromDB.price * props.quantity)}`;
+    priceSpan.textContent = `$${displayPriceNumber(
+      productFromDB.price * props.quantity
+    )}`;
     contentDiv.appendChild(priceSpan);
   }
 
@@ -1071,9 +1035,10 @@ export function orderCard(order) {
 
     const priceSpan = document.createElement("span");
     priceSpan.className = "card_price";
-    priceSpan.textContent = `$${displayBigNumbers((orderItem.quantity * orderItem.price).toFixed(
+    priceSpan.textContent = `$${displayBigNumbers(
+      (orderItem.quantity * orderItem.price).toFixed(2),
       2
-    ),2)}`;
+    )}`;
 
     // Agregar todos los elementos al contenedor de contenido
     contentDiv.appendChild(header);
@@ -1400,7 +1365,7 @@ export async function createPhoneModal(phone) {
       buttons: [
         {
           text: buttonText,
-          className: "ui button submit green send-modal-form-btn",
+          className: "ui button submit green send_modal_form_btn",
           onClick: async () => await handlePhoneModalActions(phone),
         },
       ],
@@ -1515,7 +1480,7 @@ export async function createAddressModal(address = undefined) {
       buttons: [
         {
           text: buttonText,
-          className: "ui button submit green send-modal-form-btn",
+          className: "ui button submit green send_modal_form_btn",
           onClick: async () => await handleAddressModalActions(address),
         },
       ],
@@ -2058,10 +2023,11 @@ export function generateOrderDetailModal(order, isAdminModal = false) {
         <div class="modal_card_content_row">
             <span class="modal-card_content-span">${
               order.orderItemsPurchased
-            } producto${order.orderItemsPurchased > 1 ? "s":""}</span>
-            <span class="modal-card_content-span">$${
-              displayBigNumbers(order.orderItemsPurchasedPrice,2)
-            }</span>
+            } producto${order.orderItemsPurchased > 1 ? "s" : ""}</span>
+            <span class="modal-card_content-span">$${displayBigNumbers(
+              order.orderItemsPurchasedPrice,
+              2
+            )}</span>
         </div>
         </div>`;
   }
@@ -2069,7 +2035,10 @@ export function generateOrderDetailModal(order, isAdminModal = false) {
       <div class="content">
           <span class="modal_card_content_row">
               <span class="modal-card_content-span bold">Total</span>
-              <span class="modal-card_content-span bold">$${displayBigNumbers(order.total,2)}</span>
+              <span class="modal-card_content-span bold">$${displayBigNumbers(
+                order.total,
+                2
+              )}</span>
           </span>
       </div>
   `;
@@ -2107,7 +2076,7 @@ export function generateOrderDetailModal(order, isAdminModal = false) {
     "card-payment-detail",
     "order_detail_card_section"
   );
-  
+
   paymentSection.innerHTML = `
       <label class="card_label label">Detalle del pago</label>
       <div class="ui card">
@@ -2991,7 +2960,7 @@ export async function createProductModal(product = undefined) {
     buttons: [
       {
         type: "button",
-        className: "ui button submit green send-modal-form-btn",
+        className: "ui button submit green send_modal_form_btn",
         text: product ? "Editar" : "Crear",
         onClick: async () => await handleProductModalActions(product),
       },
@@ -3161,7 +3130,7 @@ export async function createBrandModal(brand = undefined) {
       buttons: [
         {
           type: "button",
-          className: "ui button submit green send-modal-form-btn",
+          className: "ui button submit green send_modal_form_btn",
           text: brand ? "Editar" : "Crear",
           onClick: async () => await handleBrandModalActions(brand),
         },
@@ -3293,7 +3262,7 @@ export async function createDropModal(drop = undefined) {
       buttons: [
         {
           type: "button",
-          className: "ui button submit green send-modal-form-btn",
+          className: "ui button submit green send_modal_form_btn",
           text: drop ? "Editar" : "Crear",
           onClick: async () => await handleDropModalActions(drop),
         },
@@ -3390,7 +3359,7 @@ export async function createColorModal(color = undefined) {
       buttons: [
         {
           type: "button",
-          className: "ui button submit green send-modal-form-btn",
+          className: "ui button submit green send_modal_form_btn",
           text: color ? "Editar" : "Crear",
           onClick: async () => await handleColorModalActions(color),
         },
@@ -3639,18 +3608,38 @@ export function createDropCard(drop) {
 export function renderAdminProductCard(product) {
   const template = document.createElement("template");
   template.innerHTML = `
-    <div class="admin_product_card ${product.active ? "" : "unactive_product_card"}">
-    ${product.is_dobleuso ? '<div class="admin_product_card_badge">DobleUso</div>' : ''}
+    <div class="admin_product_card ${
+      product.active ? "" : "unactive_product_card"
+    }">
+    ${
+      product.is_dobleuso
+        ? '<div class="admin_product_card_badge">DobleUso</div>'
+        : ""
+    }
       <div class="admin_product_card_image_wrapper">
-        <img src="${product.files[0]?.file_urls[0]?.url}" alt="${product.name}" />
+        <img src="${product.files[0]?.file_urls[0]?.url}" alt="${
+    product.name
+  }" />
         
       </div>
       <div class="admin_product_card_info">
         <h3>${product.name}</h3>
-        <p class="admin_product_card_brand">${product.brand?.name || ''}</p>
+        <p class="admin_product_card_brand">${product.brand?.name || ""}</p>
         <p class="admin_product_card_drop">Drop 1 - Drop 3</p>
-        <p class="admin_product_card_price">U$$ ${product.price}</p>
+        <p class="admin_product_card_price">
+  U$$ ${product.price}
+  ${
+    product.discount > 0
+      ? `||<span class="admin_product_card_discount">${product.discount}% OFF</span>`
+      : ""
+  }
+</p>
         <p class="admin_product_card_stock">Stock: ${product.totalStock}</p>
+        <a href="/producto/${
+          product.id
+        }" target="_blank" class="admin_product_card_link" onclick="event.stopPropagation()">
+          Ver publicación
+        </a>
       </div>
     </div>
   `.trim();
@@ -3670,19 +3659,114 @@ export function renderAdminProductsToolbar() {
 
     <div class="admin_toolbar_right">
       <select class="admin_filter_select" id="sort_by">
-        <option value="name">Ordenar por nombre</option>
-        <option value="price">Ordenar por precio</option>
-        <option value="stock">Ordenar por stock</option>
-      </select>
+  <option value="name_asc">Nombre A → Z</option>
+  <option value="name_desc">Nombre Z → A</option>
+  <option value="price_asc">Precio más bajo</option>
+  <option value="price_desc">Precio más alto</option>
+  <option value="stock_asc">Menor stock</option>
+  <option value="stock_desc">Mayor stock</option>
+  <option value="brand_asc">Marca A → Z</option>
+  <option value="brand_desc">Marca Z → A</option>
+</select>
+
 
       <select class="admin_filter_select" id="filter_type">
         <option value="all">Todos los productos</option>
         <option value="dobleuso">Productos DobleUso</option>
         <option value="dobleclover">Productos DobleClover</option>
         <option value="active">Productos activos</option>
+        <option value="discount">Productos con descuento</option>
       </select>
     </div>
   `;
 
   return container;
+}
+
+export async function createOutOfStockNotificationModal(productData) {
+  const userEmail = userLogged?.email || "";
+  const userFirstPhone = userLogged?.phones[0] || undefined;
+  if (!sizesFromDB.length) await setSizes();
+  if (!countriesFromDB.length) await setCountries();
+  // Filtrar talles válidos para esta categoría
+  const validSizes = sizesFromDB.filter((size) =>
+    size.categories.includes(productData.categories_id)
+  );
+
+  // Orden opcional: por ID o alfabéticamente
+  const sizes = validSizes.map((size) => ({
+    id: size.id,
+    size: size.size,
+  }));
+
+  createModal({
+    headerTitle: "Avisame cuando haya stock",
+    formFields: [
+      {
+        type: "two-fields",
+        fields: [
+          {
+            label: "Codigo de area",
+            type: "select",
+            name: "phone_countries_id",
+            className:
+              "ui search dropdown country_code_search_input form_search_dropdown",
+            value: userFirstPhone ? userFirstPhone.countries_id : "",
+            required: true,
+          },
+          {
+            label: "Numero de telefono",
+            type: "text",
+            className: "numeric_only_input",
+            name: "phone_number",
+            value: userFirstPhone ? userFirstPhone.phone_number : "",
+            required: true,
+          },
+        ],
+      },
+      {
+        label: "Tu correo electrónico",
+        type: "text",
+        name: "email",
+        required: true,
+        value: userEmail,
+      },
+      {
+        label: "Tu Talle",
+        type: "select",
+        name: "sizes_id",
+        required: true,
+        options: sizes.map((s) => ({
+          value: s.id,
+          label: s.size,
+        })),
+      },
+    ],
+    buttons: [
+      {
+        text: "Enviar aviso",
+        className: "ui button green send_modal_form_btn",
+        onClick: async (e) =>
+          await handleOutOfStockNotification(productData, e),
+      },
+    ],
+  });
+  // Una vez lo creo, lo abro
+  handlePageModal(true);
+  let classNameToActivate =
+    ".ui.search.dropdown.country_code_search_input.form_search_dropdown";
+  let arrayToActivateInDropdown = countriesFromDB
+    ?.filter((count) => count.code)
+    ?.map((country) => ({
+      id: country.id,
+      name: `+${country.code} (${country.name})`,
+    }));
+
+  // Ahora activo el select
+  activateDropdown({
+    className: classNameToActivate,
+    array: arrayToActivateInDropdown,
+    placeHolder: "Codigo de area",
+    values: userFirstPhone ? userFirstPhone?.country?.id : [],
+  });
 }

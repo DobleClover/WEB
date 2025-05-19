@@ -1,4 +1,4 @@
-import { createProductCard } from "./componentRenderer.js";
+import { createOutOfStockNotificationModal, createProductCard } from "./componentRenderer.js";
 import {
   productsFromDB,
   setProductsFromDB,
@@ -164,7 +164,16 @@ window.addEventListener("load", async () => {
       buttonContainer.className = "button_container";
       if (productDetailsSection)
         productDetailsSection.appendChild(buttonContainer);
-      paintAddToCartButton();
+      const productHasStock = !(!productData.totalStock || productData.totalStock == 0);
+      if (!productHasStock) {
+        const notifyButton = document.createElement("button");
+        notifyButton.className = "notify_stock_button";
+        notifyButton.textContent = "Avisame cuando haya stock";
+        notifyButton.onclick = async () => await createOutOfStockNotificationModal(productData);
+        buttonContainer.appendChild(notifyButton);
+      } else {
+        paintAddToCartButton();
+      }
     };
 
     productId = getIdFromUrl(); //Obtengo el id del producto
@@ -209,10 +218,10 @@ window.addEventListener("load", async () => {
     function createImagesContainer(productFiles) {
       const imagesWrapper = document.createElement("div");
       imagesWrapper.className = "images_wrapper";
-    
+
       const smallImagesContainer = document.createElement("div");
       smallImagesContainer.className = "small_images_container";
-    
+
       productFiles.forEach((file, index) => {
         // Crear imagen grande
         const largeImage = document.createElement("img");
@@ -227,7 +236,7 @@ window.addEventListener("load", async () => {
         largeImage.setAttribute("data-file_id", file.id);
         largeImage.loading = "lazy";
         imagesWrapper.appendChild(largeImage);
-    
+
         // Crear imagen pequeña
         if (productFiles.length > 1) {
           const smallImage = document.createElement("img");
@@ -242,15 +251,17 @@ window.addEventListener("load", async () => {
           smallImagesContainer.appendChild(smallImage);
         }
       });
-    
+
       // Agregar a la sección product_images_section
-      const productImagesSection = document.querySelector(".product_images_section");
+      const productImagesSection = document.querySelector(
+        ".product_images_section"
+      );
       productImagesSection.innerHTML = "";
       if (productImagesSection) {
         productImagesSection.appendChild(imagesWrapper);
         productImagesSection.appendChild(smallImagesContainer);
       }
-    
+
       // Asegurar que todas las imágenes hayan cargado antes de mostrar y resetear scroll
       const allImages = imagesWrapper.querySelectorAll(".image_element");
       const imagePromises = Array.from(allImages).map((img) => {
@@ -259,13 +270,12 @@ window.addEventListener("load", async () => {
           img.onload = img.onerror = () => resolve();
         });
       });
-    
+
       Promise.all(imagePromises).then(() => {
         imagesWrapper.scrollLeft = 0;
         removeDoblecloverOverlay(); // Oculta loader cuando todo está listo
       });
     }
-    
 
     // Función para actualizar las opciones de talles
     function updateSizeOptions(sizeSelect, variations, selectedColorId) {

@@ -287,8 +287,7 @@ window.addEventListener("load", async () => {
       });
     } catch (error) {
       console.log(error);
-      return
-      
+      return;
     }
   }
   function createUserProfileComponent() {
@@ -401,13 +400,13 @@ const paintAdminSales = async () => {
       items: order.orderItems.length,
       fecha: sanitizeDate(order.createdAt),
       estado: order.orderStatus.status,
-      'Tipo de envío': order.shippingType.type,
+      "Tipo de envío": order.shippingType.type,
     };
     rowsData.push(rowObject);
   });
   const gridData = {
     columnDefs: [
-      { field: "identificador", flex: .8 },
+      { field: "identificador", flex: 0.8 },
       { field: "nombre", flex: 0.8 },
       { field: "apellido", flex: 1 },
       { field: "items", flex: 0.5, filter: "agNumberColumnFilter" },
@@ -536,9 +535,6 @@ const paintAdminProducts = async () => {
   listenToAdminProductToolbar();
 };
 
-
-
-
 const handleProductRowClick = async (product) => {
   await createProductModal(product);
 };
@@ -580,7 +576,7 @@ const handleOrderRowClick = async (order) => {
     // Armo el html de la fila
     // Obtener la imagen del producto o la default
     let productImage = "./img/product/default.png";
-    let srcset = "";    
+    let srcset = "";
     if (orderItem.product?.files?.length) {
       const firstFile = orderItem.product.files[0];
       productImage =
@@ -1116,24 +1112,57 @@ function renderFilteredSortedCards() {
 
   // Filtros
   if (filterType === "dobleuso") {
-    filtered = filtered.filter(p => p.is_dobleuso);
+    filtered = filtered.filter((p) => p.is_dobleuso);
   } else if (filterType === "dobleclover") {
-    filtered = filtered.filter(p => p.brand?.name?.toLowerCase().includes("dobleclover"));
+    filtered = filtered.filter((p) =>
+      p.brand?.name?.toLowerCase().includes("dobleclover")
+    );
   } else if (filterType === "active") {
-    filtered = filtered.filter(p => p.active);
+    filtered = filtered.filter((p) => p.active);
+  } else if (filterType === "discount") {
+    filtered = filtered.filter((p) => p.discount > 0);
   }
 
   // Orden
+  const [sortField, sortOrder] = sortBy.split("_");
+
   filtered.sort((a, b) => {
-    if (sortBy === "name") return a.name.localeCompare(b.name);
-    if (sortBy === "price") return (parseFloat(a.price) || 0) - (parseFloat(b.price) || 0);
-    if (sortBy === "stock") return a.totalStock - b.totalStock;
+    let aVal = a[sortField];
+    let bVal = b[sortField];
+  
+    if (sortField === "stock") {
+      aVal = a.totalStock || 0;
+      bVal = b.totalStock || 0;
+      return sortOrder === "asc" ? aVal - bVal : bVal - aVal;
+    }
+  
+    if (sortField === "brand") {
+      aVal = a.brand?.name?.toLowerCase() || "";
+      bVal = b.brand?.name?.toLowerCase() || "";
+      return sortOrder === "asc"
+        ? aVal.localeCompare(bVal)
+        : bVal.localeCompare(aVal);
+    }
+  
+    if (sortField === "name") {
+      return sortOrder === "asc"
+        ? a.name.localeCompare(b.name)
+        : b.name.localeCompare(a.name);
+    }
+  
+    if (sortField === "price") {
+      const aNum = parseFloat(a.price) || 0;
+      const bNum = parseFloat(b.price) || 0;
+      return sortOrder === "asc" ? aNum - bNum : bNum - aNum;
+    }
+  
     return 0;
   });
+  
 
   // Render
   const fragment = document.createDocumentFragment();
-  filtered.forEach(prod => {
+  filtered.forEach((prod) => {
     const card = renderAdminProductCard(prod);
     card.addEventListener("click", () => handleProductRowClick(prod));
     fragment.appendChild(card);
@@ -1141,6 +1170,5 @@ function renderFilteredSortedCards() {
 
   cardsWrapper.appendChild(fragment);
 }
-
 
 export { userProfileExportObj };
