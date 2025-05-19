@@ -98,6 +98,12 @@ export function createProductCard(props) {
       mainImageObj,
       "product_card_image product_card_main_image product_card_active_img"
     );
+  } else {
+    mainImage = document.createElement("img");
+    mainImage.src = "/img/product/default.png";
+    mainImage.alt = "Imagen no disponible";
+    mainImage.className =
+      "product_card_image product_card_main_image product_card_active_img";
   }
 
   const hoveredImage = document.createElement("img");
