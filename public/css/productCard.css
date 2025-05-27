@@ -88,6 +88,7 @@
   transition: transform 0.2s ease-in-out, opacity 0.3s ease-in-out; /* Transición suave */
   width: unset !important;
   opacity: 0;
+  aspect-ratio: 1/1.5;
 }
 .card_information {
   height: 100%;

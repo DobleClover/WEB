@@ -56,6 +56,10 @@ export default (sequelize, dataTypes) => {
       as: "addresses",
       foreignKey: "users_id",
     });
+    User.hasMany(models.CouponUsage, {
+      as: "usedCoupons",
+      foreignKey: "users_id",
+    });
   };
 
   return User;

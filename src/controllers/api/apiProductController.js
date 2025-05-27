@@ -3,6 +3,7 @@ const { Product } = db;
 // LIBRERIES
 import { validationResult } from "express-validator";
 import { v4 as UUIDV4 } from "uuid";
+import { Sequelize, Op } from "sequelize";
 import {
   insertFilesInDB,
   findFilesInDb,
@@ -50,12 +51,15 @@ const PRODUCTS_FOLDER_NAME = "products";
 const controller = {
   handleGetAllProducts: async (req, res) => {
     try {
-      let { categoryId, productId, limit, offset, is_dobleuso } = req.query;
+      let { categoryId, productId, limit, offset, is_dobleuso, has_stock} = req.query;
       if (limit) limit = parseInt(limit);
       if (categoryId) categoryId = parseInt(categoryId);
       if (offset) offset = parseInt(offset);
       if (typeof is_dobleuso !== "undefined") {
-        is_dobleuso = is_dobleuso === "1";
+        is_dobleuso = is_dobleuso === "1" || is_dobleuso === "true";
+      }
+      if (typeof has_stock !== "undefined") {
+        has_stock = has_stock === "1" || has_stock === "true";
       }
       let products;
       // Aca esta buscando uno/varios pero puntuales
@@ -63,6 +67,11 @@ const controller = {
         const foundProduct = await getProductsFromDB({
           id: productId,
           withImages: true,
+          categoryId,
+          limit,
+          offset,
+          is_dobleuso,
+          hasStock: has_stock
         });
         if (!foundProduct) {
           return res.status(HTTP_STATUS.NOT_FOUND.code).json({
@@ -80,15 +89,17 @@ const controller = {
       } else {
         const productsFetched = await getProductsFromDB({
           id: null,
-          categoryId,
           withImages: true,
+          categoryId,
           limit,
           offset,
           is_dobleuso,
+          hasStock: has_stock
         });
         products = productsFetched;
       }
-
+      console.log(products);
+      
       const totalCount = await getProductsCountFromDB({
         categoryId,
         is_dobleuso,
@@ -433,6 +444,7 @@ export async function getProductsFromDB({
   categoryId = null,
   dropId = null,
   is_dobleuso = null,
+  hasStock = null, // NUEVO: permite pedir solo con o sin stock
   withImages = false,
   limit,
   offset,
@@ -442,13 +454,32 @@ export async function getProductsFromDB({
     if (categoryId) where.categories_id = categoryId;
     if (typeof is_dobleuso === "boolean") where.is_dobleuso = is_dobleuso;
 
+    // Filtro opcional por ID
     let productsToReturn, productToReturn;
+
+    // Subquery para calcular totalStock
+    const totalStockSubquery = Sequelize.literal(`(
+      SELECT SUM(quantity)
+      FROM variations
+      WHERE variations.products_id = Product.id
+    )`);
+
+    // Filtro por stock si se pidió
+    if (typeof hasStock === "boolean") {
+      where[Op.and] = Sequelize.where(totalStockSubquery, hasStock ? { [Op.gt]: 0 } : 0);
+    }
+
+    const baseOptions = {
+      where,
+      include: productIncludeArray,
+      limit,
+      offset,
+      order: [[totalStockSubquery, 'DESC']], // Ordena por total stock
+    };
 
     if (typeof id === "string") {
       productToReturn = await db.Product.findByPk(id, {
-        include: productIncludeArray,
-        limit,
-        offset,
+        ...baseOptions,
       });
       if (!productToReturn) return null;
       productToReturn = getDeepCopy(productToReturn);
@@ -460,24 +491,18 @@ export async function getProductsFromDB({
       return productToReturn;
     } else if (Array.isArray(id)) {
       productsToReturn = await db.Product.findAll({
-        where: { id },
-        include: productIncludeArray,
-        limit,
-        offset,
+        ...baseOptions,
+        where: { ...where, id },
       });
     } else {
-      productsToReturn = await Product.findAll({
-        where,
-        include: productIncludeArray,
-        limit,
-        offset,
-      });
+      productsToReturn = await db.Product.findAll(baseOptions);
     }
 
     if (!productToReturn && (!productsToReturn || !productsToReturn.length))
       return null;
 
     productsToReturn = getDeepCopy(productsToReturn);
+
     for (let i = 0; i < productsToReturn.length; i++) {
       const prod = productsToReturn[i];
       await setProductKeysToReturn({
@@ -493,6 +518,7 @@ export async function getProductsFromDB({
     return null;
   }
 }
+
 
 async function deleteProductInDb(productId) {
   try {

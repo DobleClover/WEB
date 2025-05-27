@@ -46,6 +46,7 @@ import { HTTP_STATUS } from "../../utils/staticDB/httpStatusCodes.js";
 import { deleteSensitiveUserData } from "./apiUserController.js";
 import { getSettingsFromDB } from "./apiSettingController.js";
 import sendOrderMails from "../../utils/helpers/sendOrderMails.js";
+import { markCouponAsUsed } from "./apiCouponController.js";
 
 // Agrega credenciales
 const mpClient = new MercadoPagoConfig({
@@ -122,6 +123,7 @@ const controller = {
         payment_types_id,
         shipping_types_id,
         variationsFromDB, //Del middleware
+        coupon_code,
       } = req.body;
 
       // Si esta logueado y no tenia los nros y direcciones armadas...
@@ -187,10 +189,52 @@ const controller = {
       // armo los orderItems
       let orderItemsToDB = [];
       const settingsFromDB = await getSettingsFromDB();
-      const dolarPrice = settingsFromDB.find(
-        (dbSetting) => dbSetting.setting_types_id == 1
-      )?.value || undefined;
-      
+      const dolarPrice =
+        settingsFromDB.find((dbSetting) => dbSetting.setting_types_id == 1)
+          ?.value || undefined;
+
+      // Verifico cupon
+      let coupon = null;
+      if (coupon_code) {
+        coupon = await db.Coupon.findOne({
+          where: {
+            code: coupon_code.toUpperCase().trim(),
+            expires_at: {
+              [db.Sequelize.Op.or]: [
+                null,
+                { [db.Sequelize.Op.gt]: new Date() },
+              ],
+            },
+          },
+          include: {
+            model: db.CouponUsage,
+            as: "usages",
+            where: { users_id },
+            required: true,
+          },
+        });
+
+        if (!coupon) {
+          return res
+            .status(400)
+            .json({ ok: false, msg: "Cupón inválido o no aplicable" });
+        }
+
+        const usage = coupon.usages[0];
+        if (usage.used_at) {
+          return res
+            .status(400)
+            .json({ ok: false, msg: "Este cupón ya fue utilizado" });
+        }
+
+        if (
+          coupon.usage_limit !== null &&
+          coupon.usage_count >= coupon.usage_limit
+        ) {
+          return res.status(400).json({ ok: false, msg: "Cupón agotado" });
+        }
+      }
+
       // Voy por las variaciones para restar stock
       variations.forEach((variation) => {
         let { quantityRequested, id } = variation; //Tengo que chequear con esa variacion
@@ -205,8 +249,12 @@ const controller = {
         //Hago el snapshot del  precio y nombre
         let orderItemName = variationFromDB.product?.name;
         //Si pago en mp entonces es precio pesos, sino precio usd
-        
-        let orderItemPrice = parseFloat(variationFromDB.product?.discounted_price || variationFromDB.product?.price) * parseFloat(dolarPrice);
+
+        let orderItemPrice =
+          parseFloat(
+            variationFromDB.product?.discounted_price ||
+              variationFromDB.product?.price
+          ) * parseFloat(dolarPrice);
 
         orderItemPrice = orderItemPrice && parseFloat(orderItemPrice);
         let orderItemQuantity = parseInt(quantityRequested);
@@ -236,6 +284,14 @@ const controller = {
       });
       // Dejo seteado el total
       orderDataToDB.total = orderTotalPrice;
+      // Si tiene cupon entonces modifica el total
+      if (coupon) {
+        const discountAmount =
+          orderTotalPrice * (coupon.discount_percent / 100);
+        orderTotalPrice -= discountAmount;
+        orderDataToDB.total = orderTotalPrice;
+        orderDataToDB.coupons_id = coupon.id; // <-- vínculo con la orden
+      }
 
       // Hago los insert en la base de datos
       let orderCreated = await db.Order.create(
@@ -275,7 +331,13 @@ const controller = {
         // EFECTIVO || TRANSFERENCIA
         paymentOrderId = null;
         paymentURL = `/post-compra?orderId=${orderDataToDB.tra_id}&shippingTypeId=${orderDataToDB.shipping_types_id}&paymentTypeId=${orderDataToDB.payment_types_id}`;
-        const orderToSendEmails = await getOrdersFromDB({id: orderDataToDB.id});
+        const orderToSendEmails = await getOrdersFromDB({
+          id: orderDataToDB.id,
+        });
+        // Si tiene cupon, entonces aca ya se uso ==> Lo tildo como usado
+        if (orderToSendEmails.coupons_id && users_id) {
+          await markCouponAsUsed(orderToSendEmails);
+        }
         await sendOrderMails(orderToSendEmails);
         console.log("📧 Mails de confirmación enviados correctamente");
       }
@@ -607,7 +669,7 @@ function setOrderKeysToReturn(order) {
   order.shippingType = shippingTypes.find(
     (shipType) => shipType.id == order.shipping_types_id
   );
- 
+
   order.orderItemsPurchased = order.orderItems.reduce((acum, item) => {
     return acum + item.quantity;
   }, 0);
@@ -713,6 +775,6 @@ export async function checkOrderPaymentExpiration(order) {
   if (diffMinutes > 20) {
     await disableCreatedOrder(order.id);
     return { type: 1 }; //1 es para cancelacion
-  } 
+  }
   return false;
 }

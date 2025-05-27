@@ -2880,7 +2880,6 @@ export async function createProductModal(product = undefined) {
             name: "product_description",
             placeholder:
               "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Incidunt, ex.",
-            required: true,
             containerClassName: "required",
             value: product ? product.description : "",
           },

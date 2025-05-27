@@ -66,6 +66,8 @@ function listenToFilterSelect() {
 
 let productsDobleClover = [];
 let productsDobleUso = [];
+let fetchingWithoutStockDobleUso = false;
+let fetchingWithoutStockDobleClover = false;
 
 let offsetDobleClover = 0;
 let offsetDobleUso = 0;
@@ -74,46 +76,59 @@ const limitPerLoad = 5;
 
 
 async function loadMoreProducts({ isDobleUso = false, initialLoad = false }) {
-  const offset = isDobleUso ? offsetDobleUso : offsetDobleClover;
   const wrapper = document.querySelector(isDobleUso ? ".dobleuso_wrapper" : ".dobleclover_wrapper");
   const loadMoreBtn = document.getElementById(isDobleUso ? "loadMoreDobleuso" : "loadMoreDobleclover");
 
-  // Feedback visual
+  const offset = isDobleUso ? offsetDobleUso : offsetDobleClover;
+  const fetchingWithoutStock = isDobleUso ? fetchingWithoutStockDobleUso : fetchingWithoutStockDobleClover;
+
   if (loadMoreBtn) {
     loadMoreBtn.disabled = true;
     loadMoreBtn.textContent = "Cargando...";
   }
 
   try {
-    const res = await fetch(`/api/product?is_dobleuso=${isDobleUso ? 1 : 0}&limit=${limitPerLoad}&offset=${offset}`);
+    // Armar la URL con has_stock dinámico
+    const hasStockParam = fetchingWithoutStock ? "0" : "1";
+    const res = await fetch(`/api/product?is_dobleuso=${isDobleUso ? 1 : 0}&has_stock=${hasStockParam}&limit=5&offset=${offset}`);
     const data = await res.json();
     if (!data.ok) throw new Error("Error fetching products");
 
-    const newProducts = data.data;
+    const products = data.data;
 
-    // Guardar productos
-    if (isDobleUso) {
-      productsDobleUso.push(...newProducts);
-      offsetDobleUso += newProducts.length;
-    } else {
-      productsDobleClover.push(...newProducts);
-      offsetDobleClover += newProducts.length;
-    }
+    // Pintar si hay
+    if (products.length > 0) {
+      await paintProductCardsInList(products, wrapper, true);
 
-    // Pintar productos
-    await paintProductCardsInList(newProducts,wrapper,true)
-    
-    // Mostrar u ocultar el botón
-    if (!data.hasMore || newProducts.length === 0) {
-      loadMoreBtn.style.display = "none";
-    } else {
+      if (isDobleUso) {
+        offsetDobleUso += products.length;
+      } else {
+        offsetDobleClover += products.length;
+      }
+
       loadMoreBtn.disabled = false;
       loadMoreBtn.textContent = "Cargar más productos";
-    }
 
-    // Animación al cargar los primeros
-    if (initialLoad && newProducts.length > 0) {
-      animateSectionElements(wrapper, 0.05);
+      if (initialLoad) {
+        animateSectionElements(wrapper, 0.05);
+      }
+
+    } else {
+      // Si estaba buscando con stock y no encontró más → pasar a sin stock
+      if (!fetchingWithoutStock) {
+        if (isDobleUso) {
+          fetchingWithoutStockDobleUso = true;
+          offsetDobleUso = 0;
+        } else {
+          fetchingWithoutStockDobleClover = true;
+          offsetDobleClover = 0;
+        }
+        // Intentar cargar sin stock inmediatamente
+        return await loadMoreProducts({ isDobleUso, initialLoad });
+      } else {
+        // Ya estaba buscando sin stock y no hay más
+        loadMoreBtn.style.display = "none";
+      }
     }
   } catch (err) {
     console.error("Error loading products:", err);
@@ -123,6 +138,8 @@ async function loadMoreProducts({ isDobleUso = false, initialLoad = false }) {
     }
   }
 }
+
+
 
 
 function listenToLoadMoreBtns(){

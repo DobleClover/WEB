@@ -9,8 +9,8 @@ const { handleCreateProduct, handleUpdateProduct, handleGetAllProducts, handleDe
 const {productFields} = formValidations;
 
 router.get('/', handleGetAllProducts);
-router.post('/',   multerMiddleware.array('images'), productFields, handleCreateProduct);
-router.put('/:id',   multerMiddleware.array('images'), productFields, handleUpdateProduct);
-router.delete('/:id', handleDeleteProduct);
+router.post('/',adminCredentialsMiddleware, multerMiddleware.array('images'), productFields, handleCreateProduct);
+router.put('/:id', adminCredentialsMiddleware, multerMiddleware.array('images'), productFields, handleUpdateProduct);
+router.delete('/:id', adminCredentialsMiddleware, handleDeleteProduct);
 
 export default router;

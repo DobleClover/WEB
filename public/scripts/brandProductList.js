@@ -52,9 +52,9 @@ function renderBrandSections(brand) {
       bannerSection.appendChild(img);
     }
   
-    // Trama de fondo con logotipo
-    if (logoUrl) {
-      productSection.style.backgroundImage = `url("${logoUrl}")`;
-    }
+    // // Trama de fondo con logotipo
+    // if (logoUrl) {
+    //   productSection.style.backgroundImage = `url("${logoUrl}")`;
+    // }
   }
   

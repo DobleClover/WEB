@@ -15,6 +15,7 @@ import clearUserSession from "../utils/helpers/clearUserSession.js";
 import { disableCreatedOrder, getOneOrderFromDB, getOrdersFromDB } from "./api/apiOrderController.js";
 import { captureMercadoPagoPayment } from "./api/apiPaymentController.js";
 import sendOrderMails from "../utils/helpers/sendOrderMails.js";
+import { markCouponAsUsed } from "./api/apiCouponController.js";
 // Obtener la ruta absoluta del archivo
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -162,7 +163,7 @@ const controller = {
       }
   
       console.log("✅ Pago aprobado por Mercado Pago");
-  
+      await markCouponAsUsed(orderFromDb);
       const updatedStatus = orderFromDb.shipping_types_id === 1 ? 2 : 3;
       console.log(`📦 Nuevo estado asignado a la orden: ${updatedStatus === 2 ? "Pendiente de envío" : "Pendiente de recolección"}`);
   

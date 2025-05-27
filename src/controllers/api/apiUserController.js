@@ -33,6 +33,7 @@ const { User } = db;
 import { HTTP_STATUS } from "../../utils/staticDB/httpStatusCodes.js";
 import generateHexCode from "../../utils/helpers/generateHexCode.js";
 import countries from "../../utils/staticDB/countries.js";
+import { createWelcomeCoupon } from "./apiCouponController.js";
 
 const { verify } = jwt;
 
@@ -344,7 +345,7 @@ const controller = {
           verified_email: false,
         },
       });
-
+      await createWelcomeCoupon(users_id);
       return res.status(HTTP_STATUS.OK.code).json({
         ok: true,
         msg: systemMessages.userMsg.userVerifiedSuccess,

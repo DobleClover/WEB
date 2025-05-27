@@ -515,6 +515,7 @@ const getTotalUsdAndPesosAccumulators = (orders) => {
 
 const paintAdminProducts = async () => {
   if (!productsFromDB.length) await setProductsFromDB();
+  
 
   const mainWrapper = document.querySelector(".main_content_wrapper");
   mainWrapper.innerHTML = ""; // Limpiamos antes de pintar
@@ -530,7 +531,7 @@ const paintAdminProducts = async () => {
 
   // Pintar tarjetas iniciales con orden/filtro actual
   renderFilteredSortedCards();
-
+  updateFilterOptionCounts();
   // Escuchar botón + selects
   listenToAdminProductToolbar();
 };
@@ -1169,6 +1170,22 @@ function renderFilteredSortedCards() {
   });
 
   cardsWrapper.appendChild(fragment);
+}
+function updateFilterOptionCounts() {
+  const select = document.getElementById("filter_type");
+  if (!select) return;
+
+  const all = productsFromDB.length;
+  const dobleuso = productsFromDB.filter(p => p.is_dobleuso).length;
+  const dobleclover = productsFromDB.filter(p => !p.is_dobleuso).length;
+  const active = productsFromDB.filter(p => p.active).length;
+  const discount = productsFromDB.filter(p => p.discount > 0).length;
+
+  select.querySelector('option[value="all"]').textContent = `Todos los productos (${all})`;
+  select.querySelector('option[value="dobleuso"]').textContent = `Productos DobleUso (${dobleuso})`;
+  select.querySelector('option[value="dobleclover"]').textContent = `Productos DobleClover (${dobleclover})`;
+  select.querySelector('option[value="active"]').textContent = `Productos activos (${active})`;
+  select.querySelector('option[value="discount"]').textContent = `Productos con descuento (${discount})`;
 }
 
 export { userProfileExportObj };
