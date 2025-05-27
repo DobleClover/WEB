@@ -181,12 +181,13 @@ window.addEventListener("load", async () => {
 
     const productFromDB = (productsFromDB?.length && productsFromDB[0]) || null;
     if (!productFromDB) return (window.location.href = "/tienda"); //Lo mando a la tienda si no encontro
-    let productCategoryID = productFromDB?.category?.id;
-
+    let productCategoryID = productFromDB?.categories_id;
+    let productBrandID = productFromDB?.brands_id;;
+    
     const relatedProducts = await fetchDBProducts({
       categoryId: productCategoryID,
       limit: 4,
-    }); //Aca seteo los related
+    });
     document.title = `Tienda - ${productFromDB.name}`;
     // Una vez que esta despintp y pinto
     // hidePlaceHolders();
