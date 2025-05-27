@@ -24,6 +24,19 @@ export async function setShippingTypes(){
     }
 }
 
+export let couponPrefixesFromDB = [];
+export async function setCouponPrefixes(){
+    try {
+        let array = (
+            await (await fetch(`${window.location.origin}/api/type/coupon-prefix`)).json()
+          ).data || [];
+          couponPrefixesFromDB = array;
+    } catch (error) {
+        console.log("Falle");
+        return console.log(error);        
+    }
+}
+
 export let countriesFromDB = [];
 export async function setCountries(){
     try {
@@ -143,6 +156,17 @@ export async function setSettings(){
         const response = await fetch(`${window.location.origin}/api/setting`);
         const json = await response.json();
         settingsFromDB =  json.data || [];
+    } catch (error) {
+        console.log("Falle");
+        return console.log(error);        
+    }
+}
+
+export let coupons = [];
+export async function setCoupons(){
+    try {
+        const res = await fetch("/api/coupon");
+        coupons = (await res.json())?.data || [];
     } catch (error) {
         console.log("Falle");
         return console.log(error);        

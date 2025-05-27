@@ -14,6 +14,7 @@ import {
   brandsFromDB,
   colorsFromDB,
   countriesFromDB,
+  coupons,
   dropsFromDB,
   provincesFromDB,
   setSettings,
@@ -880,7 +881,23 @@ export function buildDropBodyData(form) {
 
   return formData;
 }
+export function buildCouponBodyData(form) {
+  let bodyDataToReturn = {
+    prefix_id: form["coupon_prefix"]?.value,
+    expires_at: form["coupon_expiration_date"]?.value,
+    usage_limit: form["coupon_max_uses"]?.value,
+    discount_percent: form["coupon_discount_percent"]?.value,
+  };
+  // Si el prefijo es otro, entonces uso uno personalizado
+  if(!form["coupon_prefix"]?.value){
+    bodyDataToReturn.prefix = form["coupon_prefix_input"]?.value
+  };
+  // Si el type es 1 entonces es expiracion, sino es max uses
+  if(form["coupon_type"]?.value == 1) bodyDataToReturn.usage_limit = null
+  else if(form["coupon_type"]?.value == 2) bodyDataToReturn.expires_at = null
 
+  return bodyDataToReturn;
+}
 //Una vez que se crea la entidad, ahi dependiendo si es en carro o profile tengo que hacer algo
 export async function updateAddressElements() {
   try {
@@ -947,7 +964,13 @@ export async function updateDropTable() {
     return console.log(error);
   }
 }
-
+export async function updateCouponTable() {
+  try {
+    userProfileExportObj.pageConstructor();
+  } catch (error) {
+    return console.log(error);
+  }
+}
 //Crea y actualiza los valores de phone & address del usuario loggeado (se supone que solo creamos phone & address de los usuarios)
 export async function handlePhoneFetch(bodyData, method) {
   let fetchURL =
@@ -1074,6 +1097,7 @@ export async function handleUserLoginFetch(bodyData) {
   showCardMessage(false, msg);
   return false;
 }
+
 export async function handleUserSignUpFetch(bodyData) {
   let response = await fetch("/api/user/", {
     method: "POST",
@@ -1126,6 +1150,7 @@ export async function handleBrandFetch(bodyData, method) {
     return console.log(error);
   }
 }
+
 export async function handleDropFetch(bodyData, method) {
   try {
     let fetchURL =
@@ -1159,6 +1184,7 @@ export async function handleDropFetch(bodyData, method) {
     return console.log(error);
   }
 }
+
 export async function handleColorFetch(bodyData, method) {
   try {
     let fetchURL =
@@ -1194,6 +1220,30 @@ export async function handleColorFetch(bodyData, method) {
   }
 }
 
+export async function handleCouponFetch(bodyData, method) {
+  let fetchURL =
+      method == "POST" ? `/api/coupon` : `/api/coupon/${bodyData.id}`;
+  let response = await fetch(fetchURL, {
+    method: method,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(bodyData),
+  });
+
+  if (response.ok) {
+    response = response.ok && (await response.json());
+    //Aca dio ok, entonces al ser de un usuario actualizo al usuarioLogged.phones
+    if (method == "POST") {
+      //Aca agrego
+      coupons?.push(response.address);
+    } 
+    let responseMsg = response.msg;
+    showCardMessage(true, responseMsg);
+    return true;
+  }
+  let msg = "Ha ocurrido un error, intente nuevamente";
+  showCardMessage(false, msg);
+  return false;
+}
 //Deshabilita un boton por x cantidad de tiempo
 export function disableBtn(btn, time) {
   btn.classList.add("disabled");

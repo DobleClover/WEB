@@ -22,6 +22,8 @@ import provinces from "../../utils/staticDB/provinces.js";
 import { getMappedErrors } from "../../utils/helpers/getMappedErrors.js";
 import { HTTP_STATUS } from "../../utils/staticDB/httpStatusCodes.js";
 import { deleteSensitiveUserData } from "./apiUserController.js";
+import couponPrefix from "../../utils/staticDB/couponPrefix.js";
+
 
 // ENV
 
@@ -59,6 +61,22 @@ const controller = {
       return res
         .status(500)
         .json({ ok: false, msg: "Error interno del servidor" });
+    }
+  },
+  getCoupons: async (req, res) => {
+    try {
+      const coupons = await db.Coupon.findAll({
+        order: [["createdAt", "DESC"]],
+        include: ['usages']
+      });
+
+      res.status(200).json({
+        ok: true,
+        data: coupons
+      });
+    } catch (error) {
+      console.error("Error fetching coupons:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
   },
   validateCouponCode: async (req, res) => {
@@ -126,7 +144,7 @@ const controller = {
     try {
       const {
         discount_percent,
-        prefix = "DC-",
+        prefix_id = "1",
         expires_at,
         usage_limit,
       } = req.body;
@@ -137,8 +155,8 @@ const controller = {
           msg: "Falta el campo obligatorio: discount_percent",
         });
       }
-
-      const code = await generateCouponCode({ prefix });
+      const prefixFromDB = couponPrefix.find(pref=>pref.id == prefix_id)?.name;
+      const code = await generateCouponCode({ prefix: prefixFromDB });
 
       const newCoupon = await db.Coupon.create({
         id: uuidv4(),

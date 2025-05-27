@@ -6,6 +6,7 @@ import {
   createAddressModal,
   createBrandModal,
   createColorModal,
+  createCouponModal,
   createDropModal,
   createLoadingSpinner,
   createProductModal,
@@ -33,6 +34,8 @@ import {
   setColors,
   settingsFromDB,
   setSettings,
+  coupons,
+  setCoupons,
 } from "./fetchEntitiesFromDB.js";
 import { paintUserIconOrLetter } from "./header.js";
 import {
@@ -126,6 +129,8 @@ window.addEventListener("load", async () => {
     try {
       //Despinto el wrapper
       mainContentWrapper.innerHTML = "";
+      console.log(activeIndexSelected);
+
       //esta funcion dependiendo que viene invoca a la funcion que pinta/despinta las cosas
       switch (activeIndexSelected) {
         case 0: //Profile | Ventas
@@ -139,10 +144,13 @@ window.addEventListener("load", async () => {
             ? paintUserPhones()
             : await paintAdminBrandsAndDrops();
           break;
-        case 3: //Order History | settings
+        case 3: //Order History | coupons
           typeOfPanel === 2
             ? await paintUserOrders()
-            : await paintAdminSettings();
+            : await paintAdminCoupons();
+          break;
+        case 4: //Order History | settings
+          typeOfPanel === 2 ? null : await paintAdminSettings();
           break;
         default:
           break;
@@ -196,8 +204,13 @@ window.addEventListener("load", async () => {
         },
         {
           itemType: "shipping", // Identificador
-          itemLogo: "bx bx-purchase-tag-alt", // Clase CSS para el ícono
+          itemLogo: "bx bx-table", // Clase CSS para el ícono
           itemLabel: "Marcas, Drops & Colores", // Texto del tooltip
+        },
+        {
+          itemType: "coupons", // Identificador
+          itemLogo: "bx bx-purchase-tag-alt", // Clase CSS para el ícono
+          itemLabel: "Cupones", // Texto del tooltip
         },
         {
           itemType: "settings", // Identificador
@@ -515,7 +528,6 @@ const getTotalUsdAndPesosAccumulators = (orders) => {
 
 const paintAdminProducts = async () => {
   if (!productsFromDB.length) await setProductsFromDB();
-  
 
   const mainWrapper = document.querySelector(".main_content_wrapper");
   mainWrapper.innerHTML = ""; // Limpiamos antes de pintar
@@ -1130,13 +1142,13 @@ function renderFilteredSortedCards() {
   filtered.sort((a, b) => {
     let aVal = a[sortField];
     let bVal = b[sortField];
-  
+
     if (sortField === "stock") {
       aVal = a.totalStock || 0;
       bVal = b.totalStock || 0;
       return sortOrder === "asc" ? aVal - bVal : bVal - aVal;
     }
-  
+
     if (sortField === "brand") {
       aVal = a.brand?.name?.toLowerCase() || "";
       bVal = b.brand?.name?.toLowerCase() || "";
@@ -1144,22 +1156,21 @@ function renderFilteredSortedCards() {
         ? aVal.localeCompare(bVal)
         : bVal.localeCompare(aVal);
     }
-  
+
     if (sortField === "name") {
       return sortOrder === "asc"
         ? a.name.localeCompare(b.name)
         : b.name.localeCompare(a.name);
     }
-  
+
     if (sortField === "price") {
       const aNum = parseFloat(a.price) || 0;
       const bNum = parseFloat(b.price) || 0;
       return sortOrder === "asc" ? aNum - bNum : bNum - aNum;
     }
-  
+
     return 0;
   });
-  
 
   // Render
   const fragment = document.createDocumentFragment();
@@ -1171,21 +1182,116 @@ function renderFilteredSortedCards() {
 
   cardsWrapper.appendChild(fragment);
 }
+
 function updateFilterOptionCounts() {
   const select = document.getElementById("filter_type");
   if (!select) return;
 
   const all = productsFromDB.length;
-  const dobleuso = productsFromDB.filter(p => p.is_dobleuso).length;
-  const dobleclover = productsFromDB.filter(p => !p.is_dobleuso).length;
-  const active = productsFromDB.filter(p => p.active).length;
-  const discount = productsFromDB.filter(p => p.discount > 0).length;
+  const dobleuso = productsFromDB.filter((p) => p.is_dobleuso).length;
+  const dobleclover = productsFromDB.filter((p) => !p.is_dobleuso).length;
+  const active = productsFromDB.filter((p) => p.active).length;
+  const discount = productsFromDB.filter((p) => p.discount > 0).length;
 
-  select.querySelector('option[value="all"]').textContent = `Todos los productos (${all})`;
-  select.querySelector('option[value="dobleuso"]').textContent = `Productos DobleUso (${dobleuso})`;
-  select.querySelector('option[value="dobleclover"]').textContent = `Productos DobleClover (${dobleclover})`;
-  select.querySelector('option[value="active"]').textContent = `Productos activos (${active})`;
-  select.querySelector('option[value="discount"]').textContent = `Productos con descuento (${discount})`;
+  select.querySelector(
+    'option[value="all"]'
+  ).textContent = `Todos los productos (${all})`;
+  select.querySelector(
+    'option[value="dobleuso"]'
+  ).textContent = `Productos DobleUso (${dobleuso})`;
+  select.querySelector(
+    'option[value="dobleclover"]'
+  ).textContent = `Productos DobleClover (${dobleclover})`;
+  select.querySelector(
+    'option[value="active"]'
+  ).textContent = `Productos activos (${active})`;
+  select.querySelector(
+    'option[value="discount"]'
+  ).textContent = `Productos con descuento (${discount})`;
+}
+// Obtener cupones desde el backend
+async function paintAdminCoupons() {
+  const mainWrapper = document.querySelector(".main_content_wrapper");
+  mainWrapper.innerHTML = ""; // Limpiamos antes de pintar
+  // Toolbar superior con botón "Generar cupón"
+  const toolbar = document.createElement("div");
+  toolbar.className = "admin_products_toolbar";
+
+  toolbar.innerHTML = `
+   <div class="admin_toolbar_left">
+     <button class="admin_add_coupon_btn">
+       <i class="bx bx-plus"></i> Generar cupón
+     </button>
+   </div>
+ `;
+
+  mainWrapper.appendChild(toolbar);
+  const titleRow = document.createElement("div");
+  titleRow.className = "title_add_product_container";
+  titleRow.innerHTML = `
+    <div class="top_row_container">
+      <h2>Cupones</h2>
+    </div>`;
+  mainWrapper.appendChild(titleRow);
+
+  const tableContainer = document.createElement("div");
+  tableContainer.classList.add("table_container");
+
+  const gridTable = document.createElement("div");
+  gridTable.className = "ag-theme-alpine";
+  gridTable.id = "couponGrid";
+  gridTable.style.height = "600px"; // Ajustá si necesitás otro tamaño
+
+  tableContainer.appendChild(gridTable);
+  mainWrapper.appendChild(tableContainer);
+
+  if (!coupons.length) await setCoupons()
+
+  // Columnas para AG Grid
+  const columnDefs = [
+    { headerName: "Nombre", field: "code", flex: 1 },
+    {
+      headerName: "Activo",
+      field: "activo",
+      valueGetter: (params) => {
+        const c = params.data;
+        const expired = c.expires_at && new Date(c.expires_at) < new Date();
+        const reachedMax = c.usage_limit !== null && c.usage_count >= c.usage_limit;
+        return !expired && !reachedMax ? "Sí" : "No";
+      },
+      flex: 1,
+    },
+    {
+      headerName: "Usos",
+      field: "uses",
+      valueGetter: (params) => {
+        const c = params.data;
+        return c.usage_limit ? `${c.usage_count}/${c.usage_limit}` : `${c.usage_count}`;
+      },
+      flex: 1,
+    },
+    {
+      headerName: "Expira en",
+      field: "expiresAt",
+      valueGetter: (params) => {
+        const fecha = params.data.expires_at;
+        if (!fecha) return "—";
+        const expirada = new Date(fecha) < new Date();
+        return expirada
+          ? "Expiró"
+          : new Date(fecha).toLocaleDateString("es-AR");
+      },
+      flex: 1,
+    },
+  ];
+  agGrid.createGrid(gridTable, {
+    columnDefs,
+    rowData: [...coupons],
+  });
+  // Listener para el botón
+  document.querySelector(".admin_add_coupon_btn").addEventListener("click", async() => {
+    await createCouponModal(); // 
+  });
 }
 
 export { userProfileExportObj };

@@ -4,6 +4,7 @@ import {
   categoriesFromDB,
   colorsFromDB,
   countriesFromDB,
+  couponPrefixesFromDB,
   dropsFromDB,
   paymentTypesFromDB,
   provincesFromDB,
@@ -11,6 +12,7 @@ import {
   setCategories,
   setColors,
   setCountries,
+  setCouponPrefixes,
   setProvinces,
   setSizes,
   settingsFromDB,
@@ -22,6 +24,7 @@ import {
   handleAddressModalActions,
   handleBrandModalActions,
   handleColorModalActions,
+  handleCouponModalActions,
   handleDropModalActions,
   handlePhoneModalActions,
   handleProductModalActions,
@@ -2840,7 +2843,7 @@ export function generateUserVerifySection() {
 export async function createProductModal(product = undefined) {
   if (!categoriesFromDB.length) await setCategories();
   createModal({
-    headerTitle: product ? "Editar Product" : "Crear Producto",
+    headerTitle: product ? "Editar Producto" : "Crear Producto",
     formClassName: "",
     formFields: [
       {
@@ -3774,4 +3777,169 @@ export async function createOutOfStockNotificationModal(productData) {
     placeHolder: "Codigo de area",
     values: userFirstPhone ? userFirstPhone?.country?.id : [],
   });
+}
+
+export async function createCouponModal(coupon = undefined) {
+  if (!couponPrefixesFromDB.length) await setCouponPrefixes();
+  couponPrefixesFromDB.push({
+    id: "",
+    name: "otro",
+  });
+  const typesOfCoupons = [
+    {
+      id: 1,
+      name: "Cupon con expiracion",
+    },
+    {
+      id: 2,
+      name: "Cupon con maximo de usos",
+    },
+  ];
+  createModal({
+    headerTitle: coupon ? "Editar Cupon" : "Crear Cupon",
+    formClassName: "",
+    formFields: [
+      {
+        type: "two-fields",
+        fields: [
+          {
+            type: "select",
+            name: "coupon_prefix",
+            label: "Prefijo",
+            options: couponPrefixesFromDB.map((pref) => ({
+              value: pref.id,
+              label: pref.name,
+            })),
+            required: true,
+            containerClassName: "required",
+            value: coupon ? coupon.categories_id : "",
+          },
+          {
+            type: "text",
+            name: "coupon_prefix_input",
+            containerClassName: "hidden",
+          },
+        ],
+      },
+      {
+        type: "select",
+        name: "coupon_type",
+        label: "Tipo de cupon",
+        options: typesOfCoupons.map((pref) => ({
+          value: pref.id,
+          label: pref.name,
+        })),
+        required: true,
+        containerClassName: "required",
+        value: coupon ? coupon.categories_id : "",
+      },
+      {
+        type: "date",
+        name: "coupon_expiration_date",
+        containerClassName: "",
+      },
+      {
+        type: "text",
+        label: "Numero Maximo de usos",
+        name: "coupon_max_uses",
+        containerClassName: "hidden",
+        className: "numeric_only_input",
+        value: 1
+      },
+      {
+        type: "text",
+        label: "% de descuento",
+        name: "coupon_discount_percent",
+        required: true,
+        containerClassName: "required",
+        className: "numeric_only_input short_input",
+        placeholder: "10"
+      },
+    ],
+    buttons: [
+      {
+        type: "button",
+        className: "ui button submit green send_modal_form_btn",
+        text: coupon ? "Editar" : "Crear",
+        onClick: async () => await handleCouponModalActions(coupon),
+      },
+    ],
+    id: coupon?.id || undefined,
+  });
+  // Una vez lo creo, lo abro
+  handlePageModal(true);
+  checkForFloatInputs();
+  checkForNumericInputs();
+  checkForAutoselectInputs();
+  // Ahora cargo el select finder de la marca
+  let object;
+  if (!brandsFromDB?.length) {
+    await setBrands();
+  }
+  object = {
+    brandsFromDB,
+  };
+  checkForSelectFinders(object);
+  if (!sizesFromDB.length) await setSizes();
+  if (!colorsFromDB.length) await setColors();
+  //Activo los togglers & Dropdown
+  activateCheckboxTogglers();
+  // Ahora voy por las variaciones
+  // Agrupar por taco.id en un array de arrays
+  if (coupon) {
+    let groupsByColorId = Object.values(
+      coupon.variations?.reduce((acc, item) => {
+        const colorId = item.colors_id;
+        if (!acc[colorId]) {
+          acc[colorId] = [];
+        }
+        acc[colorId].push(item);
+        return acc;
+      }, {})
+    );
+
+    const colorVariationWrapper = document.querySelector(
+      ".ui.modal .variations-wrapper-field"
+    );
+
+    // Lo dejo únicamente por colors_id, sizes_id y el stock
+    groupsByColorId = groupsByColorId.map((group) =>
+      group.map((item) => ({
+        colors_id: item.colors_id,
+        sizes_id: item.size.id,
+        quantity: item.quantity,
+      }))
+    );
+
+    groupsByColorId.forEach((colorVariations) => {
+      const colorVariationElement = generateVariationField(colorVariations);
+      colorVariationWrapper.appendChild(colorVariationElement);
+
+      //Agarro tanto el dropdown como el colorID para iniciarlo
+      const colorID = colorVariations[0].colors_id;
+      initiateColorDropdown(colorVariationElement, colorID);
+
+      checkForNumericInputs();
+    });
+    //Para elegir la marca
+    const brandSearchDropdown = $(
+      ".ui.modal .ui.dropdown.brand_search_input.search"
+    );
+    brandSearchDropdown.dropdown("set selected", [coupon.brands_id]).dropdown({
+      fullTextSearch: "exact",
+      showOnFocus: false,
+      clearable: true,
+    });
+    // Tema imagenes
+    let { files } = coupon;
+    if (files && files.length)
+      loadExistingImages(files, ".ui.modal .files_thumb_field");
+  }
+  listenProductModalCategorySelect();
+  // Ahora agrego las escuchas
+  listenToProductModalBtns();
+  // Para escuchar los files
+  listenToFileInput("product_image", (fileData) =>
+    updateImages(fileData, ".ui.modal .files_thumb_field")
+  );
 }

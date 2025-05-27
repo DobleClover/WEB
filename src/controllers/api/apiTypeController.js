@@ -8,6 +8,7 @@ import ordersStatuses from '../../utils/staticDB/ordersStatuses.js';
 import { categories } from '../../utils/staticDB/categories.js';
 import { HTTP_STATUS } from '../../utils/staticDB/httpStatusCodes.js';
 import provinces from '../../utils/staticDB/provinces.js';
+import couponPrefix from '../../utils/staticDB/couponPrefix.js';
 
 
 
@@ -135,7 +136,22 @@ const controller = {
                 msg: fetchFailed
             })
         }
-    }
+    },
+    getCouponPrefixes: async (req, res) => {
+        try {
+            return res.status(HTTP_STATUS.OK.code).json({
+                ok: true,
+                data: couponPrefix
+            })
+        } catch (error) {
+            console.log(`error in getCouponPrefixes:`);
+            console.log(error);
+            return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
+                ok: false,
+                msg: fetchFailed
+            })
+        }
+    },
 };
 
 export default controller;

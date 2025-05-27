@@ -1,4 +1,4 @@
-import { buildAddressBodyData, buildBrandBodyData, buildColorBodyData, buildDropBodyData, buildPhoneBodyData, buildProductBodyData, buildUserLoginBodyData, buildUserSignUpBodyData, handleAddressFetch, handleBrandFetch, handleColorFetch, handleDropFetch, handleModalCreation, handlePhoneFetch, handleProductFetch, handleUserLoginFetch, handleUserSignUpFetch, updateAddressElements, updateBrandTable, updateColorTable, updateDropTable, updatePhoneElements, updateProductTable } from "./utils.js";
+import { buildAddressBodyData, buildBrandBodyData, buildColorBodyData, buildCouponBodyData, buildDropBodyData, buildPhoneBodyData, buildProductBodyData, buildUserLoginBodyData, buildUserSignUpBodyData, handleAddressFetch, handleBrandFetch, handleColorFetch, handleCouponFetch, handleDropFetch, handleModalCreation, handlePhoneFetch, handleProductFetch, handleUserLoginFetch, handleUserSignUpFetch, updateAddressElements, updateBrandTable, updateColorTable, updateCouponTable, updateDropTable, updatePhoneElements, updateProductTable } from "./utils.js";
 import { setLocalStorageItem } from "./localStorage.js";
 import { validateUserSignUpForm } from "./formValidators.js";
 import { paintUserIconOrLetter } from "./header.js";
@@ -117,3 +117,18 @@ try {
     return console.log(error);
 }
 }
+
+export async function handleCouponModalActions(coupon = undefined){
+    try {
+        await handleModalCreation({
+            entityType: 'coupon',
+            method: coupon ? "PUT" : "POST",
+            buildBodyData: buildCouponBodyData,
+            saveGuestEntity: null, 
+            updateElements: updateCouponTable, // Funcion que actualiza la tabla de productos
+            postToDatabase: handleCouponFetch
+          })//hago el fetch para crear esa address
+    } catch (error) {
+        return console.log(error);
+    }
+    }

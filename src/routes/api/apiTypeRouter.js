@@ -11,5 +11,6 @@ router.get('/size', apiTypeController.getSizes);
 router.get('/category', apiTypeController.getCategories);
 router.get('/gender', apiTypeController.getGenders);
 router.get('/order-statuses', apiTypeController.getOrderStatuses);
+router.get('/coupon-prefix', apiTypeController.getCouponPrefixes);
 
 export default router;
