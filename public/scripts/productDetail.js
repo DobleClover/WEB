@@ -1,4 +1,7 @@
-import { createOutOfStockNotificationModal, createProductCard } from "./componentRenderer.js";
+import {
+  createOutOfStockNotificationModal,
+  createProductCard,
+} from "./componentRenderer.js";
 import {
   productsFromDB,
   setProductsFromDB,
@@ -164,12 +167,15 @@ window.addEventListener("load", async () => {
       buttonContainer.className = "button_container";
       if (productDetailsSection)
         productDetailsSection.appendChild(buttonContainer);
-      const productHasStock = !(!productData.totalStock || productData.totalStock == 0);
+      const productHasStock = !(
+        !productData.totalStock || productData.totalStock == 0
+      );
       if (!productHasStock) {
         const notifyButton = document.createElement("button");
         notifyButton.className = "notify_stock_button";
         notifyButton.textContent = "Avisame cuando haya stock";
-        notifyButton.onclick = async () => await createOutOfStockNotificationModal(productData);
+        notifyButton.onclick = async () =>
+          await createOutOfStockNotificationModal(productData);
         buttonContainer.appendChild(notifyButton);
       } else {
         paintAddToCartButton();
@@ -182,8 +188,8 @@ window.addEventListener("load", async () => {
     const productFromDB = (productsFromDB?.length && productsFromDB[0]) || null;
     if (!productFromDB) return (window.location.href = "/tienda"); //Lo mando a la tienda si no encontro
     let productCategoryID = productFromDB?.categories_id;
-    let productBrandID = productFromDB?.brands_id;;
-    
+    let productBrandID = productFromDB?.brands_id;
+
     const relatedProducts = await fetchDBProducts({
       categoryId: productCategoryID,
       limit: 4,
@@ -204,12 +210,14 @@ window.addEventListener("load", async () => {
       productsToPaint = productsToPaint
         .filter((product) => product.id !== productId)
         .slice(0, 3);
-      paintProductCardsInList(productsToPaint, relatedProductCardWrapper);
-      //   una vez lo pinto, agrego las aniamciones
-      relatedProductCardWrapper = document.querySelector(
-        ".related_products_section .product_cards_wrapper"
-      );
-      animateSectionElements(relatedProductCardWrapper, 0.1);
+      if (productsToPaint.length) {
+        paintProductCardsInList(productsToPaint, relatedProductCardWrapper);
+        //   una vez lo pinto, agrego las aniamciones
+        relatedProductCardWrapper = document.querySelector(
+          ".related_products_section .product_cards_wrapper"
+        );
+        animateSectionElements(relatedProductCardWrapper, 0.1);
+      }
     };
     productDetailExportObj.createProductDetailsSection(productFromDB);
     relatedProducts.length && productDetailExportObj.paintRelatedProductCards(); //Pinto los related

@@ -1842,7 +1842,7 @@ export function formatStringForTextarea(text) {
 
 export async function paintProductCardsInList(products = [], wrapper = null, append = false) {
   if (!settingsFromDB.length) await setSettings();
-  if (!products.length) await setProductsFromDB({});
+  if (!products.length) return;
 
   const productsToIterate = products.length ? [...products] : [...productsFromDB];
 

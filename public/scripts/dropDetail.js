@@ -44,8 +44,12 @@ window.addEventListener("load", async () => {
       ".text_wrapper_container"
     );
     const dropId= getIdFromUrl();
-    const productsFromDrop = await fetchDropProducts(dropId)
-    await paintProductCardsInList(productsFromDrop);
+    const productsFromDrop = await fetchDropProducts(dropId);
+    if(productsFromDrop.length){
+      await paintProductCardsInList(productsFromDrop);
+    } else{
+      // TODO: Pintar que no hay productos
+    }
     removeDoblecloverOverlay();
   } catch (error) {
     return console.log(error);

@@ -7,7 +7,12 @@ window.addEventListener("load", async () => {
     // Ocultar loader al terminar
     removeDoblecloverOverlay()
     renderBrandSections(brand);
-    await paintProductCardsInList(brand.products);
+    if(brand.products.length){
+      await paintProductCardsInList(brand.products);
+    } else {
+      // TODO: pintar algo como que no hay productos
+    }
+    
     
   } catch (error) {
     console.error("Error al cargar la marca:", error);
