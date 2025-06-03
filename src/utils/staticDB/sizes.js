@@ -2,37 +2,37 @@ export default [
   {
     id: 1,
     size: "XXS",
-    categories: [4, 5, 6, 8,10,11], //  Remera, Buzo, Campera, Jogging
+    categories: [4, 5, 6, 8,10,11,12], //  Remera, Buzo, Campera, Jogging
   },
   {
     id: 2,
     size: "XS",
-    categories: [4, 5, 6, 8,10,11],
+    categories: [4, 5, 6, 8,10,11,12],
   },
   {
     id: 3,
     size: "S",
-    categories: [4, 5, 6, 8,10,11],
+    categories: [4, 5, 6, 8,10,11,12],
   },
   {
     id: 4,
     size: "M",
-    categories: [4, 5, 6, 8,10,11],
+    categories: [4, 5, 6, 8,10,11,12],
   },
   {
     id: 5,
     size: "L",
-    categories: [4, 5, 6, 8,10,11],
+    categories: [4, 5, 6, 8,10,11,12],
   },
   {
     id: 6,
     size: "XL",
-    categories: [4, 5, 6, 8,10,11],
+    categories: [4, 5, 6, 8,10,11,12],
   },
   {
     id: 7,
     size: "XXL",
-    categories: [4, 5, 6, 8,10,11],
+    categories: [4, 5, 6, 8,10,11,12],
   },
   {
     id: 8,
@@ -84,6 +84,26 @@ export default [
     id: 24,
     size: "Único",
     categories: [1, 7], // Gorra, Accesorio
+  },
+  {
+    id: 241,
+    size: "XS/S",
+    categories: [1,], // Gorra, Accesorio
+  },
+  {
+    id: 242,
+    size: "S/M",
+    categories: [1,], // Gorra, Accesorio
+  },
+  {
+    id: 243,
+    size: "M/L",
+    categories: [1,], // Gorra, Accesorio
+  },
+  {
+    id: 244,
+    size: "L/XL",
+    categories: [1,], // Gorra, Accesorio
   },
   {
     id: 25,

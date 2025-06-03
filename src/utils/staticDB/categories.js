@@ -43,4 +43,8 @@ export const categories = [
     id: 11,
     name: "Short",
   },
+  {
+    id: 12,
+    name: "Chomba",
+  },
 ];

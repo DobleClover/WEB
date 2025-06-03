@@ -1600,7 +1600,8 @@ export function generateUserLoggedDropdown() {
       { text: "Ventas", href: "/perfil?index=0" },
       { text: "Productos", href: "/perfil?index=1" },
       { text: "Marcas, Drops & Envíos", href: "/perfil?index=2" },
-      { text: "Ajustes", href: "/perfil?index=3" },
+      { text: "Cupones", href: "/perfil?index=3" },
+      { text: "Ajustes", href: "/perfil?index=4" },
       {
         text: "Cerrar sesión",
         href: "/logout",
@@ -2892,7 +2893,6 @@ export async function createProductModal(product = undefined) {
             name: "product_description",
             placeholder:
               "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Incidunt, ex.",
-            containerClassName: "required",
             value: product ? product.description : "",
           },
         ],
@@ -2956,12 +2956,10 @@ export async function createProductModal(product = undefined) {
         type: "select",
         className:
           "ui search dropdown drop_search_input form_search_dropdown",
-        containerClassName: "required",
         dataAttributes: {
           array_name: "dropsFromDB",
           entity_name: "Drop",
         },
-        required: true,
         multiple: true,
       },
       {
@@ -3427,56 +3425,6 @@ export async function createColorModal(color = undefined) {
     console.log(error);
     return;
   }
-}
-
-export function generateDashboardSettings(settings) {
-  const container = document.createElement("div");
-  container.classList.add("ui", "stacked", "cards", "setting_cards_wrapper");
-
-  settings.forEach((setting) => {
-    // Crear la card
-    const card = document.createElement("div");
-    card.classList.add("card");
-
-    const content = document.createElement("div");
-    content.classList.add("content");
-
-    // Crear el encabezado
-    const header = document.createElement("div");
-    header.classList.add("header");
-    header.textContent = setting.name;
-
-    // Crear el contenedor del input y botón
-    const actionInput = document.createElement("div");
-    actionInput.classList.add("ui", "action", "input");
-
-    // Crear el input
-    const input = document.createElement("input");
-    input.type = "text";
-    input.classList.add("numeric_only_input");
-    input.value = setting.value;
-
-    // Crear el botón
-    const button = document.createElement("button");
-    button.classList.add("ui", "green", "button");
-    button.textContent = "Guardar";
-
-    // Agregar evento al botón para guardar el valor
-    button.addEventListener("click", async () => {
-      await saveSetting(setting.id, actionInput);
-    });
-
-    // Estructurar los elementos
-    actionInput.appendChild(input);
-    actionInput.appendChild(button);
-
-    content.appendChild(header);
-    content.appendChild(actionInput);
-    card.appendChild(content);
-    container.appendChild(card);
-  });
-
-  return container;
 }
 
 export function createBrandCard(brand) {

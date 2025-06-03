@@ -1,4 +1,11 @@
-import { animateSectionElements, getIdFromUrl, paintProductCardsInList, removeDoblecloverOverlay, scriptInitiator } from "./utils.js";
+import { sortProductsByStockAndType } from "./helpers/productSortUtils.js";
+import {
+  animateSectionElements,
+  getIdFromUrl,
+  paintProductCardsInList,
+  removeDoblecloverOverlay,
+  scriptInitiator,
+} from "./utils.js";
 
 window.addEventListener("load", async () => {
   try {
@@ -21,7 +28,7 @@ window.addEventListener("load", async () => {
 
     // Logica para mostrar el thumb y las imagenes de manera limpia
     const mainImage = images[0];
-    if (mainImage.complete) {
+    if (mainImage?.complete) {
       mainImage.classList.add("background_image_active");
       setInterval(changeImage, intervalTime);
       setTimeout(
@@ -30,7 +37,7 @@ window.addEventListener("load", async () => {
       );
     }
     {
-      mainImage.addEventListener("load", () => {
+      mainImage?.addEventListener("load", () => {
         mainImage.classList.add("background_image_active");
         setInterval(changeImage, intervalTime);
         setTimeout(
@@ -43,11 +50,12 @@ window.addEventListener("load", async () => {
     const carrouselTextWrapperContainer = document.querySelector(
       ".text_wrapper_container"
     );
-    const dropId= getIdFromUrl();
+    const dropId = getIdFromUrl();
     const productsFromDrop = await fetchDropProducts(dropId);
-    if(productsFromDrop.length){
-      await paintProductCardsInList(productsFromDrop);
-    } else{
+    if (productsFromDrop.length) {
+      const sorted = sortProductsByStockAndType(productsFromDrop);
+      await paintProductCardsInList(sorted);
+    } else {
       // TODO: Pintar que no hay productos
     }
     removeDoblecloverOverlay();
@@ -56,10 +64,8 @@ window.addEventListener("load", async () => {
   }
 });
 
-export async function fetchDropProducts(id){
-    const url = `${
-      window.location.origin
-    }/api/drop/${id}/products`;
+export async function fetchDropProducts(id) {
+  const url = `${window.location.origin}/api/drop/${id}/products`;
 
-    return (await (await fetch(url)).json()).data || [];
+  return (await (await fetch(url)).json()).data || [];
 }

@@ -13,7 +13,6 @@ import {
   createUserMenuBtn,
   destroyExistingModal,
   form,
-  generateDashboardSettings,
   generateOrderDetailModal,
   orderCard,
   phoneCard,
@@ -38,6 +37,7 @@ import {
   setCoupons,
 } from "./fetchEntitiesFromDB.js";
 import { paintUserIconOrLetter } from "./header.js";
+import { generateDashboardSettings } from "./renderers/dashboardSettings.js";
 import {
   handleNewAddressButtonClick,
   handleNewPhoneButtonClick,
@@ -129,7 +129,7 @@ window.addEventListener("load", async () => {
     try {
       //Despinto el wrapper
       mainContentWrapper.innerHTML = "";
-      console.log(activeIndexSelected);
+      
 
       //esta funcion dependiendo que viene invoca a la funcion que pinta/despinta las cosas
       switch (activeIndexSelected) {
@@ -732,6 +732,7 @@ const paintAdminSettings = async () => {
   const mainWrapper = document.querySelector(".main_content_wrapper");
   const adminSettingsComponent = generateDashboardSettings(settingsFromDB);
   mainWrapper.innerHTML = "";
+  console.log(adminSettingsComponent);
   mainWrapper.appendChild(adminSettingsComponent);
 };
 let selectedEntityIndex = 0;
