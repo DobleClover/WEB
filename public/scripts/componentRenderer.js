@@ -13,6 +13,7 @@ import {
   setColors,
   setCountries,
   setCouponPrefixes,
+  setDrops,
   setProvinces,
   setSizes,
   settingsFromDB,
@@ -157,9 +158,17 @@ export function createProductCard(props) {
 
   let discountedPrice;
 
-  if (!productHasStock) {
-    cardPrice.textContent = "No disponible";
-    cardPrice.classList.add("no_stock_price");
+   // Si no tiene stock, mostrar botón de notificación
+   let notifyBtn
+   if (!productHasStock) {
+    notifyBtn = document.createElement("button");
+    notifyBtn.textContent = "Notificarme si ingresa";
+    notifyBtn.className = "notify_if_stock_btn";
+
+    notifyBtn.addEventListener("click", async (e) => {
+      e.preventDefault(); // Evita que se dispare el <a>
+      await createOutOfStockNotificationModal(props);
+    });
   } else if (discount) {
     discountedPrice = document.createElement("div");
     discountedPrice.className = `card_price product_card_price discount_price`;
@@ -180,7 +189,7 @@ export function createProductCard(props) {
 
   cardInfo.appendChild(cardHeader);
   cardInfo.appendChild(cardCategory);
-  cardInfo.appendChild(cardPrice);
+  productHasStock ? cardInfo.appendChild(cardPrice) : cardInfo.appendChild(notifyBtn);
   if (discount && productHasStock) cardInfo.appendChild(discountedPrice);
   if (is_dobleuso) {
     const dobleusoTag = document.createElement("div");
@@ -2942,6 +2951,20 @@ export async function createProductModal(product = undefined) {
         ],
       },
       {
+        label: "Drops",
+        name: "product_drops_id",
+        type: "select",
+        className:
+          "ui search dropdown drop_search_input form_search_dropdown",
+        containerClassName: "required",
+        dataAttributes: {
+          array_name: "dropsFromDB",
+          entity_name: "Drop",
+        },
+        required: true,
+        multiple: true,
+      },
+      {
         type: "file",
         label: "Imagenes",
         name: "product_image",
@@ -2969,7 +2992,7 @@ export async function createProductModal(product = undefined) {
       {
         type: "button",
         className: "ui button submit green send_modal_form_btn",
-        text: product ? "Editar" : "Crear",
+        text: product ? "Guardar" : "Crear",
         onClick: async () => await handleProductModalActions(product),
       },
       {
@@ -2994,6 +3017,13 @@ export async function createProductModal(product = undefined) {
   }
   object = {
     brandsFromDB,
+  };
+  checkForSelectFinders(object);
+  if (!dropsFromDB?.length) {
+    await setDrops();
+  }
+  object = {
+    dropsFromDB,
   };
   checkForSelectFinders(object);
   if (!sizesFromDB.length) await setSizes();
@@ -3042,6 +3072,16 @@ export async function createProductModal(product = undefined) {
       ".ui.modal .ui.dropdown.brand_search_input.search"
     );
     brandSearchDropdown.dropdown("set selected", [product.brands_id]).dropdown({
+      fullTextSearch: "exact",
+      showOnFocus: false,
+      clearable: true,
+    });
+    // Para drops
+    const dropSearchDropdown = $(
+      ".ui.modal .ui.dropdown.drop_search_input.search"
+    );
+    const productDropsIds = product.drops?.map(dbDrop=>dbDrop.id) || [];
+    dropSearchDropdown.dropdown("set selected", productDropsIds).dropdown({
       fullTextSearch: "exact",
       showOnFocus: false,
       clearable: true,
@@ -3139,7 +3179,7 @@ export async function createBrandModal(brand = undefined) {
         {
           type: "button",
           className: "ui button submit green send_modal_form_btn",
-          text: brand ? "Editar" : "Crear",
+          text: brand ? "Guardar" : "Crear",
           onClick: async () => await handleBrandModalActions(brand),
         },
         {
@@ -3271,7 +3311,7 @@ export async function createDropModal(drop = undefined) {
         {
           type: "button",
           className: "ui button submit green send_modal_form_btn",
-          text: drop ? "Editar" : "Crear",
+          text: drop ? "Guardar" : "Crear",
           onClick: async () => await handleDropModalActions(drop),
         },
         {
@@ -3368,7 +3408,7 @@ export async function createColorModal(color = undefined) {
         {
           type: "button",
           className: "ui button submit green send_modal_form_btn",
-          text: color ? "Editar" : "Crear",
+          text: color ? "Guardar" : "Crear",
           onClick: async () => await handleColorModalActions(color),
         },
         {
@@ -3615,6 +3655,7 @@ export function createDropCard(drop) {
 
 export function renderAdminProductCard(product) {
   const template = document.createElement("template");
+  const productDropNames = product.drops?.map(dbDrop => dbDrop.name)?.join(" - ") || "";
   template.innerHTML = `
     <div class="admin_product_card ${
       product.active ? "" : "unactive_product_card"
@@ -3633,7 +3674,7 @@ export function renderAdminProductCard(product) {
       <div class="admin_product_card_info">
         <h3>${product.name}</h3>
         <p class="admin_product_card_brand">${product.brand?.name || ""}</p>
-        <p class="admin_product_card_drop">Drop 1 - Drop 3</p>
+        <p class="admin_product_card_drop">${productDropNames}</p>
         <p class="admin_product_card_price">
   U$$ ${product.price}
   ${
@@ -3860,7 +3901,7 @@ export async function createCouponModal(coupon = undefined) {
       {
         type: "button",
         className: "ui button submit green send_modal_form_btn",
-        text: coupon ? "Editar" : "Crear",
+        text: coupon ? "Guardar" : "Crear",
         onClick: async () => await handleCouponModalActions(coupon),
       },
     ],

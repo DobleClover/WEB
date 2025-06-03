@@ -51,7 +51,8 @@ const PRODUCTS_FOLDER_NAME = "products";
 const controller = {
   handleGetAllProducts: async (req, res) => {
     try {
-      let { categoryId, productId, limit, offset, is_dobleuso, has_stock} = req.query;
+      let { categoryId, productId, limit, offset, is_dobleuso, has_stock } =
+        req.query;
       if (limit) limit = parseInt(limit);
       if (categoryId) categoryId = parseInt(categoryId);
       if (offset) offset = parseInt(offset);
@@ -71,7 +72,7 @@ const controller = {
           limit,
           offset,
           is_dobleuso,
-          hasStock: has_stock
+          hasStock: has_stock,
         });
         if (!foundProduct) {
           return res.status(HTTP_STATUS.NOT_FOUND.code).json({
@@ -94,12 +95,10 @@ const controller = {
           limit,
           offset,
           is_dobleuso,
-          hasStock: has_stock
+          hasStock: has_stock,
         });
         products = productsFetched;
       }
-      console.log(products);
-      
       const totalCount = await getProductsCountFromDB({
         categoryId,
         is_dobleuso,
@@ -167,6 +166,15 @@ const controller = {
           msg: createFailed,
         });
       }
+      // Ahora agarro los drops que relaciono
+      let { drops } = req.body;
+      drops = JSON.parse(drops);
+      let dropRelationsToPush = drops?.map((dropID) => ({
+        drops_id: dropID,
+        products_id: newProductId,
+      }));
+      dropRelationsToPush.length &&
+        (await db.Product_Drop.bulkCreate(dropRelationsToPush));
       // vamos a recibir variaciones que contienen sizes_id, colors_id, quantity
       //Vienen modo string...
       filesFromArray = JSON.parse(req.body.filesFromArray);
@@ -273,7 +281,32 @@ const controller = {
           ok: false,
           msg: updateFailed.en,
         });
-      }
+      };
+      // Ahora veo que productos tiene
+      let { drops } = req.body;
+      drops = JSON.parse(drops);
+      // Calcular qué productos agregar y cuáles eliminar
+      let { idsToAdd, idsToRemove } = getDropRelationListsFromProduct({
+        dropIDS: drops,
+        dbProduct,
+      });
+      const dropRelationsToAdd =
+        idsToAdd?.map((dropID) => ({
+          products_id: dbProduct.id,
+          drops_id: dropID,
+        })) || [];
+      dropRelationsToAdd.length &&
+        (await db.Product_Drop.bulkCreate(dropRelationsToAdd));
+      idsToRemove.length &&
+        (await db.Product_Drop.destroy({
+          where: {
+            drops_id: idsToRemove,
+            products_id: dbProduct.id,
+          },
+        }));
+      console.log("🟢 Relaciones con drops actualizadas con éxito:");
+
+      // Ahora variaciones
       const oldProductVariations = await findProductVariations(id);
 
       const variationsToDelete = getVariationsToDelete(
@@ -466,7 +499,10 @@ export async function getProductsFromDB({
 
     // Filtro por stock si se pidió
     if (typeof hasStock === "boolean") {
-      where[Op.and] = Sequelize.where(totalStockSubquery, hasStock ? { [Op.gt]: 0 } : 0);
+      where[Op.and] = Sequelize.where(
+        totalStockSubquery,
+        hasStock ? { [Op.gt]: 0 } : 0
+      );
     }
 
     const baseOptions = {
@@ -474,7 +510,7 @@ export async function getProductsFromDB({
       include: productIncludeArray,
       limit,
       offset,
-      order: [[totalStockSubquery, 'DESC']], // Ordena por total stock
+      order: [[totalStockSubquery, "DESC"]], // Ordena por total stock
     };
 
     if (typeof id === "string") {
@@ -518,7 +554,6 @@ export async function getProductsFromDB({
     return null;
   }
 }
-
 
 async function deleteProductInDb(productId) {
   try {
@@ -567,7 +602,6 @@ async function updateProductInDb(body, productId) {
   }
 }
 
-
 export async function setProductKeysToReturn({
   product,
   withImages = false,
@@ -595,8 +629,11 @@ export async function setProductKeysToReturn({
         files: product.files,
       });
       product.files?.sort((a, b) => a.position - b.position);
-    };
-    product.discounted_price = product.discount > 0 ? product.price * (1 - product.discount / 100) : null;
+    }
+    product.discounted_price =
+      product.discount > 0
+        ? product.price * (1 - product.discount / 100)
+        : null;
   } catch (error) {
     console.log("falle");
     return console.log(error);
@@ -664,4 +701,15 @@ export async function getProductsCountFromDB({
     console.error("Error counting products:", error);
     return 0;
   }
+}
+
+function getDropRelationListsFromProduct({ dropIDS = [], dbProduct = {} }) {
+  // Obtener IDs de drops actualmente relacionados al producto
+  const currentDropIds = dbProduct?.drops?.map((d) => d.id) || [];
+
+  // Calcular diferencias
+  const dropsToRemove = currentDropIds.filter((id) => !dropIDS.includes(id)); // estaban antes, pero ya no
+  const dropsToAdd = dropIDS.filter((id) => !currentDropIds.includes(id)); // no estaban antes, pero ahora sí
+
+  return { idsToAdd: dropsToAdd, idsToRemove: dropsToRemove };
 }

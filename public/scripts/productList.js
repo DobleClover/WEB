@@ -1,5 +1,6 @@
 import { createProductCard } from "./componentRenderer.js";
 import { setSettings } from "./fetchEntitiesFromDB.js";
+import { createPaginatedProductLoader } from "./helpers/paginationLoader.js";
 import {
   animateSectionElements,
   listenToProductCards,
@@ -24,10 +25,23 @@ window.addEventListener("load", async () => {
     ".product_cards_wrapper_section.dobleuso_wrapper"
   );
   // Primer render automático
-  loadMoreProducts({ isDobleUso: false, initialLoad: true });
-  loadMoreProducts({ isDobleUso: true, initialLoad: true });
+  createPaginatedProductLoader({
+    wrapperSelector: ".dobleclover_wrapper",
+    buttonSelector: "#loadMoreDobleclover",
+    queryBuilder: ({ offset, hasStock, limit }) =>
+      `/api/product?is_dobleuso=0&has_stock=${hasStock}&limit=${limit}&offset=${offset}`,
+    onInitialRender: animateSectionElements
+  });
+  
+  createPaginatedProductLoader({
+    wrapperSelector: ".dobleuso_wrapper",
+    buttonSelector: "#loadMoreDobleuso",
+    queryBuilder: ({ offset, hasStock, limit }) =>
+      `/api/product?is_dobleuso=1&has_stock=${hasStock}&limit=${limit}&offset=${offset}`,
+    onInitialRender: animateSectionElements
+  });
+  
   listenToFilterSelect();
-  listenToLoadMoreBtns();
 });
 
 function bannerAnimation() {
@@ -64,90 +78,4 @@ function listenToFilterSelect() {
   });
 }
 
-let productsDobleClover = [];
-let productsDobleUso = [];
-let fetchingWithoutStockDobleUso = false;
-let fetchingWithoutStockDobleClover = false;
 
-let offsetDobleClover = 0;
-let offsetDobleUso = 0;
-
-const limitPerLoad = 5;
-
-
-async function loadMoreProducts({ isDobleUso = false, initialLoad = false }) {
-  const wrapper = document.querySelector(isDobleUso ? ".dobleuso_wrapper" : ".dobleclover_wrapper");
-  const loadMoreBtn = document.getElementById(isDobleUso ? "loadMoreDobleuso" : "loadMoreDobleclover");
-
-  const offset = isDobleUso ? offsetDobleUso : offsetDobleClover;
-  const fetchingWithoutStock = isDobleUso ? fetchingWithoutStockDobleUso : fetchingWithoutStockDobleClover;
-
-  if (loadMoreBtn) {
-    loadMoreBtn.disabled = true;
-    loadMoreBtn.textContent = "Cargando...";
-  }
-
-  try {
-    // Armar la URL con has_stock dinámico
-    const hasStockParam = fetchingWithoutStock ? "0" : "1";
-    const res = await fetch(`/api/product?is_dobleuso=${isDobleUso ? 1 : 0}&has_stock=${hasStockParam}&limit=5&offset=${offset}`);
-    const data = await res.json();
-    if (!data.ok) throw new Error("Error fetching products");
-
-    const products = data.data;
-
-    // Pintar si hay
-    if (products.length > 0) {
-      await paintProductCardsInList(products, wrapper, true);
-
-      if (isDobleUso) {
-        offsetDobleUso += products.length;
-      } else {
-        offsetDobleClover += products.length;
-      }
-
-      loadMoreBtn.disabled = false;
-      loadMoreBtn.textContent = "Cargar más productos";
-
-      if (initialLoad) {
-        animateSectionElements(wrapper, 0.05);
-      }
-
-    } else {
-      // Si estaba buscando con stock y no encontró más → pasar a sin stock
-      if (!fetchingWithoutStock) {
-        if (isDobleUso) {
-          fetchingWithoutStockDobleUso = true;
-          offsetDobleUso = 0;
-        } else {
-          fetchingWithoutStockDobleClover = true;
-          offsetDobleClover = 0;
-        }
-        // Intentar cargar sin stock inmediatamente
-        return await loadMoreProducts({ isDobleUso, initialLoad });
-      } else {
-        // Ya estaba buscando sin stock y no hay más
-        loadMoreBtn.style.display = "none";
-      }
-    }
-  } catch (err) {
-    console.error("Error loading products:", err);
-    if (loadMoreBtn) {
-      loadMoreBtn.disabled = false;
-      loadMoreBtn.textContent = "Error al cargar";
-    }
-  }
-}
-
-
-
-
-function listenToLoadMoreBtns(){
-  // Botones
-  document.getElementById("loadMoreDobleclover").addEventListener("click", () => {
-    loadMoreProducts({ isDobleUso: false });
-  });
-  document.getElementById("loadMoreDobleuso").addEventListener("click", () => {
-    loadMoreProducts({ isDobleUso: true });
-  });
-}

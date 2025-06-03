@@ -651,6 +651,12 @@ export function buildProductBodyData(form) {
     filesFromArray: [],
     current_images: [],
   };
+  // Cargo los drops
+  let drops = getSelectedDropdownValuesForEntity(form,'.drop_search_input');
+  console.log(drops);
+  
+  bodyDataToReturn.drops = drops
+  // Variaciones
   const variationFields = document.querySelectorAll(".variation_field") || [];
   variationFields.forEach((field) => {
     const colorId = field.querySelector(
@@ -715,7 +721,8 @@ export function buildProductBodyData(form) {
     if (
       key === "variations" ||
       key === "filesFromArray" ||
-      key == "current_images"
+      key == "current_images" || 
+      key == "drops"
     ) {
       // Convertir las variaciones a JSON y agregar al FormData
       formData.append(key, JSON.stringify(bodyDataToReturn[key]));
@@ -1561,9 +1568,10 @@ export function checkForSelectFinders(param) {
     const brandSearchClass = ".ui.dropdown.brand_search_input.search";
     const colorSearchClass = ".ui.dropdown.color_search_input.search";
     const productSearchClass = ".ui.dropdown.product_search_input.search";
+    const dropSearchClass = ".ui.dropdown.drop_search_input.search";
 
     const searchs = $(
-      `${brandSearchClass},${colorSearchClass},${productSearchClass}`
+      `${brandSearchClass},${colorSearchClass},${productSearchClass},${dropSearchClass}`
     );
     let object;
     // Voy por los distintos search
@@ -1957,4 +1965,15 @@ export function setSendingBtnLoader(btn, isLoading) {
   } else {
     btn.classList.remove('loading', 'disabled');
   }
+}
+
+export function getSelectedDropdownValuesForEntity(form, selector) {
+  const selectedElements = form?.querySelectorAll(`${selector} a.label`);
+  const values = [];
+
+  selectedElements?.forEach((el) => {
+    if (el.dataset.value) values.push(el.dataset.value);
+  });
+
+  return values;
 }

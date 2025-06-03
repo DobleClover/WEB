@@ -169,6 +169,28 @@
   right: 0;
   z-index: 10;
 }
+.notify_if_stock_btn {
+  margin-top: 10px;
+  padding: 6px 12px;
+  border: 1px solid var(--green-color);
+  color: var(--dark-grey-color);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+  background: none;
+}
+
+.notify_if_stock_btn:hover {
+  background-color: var(--background-grey);
+}
+.dobleuso_card .notify_if_stock_btn{
+  border: 1px solid var(--background-grey);
+  color: var(--green-color);
+}
+.dobleuso_card .notify_if_stock_btn:hover {
+  background-color: #222;
+}
 @media (min-width: 1024px) {
   .product_card {
     width: 30vw;
