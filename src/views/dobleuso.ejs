@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('./partials/head.ejs') %>
+    <link rel="stylesheet" href="/css/productList.css" />
+    <link rel="stylesheet" href="/css/productCard.css" />
+    <link rel="stylesheet" href="/css/videoSection.css" />
+    <link rel="stylesheet" href="/css/dobleuso.css" />
+    <link rel="stylesheet" href="/css/invertedHeader.css" />
+    <script type="module" src="/scripts/dobleUso.js"></script>
+    <title>DobleUso</title>
+  </head>
+  <body data-page_name="dobleUso">
+    <%- include('./partials/header.ejs') %> <%-
+    include('./partials/brandLoaderOverlay.ejs') %>
+    <div class="section_bg_image" alt="tramado.png"></div>
+    <main class="main">
+      <section class="dobleuso_info_section">
+        <div class="video_container">
+          <video src="/video/dobleuso.mp4" controls autoplay loop muted></video>
+          <div class="video_actions">
+            <button class="ui button disabled basic green submit_item_btn">Tengo una prenda para entregar</button>
+            <p class="coming_soon_text">¡Próximamente!</p>
+          </div>          
+        </div>
+        <div class="steps_section">
+          <div class="steps_intro">
+            <img src="/img/logo/dobleuso-logo.png" alt="dobleuso-logo" class="dobleuso_logo">
+            <p class="steps_subtitle">
+              Una extensión de nuestra marca DobleClover en la que vamos a trabajar la moda circular.
+            </p>
+          </div>
+          
+        </div>
+      </section>
+      <div class="section_title_block">
+        <h2 class="section_title">Catálogo <span class="highlight">DobleUso</span></h2>
+      </div>
+      
+      <section class="product_cards_wrapper_section dobleuso_wrapper"></section>
+    </main>
+    <%- include('./partials/footer.ejs') %>
+  </body>
+</html>
