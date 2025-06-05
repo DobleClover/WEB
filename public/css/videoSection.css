@@ -22,6 +22,14 @@
   aspect-ratio: 9 / 16;
   border-radius: 10px;
 }
+.video_preview_img {
+  width: 100%;
+  max-width: 400px;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
 @media (min-width: 768px) {
   .video_container {
     max-width: 325px;
