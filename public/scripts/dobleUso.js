@@ -16,7 +16,7 @@ const steps = [
   },
   {
     name: "2. Coordinamos el retiro",
-    desc: `Si nos interesa, coordinamos un retiro de la prenda con vos para analizarla en persona. Evaluamos su estado y estimamos cuántos usos tiene.`,
+    desc: `Si nos interesa coordinamos un retiro de la prenda con vos, para luego nosotros analizarla en persona. Evaluamos su estado y estimamos cuantos usos tiene.`,
   },
   {
     name: "3. Análisis de disponibilidad local",
