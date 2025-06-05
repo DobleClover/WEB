@@ -1,4 +1,4 @@
-.admin_products_toolbar {
+.admin_toolbar  {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -20,7 +20,7 @@
   width: 100%;
 }
 
-.admin_add_product_btn {
+.admin_primary_btn  {
   background-color: #00aa55;
   color: white;
   border: none;
@@ -32,14 +32,14 @@
   gap: 6px;
   cursor: pointer;
   font-size: 0.95rem;
-  transition: background 0.2s ease;
+  transition: background-color 0.2s ease;
 }
 
-.admin_add_product_btn:hover {
+.admin_primary_btn :hover {
   background-color: #008d47;
 }
 
-.admin_filter_select {
+.admin_input {
   padding: 6px 10px;
   border-radius: 6px;
   border: 1px solid #ccc;
@@ -47,13 +47,34 @@
   font-size: 0.9rem;
 }
 
-.admin_search_input {
+.admin_select  {
   padding: 6px 10px;
   border-radius: 6px;
   border: 1px solid #ccc;
   font-size: 0.9rem;
   width: 180px;
 }
+.admin_negative_btn {
+  background-color: #fff;
+  color: #d01919;
+  border: 1px solid #d01919;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.admin_negative_btn:hover {
+  background-color: #ffe6e6;
+  color: #a11212;
+  border-color: #a11212;
+}
+
 @media (min-width: 768px) {
   .admin_toolbar_left,
   .admin_toolbar_right {

@@ -85,7 +85,7 @@ img {
   position: relative;
   height: fit-content;
 }
-.close-modal-btn {
+.close_modal_btn {
   position: absolute;
   top: 50%;
   right: 15px;
@@ -147,7 +147,7 @@ ul {
 .ui.modal .header {
   position: relative;
 }
-.close-modal-btn {
+.close_modal_btn {
   position: absolute;
   top: 50%;
   right: 15px;

@@ -11,12 +11,14 @@ import {
   generateTooltip,
 } from "./componentRenderer.js";
 import {
+  appliedCoupon,
   brandsFromDB,
   colorsFromDB,
   countriesFromDB,
   coupons,
   dropsFromDB,
   provincesFromDB,
+  setAppliedCoupon,
   setSettings,
   settingsFromDB,
   sizesFromDB,
@@ -889,22 +891,25 @@ export function buildDropBodyData(form) {
   return formData;
 }
 export function buildCouponBodyData(form) {
-  let bodyDataToReturn = {
-    prefix_id: form["coupon_prefix"]?.value,
-    expires_at: form["coupon_expiration_date"]?.value,
-    usage_limit: form["coupon_max_uses"]?.value,
+  const selectedPrefix = form["coupon_prefix"]?.value;
+  const customPrefix = form["coupon_prefix_input"]?.value;
+  const couponType = parseInt(form["coupon_type"]?.value);
+
+  const isCustomPrefix = !selectedPrefix;
+  const isExpirationType = couponType === 1;
+  const isUsageLimitType = couponType === 2;
+
+  const bodyDataToReturn = {
+    prefix_id: isCustomPrefix ? null : selectedPrefix,
+    prefix: isCustomPrefix ? customPrefix : null,
+    expires_at: isExpirationType ? form["coupon_expiration_date"]?.value : null,
+    usage_limit: isUsageLimitType ? form["coupon_max_uses"]?.value : null,
     discount_percent: form["coupon_discount_percent"]?.value,
   };
-  // Si el prefijo es otro, entonces uso uno personalizado
-  if(!form["coupon_prefix"]?.value){
-    bodyDataToReturn.prefix = form["coupon_prefix_input"]?.value
-  };
-  // Si el type es 1 entonces es expiracion, sino es max uses
-  if(form["coupon_type"]?.value == 1) bodyDataToReturn.usage_limit = null
-  else if(form["coupon_type"]?.value == 2) bodyDataToReturn.expires_at = null
 
   return bodyDataToReturn;
 }
+
 //Una vez que se crea la entidad, ahi dependiendo si es en carro o profile tengo que hacer algo
 export async function updateAddressElements() {
   try {
@@ -1241,7 +1246,7 @@ export async function handleCouponFetch(bodyData, method) {
     //Aca dio ok, entonces al ser de un usuario actualizo al usuarioLogged.phones
     if (method == "POST") {
       //Aca agrego
-      coupons?.push(response.address);
+      coupons?.push(response.coupon);
     } 
     let responseMsg = response.msg;
     showCardMessage(true, responseMsg);
@@ -1977,3 +1982,83 @@ export function getSelectedDropdownValuesForEntity(form, selector) {
 
   return values;
 }
+
+export async function validateCoupon(code, messageTarget) {
+  console.log("Validando cupón:", code);
+
+  const isValid = code.toLowerCase() === "descuento10";
+
+  if (isValid) {
+    showCouponMessage("Cupón aplicado correctamente 🎉", true, messageTarget);
+    console.log(document.querySelector(".coupon_input_group"));
+    
+    // Ocultar input, botón y select si existen
+    document.querySelectorAll(".coupon_input_group")?.forEach(elem=>elem.classList.add("hidden"));
+    document.querySelectorAll(".coupon_select")?.forEach(elem=>elem.classList.add("hidden"));
+    setAppliedCoupon({id: "dsasadsadsa", code : "descuento10", discount_percent: 15});
+    applyCouponToDetail(appliedCoupon);
+
+  } else {
+    showCouponMessage("Cupón inválido o expirado", false, messageTarget);
+  }
+}
+
+function showCouponMessage(msg, success, targetEl) {
+  targetEl.textContent = msg;
+  targetEl.style.display = "block";
+  targetEl.style.color = success ? "#00aa55" : "#d01919";
+}
+
+export function applyCouponToDetail(coupon = null) {
+  if (!coupon) return;
+
+  const detailContainers = document.querySelectorAll(".detail_list_container");
+
+  detailContainers.forEach((container) => {
+    const totalRow = container.querySelector(".last-row");
+    const totalCostElement = totalRow.querySelector(".detail_row_total_cost");
+
+    // Eliminar fila de cupón previa si existía
+    const oldCouponRow = container.querySelector(".coupon_row_applied");
+    if (oldCouponRow) oldCouponRow.remove();
+
+    // Obtener total actual
+    const currentTotal = parseFloat(totalCostElement.textContent.replace(/[^\d,]/g, "").replace(",", "."));
+    
+    
+    // Calcular descuento
+    const discountValue = currentTotal * (coupon.discount_percent / 100);
+    const discountedTotal = currentTotal - discountValue;
+
+    // Crear nueva fila para el cupón
+    const couponRow = document.createElement("div");
+    couponRow.className = "detail_list_row coupon_row_applied margin_top";
+
+    const label = document.createElement("p");
+    label.className = "detail_row_p";
+    label.innerHTML = `
+    ${coupon.code}<br>
+    <span class="shipping_note">${coupon.discount_percent}% de descuento</span>
+  `;
+  
+    couponRow.appendChild(label);
+    
+    const value = document.createElement("p");
+    value.className = "detail_row_p";
+    value.textContent = `- $${minDecimalPlaces(
+      displayBigNumbers(discountValue, 2),
+      2
+    )}`;
+    couponRow.appendChild(value);
+
+    // Insertar antes del total
+    container.insertBefore(couponRow, totalRow);
+
+    // Actualizar total
+    totalCostElement.textContent = `$${minDecimalPlaces(
+      displayBigNumbers(discountedTotal, 2),
+      2
+    )}`;
+  });
+}
+

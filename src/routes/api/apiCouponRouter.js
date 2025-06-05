@@ -14,6 +14,7 @@ router.post("/", adminCredentialsMiddleware, apiCouponController.createCoupon);
 
 
 // DELETE
+router.delete("/:id", adminCredentialsMiddleware, apiCouponController.destroyCoupon);
 
 
 export default router;
