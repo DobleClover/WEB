@@ -84,7 +84,9 @@ const controller = {
       const { code, users_id } = req.query;
 
       if (!code || !users_id) {
-        return res.status(400).json({ ok: false, msg: "Faltan parámetros" });
+        let msgToReturn = "Faltan parámetros";
+        if(!users_id) msgToReturn = "Debes estar registrado para utilizar cupones";
+        return res.status(400).json({ ok: false, msg: msgToReturn });
       }
 
       const coupon = await db.Coupon.findOne({

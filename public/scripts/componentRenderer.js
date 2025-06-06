@@ -4050,17 +4050,17 @@ export function createCouponInputBox(userCouponsFromDB = []) {
   applyBtn.className = "ui button basic green small apply_coupon_btn";
 
   // Select
-  let couponSelect = null;
+  const couponSelect = document.createElement("select");
+  couponSelect.className = "coupon_select";
+
+  // Opción por defecto
+  const defaultOption = document.createElement("option");
+  defaultOption.text = "Tus cupones";
+  defaultOption.disabled = true;
+  defaultOption.selected = true;
+  couponSelect.appendChild(defaultOption);
+
   if (userCouponsFromDB.length > 0) {
-    couponSelect = document.createElement("select");
-    couponSelect.className = "coupon_select";
-
-    const defaultOption = document.createElement("option");
-    defaultOption.text = "-- Mis cupones --";
-    defaultOption.disabled = true;
-    defaultOption.selected = true;
-    couponSelect.appendChild(defaultOption);
-
     userCouponsFromDB.forEach((coupon) => {
       const opt = document.createElement("option");
       opt.value = coupon.code;
@@ -4071,11 +4071,12 @@ export function createCouponInputBox(userCouponsFromDB = []) {
     // Al seleccionar: completar input y aplicar
     couponSelect.addEventListener("change", () => {
       inputField.value = couponSelect.value;
-      applyBtn.click(); // dispara validación automáticamente
+      applyBtn.click();
     });
-
-    couponWrapper.appendChild(couponSelect);
   }
+
+  // Agregar siempre el select al wrapper
+  couponWrapper.appendChild(couponSelect);
 
   // Agrupar input + botón
   const inputGroup = document.createElement("div");
@@ -4098,11 +4099,7 @@ export function createCouponInputBox(userCouponsFromDB = []) {
       return;
     }
 
-    validateCoupon(code, message, {
-      inputField,
-      couponSelect,
-      inputGroup,
-    });
+    validateCoupon(code, message);
   });
 
   return couponWrapper;
