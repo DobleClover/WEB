@@ -606,30 +606,48 @@ export async function setProductKeysToReturn({
   product,
   withImages = false,
   withVariations = false,
+  onlyMainImages = false, // nuevo parámetro
 }) {
   try {
-    //Le seteo la categoria
+    // Le seteo la categoría
     product.category = categories.find(
       (cat) => cat.id == product.categories_id
     );
+
     product.brand.name = capitalizeFirstLetter(product.brand.name);
+
     if (withVariations) {
       const dbColors = await db.Color.findAll();
       product.variations = populateVariations(product.variations, dbColors);
     }
+
     product.price = minDecimalPlaces(product.price);
+
     product.totalStock =
       product.variations?.reduce(
         (sum, variation) => sum + variation.quantity,
         0
       ) || 0;
+
     if (withImages && product.files?.length) {
+      // Si se pidió solo la imagen principal, filtramos
+      const filesToFetch = onlyMainImages
+        ? product.files.filter((file) => file.main_file || file.position == 1) // o file.position === 1
+        : product.files;
       await getFilesFromAWS({
         folderName: PRODUCTS_FOLDER_NAME,
-        files: product.files,
+        files: filesToFetch,
       });
-      product.files?.sort((a, b) => a.position - b.position);
+
+      // Si se pidió todo, ordenamos
+      if (!onlyMainImages) {
+        product.files?.sort((a, b) => a.position - b.position);
+      } else {
+        // Si solo querías la principal, podés reemplazar product.files directamente
+        product.files = filesToFetch;
+      }
     }
+
     product.discounted_price =
       product.discount > 0
         ? product.price * (1 - product.discount / 100)
@@ -639,6 +657,7 @@ export async function setProductKeysToReturn({
     return console.log(error);
   }
 }
+
 
 async function handleProductAWSFilesUpload({ files = [], filesFromBody = [] }) {
   try {

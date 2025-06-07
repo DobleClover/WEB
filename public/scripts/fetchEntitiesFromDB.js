@@ -129,7 +129,7 @@ export async function setColors(){
 export let brandsFromDB = [];
 export async function setBrands(withProductImages = false){
     try {
-        const response = await fetch(`${window.location.origin}/api/brand${withProductImages ? '?withProductImages=true':''}`);
+        const response = await fetch(`${window.location.origin}/api/brand${withProductImages ? '?withProductImages=true&onlyMainImages=true':''}`);
         const json = await response.json();
         brandsFromDB =  json.data || [];
     } catch (error) {
