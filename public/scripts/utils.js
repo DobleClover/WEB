@@ -1096,7 +1096,7 @@ export async function handleUserLoginFetch(bodyData) {
       await checkForUserLogged();
       const bodyName = document.querySelector("body").dataset?.page_name;
       // Esto es porque si pasa de no estar logeado a estarlo, pinto los productos del carro
-      if (bodyName == "cart") await cartExportObj.pageConstructor();
+      if (bodyName == "cart") location.reload();
       checkCartItemsToPaintQuantity();
       return true;
     }
