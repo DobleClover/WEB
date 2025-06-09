@@ -1,10 +1,12 @@
 import { userLogged } from "./checkForUserLogged.js";
 import {
+  appliedCoupon,
   brandsFromDB,
   categoriesFromDB,
   colorsFromDB,
   countriesFromDB,
   couponPrefixesFromDB,
+  coupons,
   dropsFromDB,
   paymentTypesFromDB,
   provincesFromDB,
@@ -20,6 +22,7 @@ import {
   sizesFromDB,
   statusesFromDB,
 } from "./fetchEntitiesFromDB.js";
+import { listenToCouponConditionalFields } from "./listeners/couponModalListeners.js";
 import { getLocalStorageItem } from "./localStorage.js";
 import {
   handleAddressModalActions,
@@ -38,6 +41,7 @@ import {
   loadExistingImages,
   paintImgInContainer,
   updateImages,
+  userProfileExportObj,
 } from "./userProfile.js";
 import {
   activateCheckboxTogglers,
@@ -72,6 +76,7 @@ import {
   minDecimalPlaces,
   displayPriceNumber,
   handleOutOfStockNotification,
+  validateCoupon,
 } from "./utils.js";
 
 export function createProductCard(props) {
@@ -158,9 +163,9 @@ export function createProductCard(props) {
 
   let discountedPrice;
 
-   // Si no tiene stock, mostrar botón de notificación
-   let notifyBtn
-   if (!productHasStock) {
+  // Si no tiene stock, mostrar botón de notificación
+  let notifyBtn;
+  if (!productHasStock) {
     notifyBtn = document.createElement("button");
     notifyBtn.textContent = "Notificarme si ingresa";
     notifyBtn.className = "notify_if_stock_btn";
@@ -189,7 +194,9 @@ export function createProductCard(props) {
 
   cardInfo.appendChild(cardHeader);
   cardInfo.appendChild(cardCategory);
-  productHasStock ? cardInfo.appendChild(cardPrice) : cardInfo.appendChild(notifyBtn);
+  productHasStock
+    ? cardInfo.appendChild(cardPrice)
+    : cardInfo.appendChild(notifyBtn);
   if (discount && productHasStock) cardInfo.appendChild(discountedPrice);
   if (is_dobleuso) {
     const dobleusoTag = document.createElement("div");
@@ -340,7 +347,7 @@ export function createModal({
   // Crear el header
   const header = document.createElement("div");
   header.className = "header";
-  header.innerHTML = `${headerTitle} <i class='bx bx-x close-modal-btn'></i>`;
+  header.innerHTML = `${headerTitle} <i class='bx bx-x close_modal_btn'></i>`;
   modal.appendChild(header);
 
   // Crear el contenido principal
@@ -420,7 +427,7 @@ export function createModal({
 
   // Evento para cerrar el modal
   modal
-    .querySelector(".close-modal-btn")
+    .querySelector(".close_modal_btn")
     ?.addEventListener("click", () => closeModal());
 
   return modal;
@@ -1600,7 +1607,8 @@ export function generateUserLoggedDropdown() {
       { text: "Ventas", href: "/perfil?index=0" },
       { text: "Productos", href: "/perfil?index=1" },
       { text: "Marcas, Drops & Envíos", href: "/perfil?index=2" },
-      { text: "Ajustes", href: "/perfil?index=3" },
+      { text: "Cupones", href: "/perfil?index=3" },
+      { text: "Ajustes", href: "/perfil?index=4" },
       {
         text: "Cerrar sesión",
         href: "/logout",
@@ -1926,6 +1934,39 @@ export async function createDisableColorModal(color) {
   });
 }
 
+// Crea y muestra el modal para deshabilitar un cupón
+export async function createDisableCouponModal(coupon) {
+  disableCouponModal(coupon);
+  handlePageModal(true);
+
+  const form = document.querySelector(".ui.form");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const idToSend = coupon.id;
+
+    let response = await fetch(`/api/coupon/${idToSend}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (response.ok) {
+      response = await response.json();
+
+      // Sacar de la lista en memoria si existe
+      const couponIndex = coupons.findIndex((c) => c.id === idToSend);
+      if (couponIndex !== -1) coupons.splice(couponIndex, 1);
+
+      closeModal();
+      showCardMessage(true, response.msg);
+      return userProfileExportObj.pageConstructor();
+    }
+
+    showCardMessage(false, "Ha ocurrido un error al deshabilitar el cupón");
+  });
+}
+
 function listenToProductModalBtns() {
   const addVariationBtn = document.querySelector(
     ".ui.modal .add-variation-btn"
@@ -2012,7 +2053,7 @@ export function generateOrderDetailModal(order, isAdminModal = false) {
   const header = document.createElement("div");
   header.classList.add("header");
   const headerWording = "Detalle de la compra";
-  header.innerHTML = `${headerWording} <i class="bx bx-x close-modal-btn"></i>`;
+  header.innerHTML = `${headerWording} <i class="bx bx-x close_modal_btn"></i>`;
 
   // Crear contenido principal
   const content = document.createElement("div");
@@ -2187,7 +2228,7 @@ export function generateOrderDetailModal(order, isAdminModal = false) {
   </div>`;
   // Agrego el closemodal even
   modal
-    .querySelector(".close-modal-btn")
+    .querySelector(".close_modal_btn")
     ?.addEventListener("click", () => closeModal());
 
   return modal;
@@ -2203,10 +2244,10 @@ export function disableAddressModal(address) {
   // Crear el header del modal
   const header = document.createElement("div");
   header.className = "header";
-  header.innerHTML = `Disable Address <i class='bx bx-x close-modal-btn'></i>`;
+  header.innerHTML = `Disable Address <i class='bx bx-x close_modal_btn'></i>`;
   modal.appendChild(header);
 
-  const closeModalBtn = modal.querySelector(".close-modal-btn");
+  const closeModalBtn = modal.querySelector(".close_modal_btn");
   closeModalBtn.addEventListener("click", () => closeModal());
 
   // Crear el contenido del modal
@@ -2276,10 +2317,10 @@ export function disablePhoneModal(phone) {
   // Crear el header del modal
   const header = document.createElement("div");
   header.className = "header";
-  header.innerHTML = `Disable Phone <i class='bx bx-x close-modal-btn'></i>`;
+  header.innerHTML = `Disable Phone <i class='bx bx-x close_modal_btn'></i>`;
   modal.appendChild(header);
 
-  const closeModalBtn = modal.querySelector(".close-modal-btn");
+  const closeModalBtn = modal.querySelector(".close_modal_btn");
   closeModalBtn.addEventListener("click", () => closeModal());
 
   // Crear el contenido del modal
@@ -2349,10 +2390,10 @@ export function disableProductModal(product) {
   // Crear el header del modal
   const header = document.createElement("div");
   header.className = "header";
-  header.innerHTML = `Deshabilitar Producto <i class='bx bx-x close-modal-btn'></i>`;
+  header.innerHTML = `Deshabilitar Producto <i class='bx bx-x close_modal_btn'></i>`;
   modal.appendChild(header);
 
-  const closeModalBtn = modal.querySelector(".close-modal-btn");
+  const closeModalBtn = modal.querySelector(".close_modal_btn");
   closeModalBtn.addEventListener("click", () => createProductModal(product));
 
   // Crear el contenido del modal
@@ -2420,10 +2461,10 @@ export function disableBrandModal(brand = undefined) {
   // Crear el header del modal
   const header = document.createElement("div");
   header.className = "header";
-  header.innerHTML = `Deshabilitar Marca <i class='bx bx-x close-modal-btn'></i>`;
+  header.innerHTML = `Deshabilitar Marca <i class='bx bx-x close_modal_btn'></i>`;
   modal.appendChild(header);
 
-  const closeModalBtn = modal.querySelector(".close-modal-btn");
+  const closeModalBtn = modal.querySelector(".close_modal_btn");
   closeModalBtn.addEventListener("click", () => createBrandModal(brand));
 
   // Crear el contenido del modal
@@ -2492,10 +2533,10 @@ export function disableDropModal(drop = undefined) {
   // Crear el header del modal
   const header = document.createElement("div");
   header.className = "header";
-  header.innerHTML = `Deshabilitar Drop <i class='bx bx-x close-modal-btn'></i>`;
+  header.innerHTML = `Deshabilitar Drop <i class='bx bx-x close_modal_btn'></i>`;
   modal.appendChild(header);
 
-  const closeModalBtn = modal.querySelector(".close-modal-btn");
+  const closeModalBtn = modal.querySelector(".close_modal_btn");
   closeModalBtn.addEventListener("click", () => createDropModal(drop));
 
   // Crear el contenido del modal
@@ -2564,10 +2605,10 @@ export function disableColorModal(color = undefined) {
   // Crear el header del modal
   const header = document.createElement("div");
   header.className = "header";
-  header.innerHTML = `Deshabilitar Color <i class='bx bx-x close-modal-btn'></i>`;
+  header.innerHTML = `Deshabilitar Color <i class='bx bx-x close_modal_btn'></i>`;
   modal.appendChild(header);
 
-  const closeModalBtn = modal.querySelector(".close-modal-btn");
+  const closeModalBtn = modal.querySelector(".close_modal_btn");
   closeModalBtn.addEventListener("click", () => createBrandModal(color));
 
   // Crear el contenido del modal
@@ -2623,6 +2664,64 @@ export function disableColorModal(color = undefined) {
   modal.appendChild(content);
 
   // Agregar el modal al cuerpo del documento
+  document.body.appendChild(modal);
+  return modal;
+}
+
+export function disableCouponModal(coupon) {
+  destroyExistingModal();
+  const modal = document.createElement("div");
+  modal.className = "ui small modal";
+
+  // Header
+  const header = document.createElement("div");
+  header.className = "header";
+  header.innerHTML = `Deshabilitar Cupón <i class='bx bx-x close_modal_btn'></i>`;
+  modal.appendChild(header);
+
+  header
+    .querySelector(".close_modal_btn")
+    .addEventListener("click", closeModal);
+
+  // Content
+  const content = document.createElement("div");
+  content.className = "content";
+  const form = document.createElement("form");
+  form.className = "ui form destroy-form";
+
+  const title = document.createElement("h4");
+  title.className = "ui dividing header required";
+  title.innerHTML = `¿Estás seguro que querés deshabilitar el cupón <b>${coupon.code}</b>?`;
+  form.appendChild(title);
+
+  const buttonFields = document.createElement("div");
+  buttonFields.className = "two fields";
+
+  const cancelField = document.createElement("div");
+  cancelField.className = "field";
+  const cancelButton = document.createElement("button");
+  cancelButton.className = "ui basic grey button";
+  cancelButton.type = "button";
+  cancelButton.textContent = "Cancelar";
+  cancelButton.addEventListener("click", closeModal);
+  cancelField.appendChild(cancelButton);
+  buttonFields.appendChild(cancelField);
+
+  const confirmField = document.createElement("div");
+  confirmField.className = "field";
+  const confirmButton = document.createElement("button");
+  confirmButton.className = "ui basic red button";
+  confirmButton.textContent = "Confirmar";
+  confirmButton.type = "submit";
+  confirmButton.addEventListener("click", () =>
+    confirmButton.classList.add("loading")
+  );
+  confirmField.appendChild(confirmButton);
+  buttonFields.appendChild(confirmField);
+
+  form.appendChild(buttonFields);
+  content.appendChild(form);
+  modal.appendChild(content);
   document.body.appendChild(modal);
   return modal;
 }
@@ -2892,7 +2991,6 @@ export async function createProductModal(product = undefined) {
             name: "product_description",
             placeholder:
               "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Incidunt, ex.",
-            containerClassName: "required",
             value: product ? product.description : "",
           },
         ],
@@ -2954,14 +3052,11 @@ export async function createProductModal(product = undefined) {
         label: "Drops",
         name: "product_drops_id",
         type: "select",
-        className:
-          "ui search dropdown drop_search_input form_search_dropdown",
-        containerClassName: "required",
+        className: "ui search dropdown drop_search_input form_search_dropdown",
         dataAttributes: {
           array_name: "dropsFromDB",
           entity_name: "Drop",
         },
-        required: true,
         multiple: true,
       },
       {
@@ -3080,7 +3175,7 @@ export async function createProductModal(product = undefined) {
     const dropSearchDropdown = $(
       ".ui.modal .ui.dropdown.drop_search_input.search"
     );
-    const productDropsIds = product.drops?.map(dbDrop=>dbDrop.id) || [];
+    const productDropsIds = product.drops?.map((dbDrop) => dbDrop.id) || [];
     dropSearchDropdown.dropdown("set selected", productDropsIds).dropdown({
       fullTextSearch: "exact",
       showOnFocus: false,
@@ -3429,56 +3524,6 @@ export async function createColorModal(color = undefined) {
   }
 }
 
-export function generateDashboardSettings(settings) {
-  const container = document.createElement("div");
-  container.classList.add("ui", "stacked", "cards", "setting_cards_wrapper");
-
-  settings.forEach((setting) => {
-    // Crear la card
-    const card = document.createElement("div");
-    card.classList.add("card");
-
-    const content = document.createElement("div");
-    content.classList.add("content");
-
-    // Crear el encabezado
-    const header = document.createElement("div");
-    header.classList.add("header");
-    header.textContent = setting.name;
-
-    // Crear el contenedor del input y botón
-    const actionInput = document.createElement("div");
-    actionInput.classList.add("ui", "action", "input");
-
-    // Crear el input
-    const input = document.createElement("input");
-    input.type = "text";
-    input.classList.add("numeric_only_input");
-    input.value = setting.value;
-
-    // Crear el botón
-    const button = document.createElement("button");
-    button.classList.add("ui", "green", "button");
-    button.textContent = "Guardar";
-
-    // Agregar evento al botón para guardar el valor
-    button.addEventListener("click", async () => {
-      await saveSetting(setting.id, actionInput);
-    });
-
-    // Estructurar los elementos
-    actionInput.appendChild(input);
-    actionInput.appendChild(button);
-
-    content.appendChild(header);
-    content.appendChild(actionInput);
-    card.appendChild(content);
-    container.appendChild(card);
-  });
-
-  return container;
-}
-
 export function createBrandCard(brand) {
   // Crear el elemento <a> principal
   const card = document.createElement("a");
@@ -3655,7 +3700,8 @@ export function createDropCard(drop) {
 
 export function renderAdminProductCard(product) {
   const template = document.createElement("template");
-  const productDropNames = product.drops?.map(dbDrop => dbDrop.name)?.join(" - ") || "";
+  const productDropNames =
+    product.drops?.map((dbDrop) => dbDrop.name)?.join(" - ") || "";
   template.innerHTML = `
     <div class="admin_product_card ${
       product.active ? "" : "unactive_product_card"
@@ -3697,11 +3743,11 @@ export function renderAdminProductCard(product) {
 
 export function renderAdminProductsToolbar() {
   const container = document.createElement("div");
-  container.className = "admin_products_toolbar";
+  container.className = "admin_products_toolbar admin_toolbar";
 
   container.innerHTML = `
     <div class="admin_toolbar_left">
-      <button class="admin_add_product_btn">
+      <button class="admin_add_product_btn admin_primary_btn">
         <i class="bx bx-plus"></i> Agregar producto
       </button>
     </div>
@@ -3856,6 +3902,7 @@ export async function createCouponModal(coupon = undefined) {
             value: coupon ? coupon.categories_id : "",
           },
           {
+            label: "Prefijo personalizado",
             type: "text",
             name: "coupon_prefix_input",
             containerClassName: "hidden",
@@ -3885,7 +3932,7 @@ export async function createCouponModal(coupon = undefined) {
         name: "coupon_max_uses",
         containerClassName: "hidden",
         className: "numeric_only_input",
-        value: 1
+        value: 1,
       },
       {
         type: "text",
@@ -3894,7 +3941,7 @@ export async function createCouponModal(coupon = undefined) {
         required: true,
         containerClassName: "required",
         className: "numeric_only_input short_input",
-        placeholder: "10"
+        placeholder: "10",
       },
     ],
     buttons: [
@@ -3907,6 +3954,13 @@ export async function createCouponModal(coupon = undefined) {
     ],
     id: coupon?.id || undefined,
   });
+  const dateInput = document.querySelector(
+    'input[name="coupon_expiration_date"]'
+  );
+  if (dateInput) {
+    const today = new Date().toISOString().split("T")[0];
+    dateInput.setAttribute("min", today);
+  }
   // Una vez lo creo, lo abro
   handlePageModal(true);
   checkForFloatInputs();
@@ -3976,11 +4030,77 @@ export async function createCouponModal(coupon = undefined) {
     if (files && files.length)
       loadExistingImages(files, ".ui.modal .files_thumb_field");
   }
-  listenProductModalCategorySelect();
-  // Ahora agrego las escuchas
-  listenToProductModalBtns();
-  // Para escuchar los files
-  listenToFileInput("product_image", (fileData) =>
-    updateImages(fileData, ".ui.modal .files_thumb_field")
-  );
+  listenToCouponConditionalFields();
+}
+
+export function createCouponInputBox(userCouponsFromDB = []) {
+  if (appliedCoupon) return; //Si ya se aplico cupon entonces desestimar esta funcion
+  const couponWrapper = document.createElement("div");
+  couponWrapper.className = "coupon_input_wrapper";
+
+  // Input
+  const inputField = document.createElement("input");
+  inputField.type = "text";
+  inputField.placeholder = "Ingresá tu cupón";
+  inputField.className = "coupon_input";
+
+  // Botón aplicar
+  const applyBtn = document.createElement("button");
+  applyBtn.textContent = "Aplicar";
+  applyBtn.className = "ui button basic green small apply_coupon_btn";
+
+  // Select
+  const couponSelect = document.createElement("select");
+  couponSelect.className = "coupon_select";
+
+  // Opción por defecto
+  const defaultOption = document.createElement("option");
+  defaultOption.text = "Tus cupones";
+  defaultOption.disabled = true;
+  defaultOption.selected = true;
+  couponSelect.appendChild(defaultOption);
+
+  if (userCouponsFromDB.length > 0) {
+    userCouponsFromDB.forEach((coupon) => {
+      const opt = document.createElement("option");
+      opt.value = coupon.code;
+      opt.textContent = `${coupon.code} (${coupon.discount_percent}%)`;
+      couponSelect.appendChild(opt);
+    });
+
+    // Al seleccionar: completar input y aplicar
+    couponSelect.addEventListener("change", () => {
+      inputField.value = couponSelect.value;
+      applyBtn.click();
+    });
+  }
+
+  // Agregar siempre el select al wrapper
+  couponWrapper.appendChild(couponSelect);
+
+  // Agrupar input + botón
+  const inputGroup = document.createElement("div");
+  inputGroup.className = "coupon_input_group";
+  inputGroup.appendChild(inputField);
+  inputGroup.appendChild(applyBtn);
+  couponWrapper.appendChild(inputGroup);
+
+  // Mensaje
+  const message = document.createElement("p");
+  message.className = "coupon_validation_msg";
+  message.style.display = "none";
+  couponWrapper.appendChild(message);
+
+  // Acción aplicar
+  applyBtn.addEventListener("click", () => {
+    const code = inputField.value.trim();
+    if (!code) {
+      showCouponMessage("Ingresá un código válido", false, message);
+      return;
+    }
+
+    validateCoupon(code, message);
+  });
+
+  return couponWrapper;
 }

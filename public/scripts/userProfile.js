@@ -7,13 +7,13 @@ import {
   createBrandModal,
   createColorModal,
   createCouponModal,
+  createDisableCouponModal,
   createDropModal,
   createLoadingSpinner,
   createProductModal,
   createUserMenuBtn,
   destroyExistingModal,
   form,
-  generateDashboardSettings,
   generateOrderDetailModal,
   orderCard,
   phoneCard,
@@ -38,6 +38,7 @@ import {
   setCoupons,
 } from "./fetchEntitiesFromDB.js";
 import { paintUserIconOrLetter } from "./header.js";
+import { generateDashboardSettings } from "./renderers/dashboardSettings.js";
 import {
   handleNewAddressButtonClick,
   handleNewPhoneButtonClick,
@@ -129,7 +130,7 @@ window.addEventListener("load", async () => {
     try {
       //Despinto el wrapper
       mainContentWrapper.innerHTML = "";
-      console.log(activeIndexSelected);
+      
 
       //esta funcion dependiendo que viene invoca a la funcion que pinta/despinta las cosas
       switch (activeIndexSelected) {
@@ -701,7 +702,7 @@ async function getUserOrders() {
 }
 
 async function listenToAdminProductToolbar() {
-  const addProductBtn = document.querySelector(".admin_add_product_btn");
+  const addProductBtn = document.querySelector(".admin_add_product_btn admin_primary_btn");
   const sortSelect = document.getElementById("sort_by");
   const filterSelect = document.getElementById("filter_type");
 
@@ -732,6 +733,7 @@ const paintAdminSettings = async () => {
   const mainWrapper = document.querySelector(".main_content_wrapper");
   const adminSettingsComponent = generateDashboardSettings(settingsFromDB);
   mainWrapper.innerHTML = "";
+  console.log(adminSettingsComponent);
   mainWrapper.appendChild(adminSettingsComponent);
 };
 let selectedEntityIndex = 0;
@@ -1215,15 +1217,19 @@ async function paintAdminCoupons() {
   mainWrapper.innerHTML = ""; // Limpiamos antes de pintar
   // Toolbar superior con botón "Generar cupón"
   const toolbar = document.createElement("div");
-  toolbar.className = "admin_products_toolbar";
+  toolbar.className = "admin_products_toolbar admin_toolbar";
 
   toolbar.innerHTML = `
-   <div class="admin_toolbar_left">
-     <button class="admin_add_coupon_btn">
-       <i class="bx bx-plus"></i> Generar cupón
-     </button>
-   </div>
- `;
+  <div class="admin_toolbar_left">
+    <button class="admin_add_coupon_btn admin_primary_btn">
+      <i class="bx bx-plus"></i> Generar cupón
+    </button>
+    <button class="admin_disable_coupon_btn admin_negative_btn">
+      <i class="bx bx-block"></i> Dar de baja cupón
+    </button>
+  </div>
+`;
+
 
   mainWrapper.appendChild(toolbar);
   const titleRow = document.createElement("div");
@@ -1250,6 +1256,7 @@ async function paintAdminCoupons() {
   // Columnas para AG Grid
   const columnDefs = [
     { headerName: "Nombre", field: "code", flex: 1 },
+    { headerName: "% Descuento", field: "discount_percent", flex: 1 },
     {
       headerName: "Activo",
       field: "activo",
@@ -1287,11 +1294,21 @@ async function paintAdminCoupons() {
   agGrid.createGrid(gridTable, {
     columnDefs,
     rowData: [...coupons],
+    rowSelection: 'single' // 👈 Esto permite seleccionar solo una fila
   });
   // Listener para el botón
   document.querySelector(".admin_add_coupon_btn").addEventListener("click", async() => {
     await createCouponModal(); // 
   });
+  document.querySelector(".admin_disable_coupon_btn").addEventListener("click", async () => {
+    const selected = gridTable.querySelector(".ag-row-selected");
+    if (!selected) return showCardMessage(false, "Seleccioná un cupón de la lista.");
+  
+    const rowIndex = selected.getAttribute("row-index");
+    const couponToDisable = coupons[parseInt(rowIndex)];
+    if (couponToDisable) await createDisableCouponModal(couponToDisable);
+  });
+  
 }
 
 export { userProfileExportObj };

@@ -84,7 +84,9 @@ const controller = {
       const { code, users_id } = req.query;
 
       if (!code || !users_id) {
-        return res.status(400).json({ ok: false, msg: "Faltan parámetros" });
+        let msgToReturn = "Faltan parámetros";
+        if(!users_id) msgToReturn = "Debes estar registrado para utilizar cupones";
+        return res.status(400).json({ ok: false, msg: msgToReturn });
       }
 
       const coupon = await db.Coupon.findOne({
@@ -144,7 +146,8 @@ const controller = {
     try {
       const {
         discount_percent,
-        prefix_id = "1",
+        prefix_id,
+        prefix,
         expires_at,
         usage_limit,
       } = req.body;
@@ -155,7 +158,7 @@ const controller = {
           msg: "Falta el campo obligatorio: discount_percent",
         });
       }
-      const prefixFromDB = couponPrefix.find(pref=>pref.id == prefix_id)?.name;
+      const prefixFromDB = couponPrefix.find(pref=>pref.id == prefix_id)?.name || prefix;
       const code = await generateCouponCode({ prefix: prefixFromDB });
 
       const newCoupon = await db.Coupon.create({
@@ -167,14 +170,13 @@ const controller = {
         created_by_admin: true,
         is_first_purchase_only: false,
       });
-
+      const couponToReturn = await db.Coupon.findByPk(newCoupon.id,{
+        include: ['usages']
+      });
       return res.status(201).json({
         ok: true,
         msg: "Cupón creado correctamente",
-        data: {
-          code: newCoupon.code,
-          discount_percent: newCoupon.discount_percent,
-        },
+        coupon: couponToReturn,
       });
     } catch (error) {
       console.error("❌ Error al crear cupón:", error);
@@ -183,6 +185,37 @@ const controller = {
         .json({ ok: false, msg: "Error interno del servidor" });
     }
   },
+  destroyCoupon: async (req, res) => {
+    try {
+      const { id } = req.params;
+  
+      if (!id) {
+        return res.status(HTTP_STATUS.BAD_REQUEST.code).json({ ok: false });
+      }
+  
+      const response = await destroyCouponFromDB(id);
+  
+      if (!response) {
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json();
+      }
+  
+      return res.status(HTTP_STATUS.OK.code).json({
+        meta: {
+          status: HTTP_STATUS.OK.code,
+          url: "/api/coupon",
+          method: "DELETE",
+        },
+        ok: true,
+        msg: "Cupón eliminado correctamente", // podés usar systemMessages si tenés
+        redirect: "/",
+      });
+    } catch (error) {
+      console.log("Fallo en apiCouponController.destroyCoupon");
+      console.log(error);
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({ error });
+    }
+  }
+  
 };
 
 export default controller;
@@ -263,3 +296,9 @@ export async function markCouponAsUsed(order) {
     `🎟️ Cupón ${coupons_id} marcado como usado por el usuario ${users_id}`
   );
 }
+
+async function destroyCouponFromDB(id) {
+  const deleted = await db.Coupon.destroy({ where: { id } });
+  return deleted > 0;
+}
+

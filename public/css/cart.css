@@ -48,6 +48,9 @@
   width: 100%;
   justify-content: space-between;
 }
+.coupon_row_applied>.detail_row_p:first-child{
+  font-size: clamp(1.05rem, 2vw + 0.25rem, 1.1rem);
+}
 .detail_row_p {
   font-size: clamp(1.15rem, 2vw + 0.25rem, 1.2rem);
 }
@@ -221,7 +224,7 @@
   display: inline-block;
   width: 100%;
 }
-.shipping-note {
+.shipping_note {
   display: block;
   font-size: 0.8rem;
   color: #777;

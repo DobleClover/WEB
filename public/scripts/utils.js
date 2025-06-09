@@ -11,12 +11,14 @@ import {
   generateTooltip,
 } from "./componentRenderer.js";
 import {
+  appliedCoupon,
   brandsFromDB,
   colorsFromDB,
   countriesFromDB,
   coupons,
   dropsFromDB,
   provincesFromDB,
+  setAppliedCoupon,
   setSettings,
   settingsFromDB,
   sizesFromDB,
@@ -67,13 +69,11 @@ export function listenToProductCards() {
         let timeoutID;
         image.addEventListener("mouseenter", () => {
           alternativeImage.src = image.src;
-          timeoutID && clearInterval(timeoutID)
+          timeoutID && clearInterval(timeoutID);
           timeoutID = setTimeout(() => {
-            alternativeImage.classList.add("product_card_active_img")
-          mainImage.classList.remove("product_card_active_img");
+            alternativeImage.classList.add("product_card_active_img");
+            mainImage.classList.remove("product_card_active_img");
           }, 250);
-          
-          
         });
 
         image.addEventListener("mouseleave", () => {
@@ -142,8 +142,8 @@ export async function handleModalCreation({
     if (validateFormFunction) formIsOK = validateFormFunction(form);
     if (!formIsOK) return;
     //ACa sigo, pinto loading el boton
-    setSendingBtnLoader(submitButton,true);
-   
+    setSendingBtnLoader(submitButton, true);
+
     // Armo el bodyData con lo que viene de parametro
     // Construir el bodyData con la función personalizada
     const bodyData = buildBodyData(form);
@@ -162,11 +162,11 @@ export async function handleModalCreation({
           modalResponse = await postToDatabase(bodyData, method);
         } catch (error) {
           console.error(`Error posting ${entityType} to database`, error);
-          setSendingBtnLoader(submitButton,false);
+          setSendingBtnLoader(submitButton, false);
           return;
         }
       }
-      setSendingBtnLoader(submitButton,false);
+      setSendingBtnLoader(submitButton, false);
       // Cierro el modal
       if (modalResponse) handlePageModal(false);
       if (updateElements) {
@@ -182,10 +182,10 @@ export async function handleModalCreation({
       if (postToDatabase) {
         try {
           fetchResponse = await postToDatabase(bodyData, method);
-          setSendingBtnLoader(submitButton,false);
+          setSendingBtnLoader(submitButton, false);
         } catch (error) {
           console.error(`Error posting ${entityType} to database`, error);
-          setSendingBtnLoader(submitButton,false);
+          setSendingBtnLoader(submitButton, false);
           return;
         }
       }
@@ -652,10 +652,10 @@ export function buildProductBodyData(form) {
     current_images: [],
   };
   // Cargo los drops
-  let drops = getSelectedDropdownValuesForEntity(form,'.drop_search_input');
+  let drops = getSelectedDropdownValuesForEntity(form, ".drop_search_input");
   console.log(drops);
-  
-  bodyDataToReturn.drops = drops
+
+  bodyDataToReturn.drops = drops;
   // Variaciones
   const variationFields = document.querySelectorAll(".variation_field") || [];
   variationFields.forEach((field) => {
@@ -721,7 +721,7 @@ export function buildProductBodyData(form) {
     if (
       key === "variations" ||
       key === "filesFromArray" ||
-      key == "current_images" || 
+      key == "current_images" ||
       key == "drops"
     ) {
       // Convertir las variaciones a JSON y agregar al FormData
@@ -889,22 +889,25 @@ export function buildDropBodyData(form) {
   return formData;
 }
 export function buildCouponBodyData(form) {
-  let bodyDataToReturn = {
-    prefix_id: form["coupon_prefix"]?.value,
-    expires_at: form["coupon_expiration_date"]?.value,
-    usage_limit: form["coupon_max_uses"]?.value,
+  const selectedPrefix = form["coupon_prefix"]?.value;
+  const customPrefix = form["coupon_prefix_input"]?.value;
+  const couponType = parseInt(form["coupon_type"]?.value);
+
+  const isCustomPrefix = !selectedPrefix;
+  const isExpirationType = couponType === 1;
+  const isUsageLimitType = couponType === 2;
+
+  const bodyDataToReturn = {
+    prefix_id: isCustomPrefix ? null : selectedPrefix,
+    prefix: isCustomPrefix ? customPrefix : null,
+    expires_at: isExpirationType ? form["coupon_expiration_date"]?.value : null,
+    usage_limit: isUsageLimitType ? form["coupon_max_uses"]?.value : null,
     discount_percent: form["coupon_discount_percent"]?.value,
   };
-  // Si el prefijo es otro, entonces uso uno personalizado
-  if(!form["coupon_prefix"]?.value){
-    bodyDataToReturn.prefix = form["coupon_prefix_input"]?.value
-  };
-  // Si el type es 1 entonces es expiracion, sino es max uses
-  if(form["coupon_type"]?.value == 1) bodyDataToReturn.usage_limit = null
-  else if(form["coupon_type"]?.value == 2) bodyDataToReturn.expires_at = null
 
   return bodyDataToReturn;
 }
+
 //Una vez que se crea la entidad, ahi dependiendo si es en carro o profile tengo que hacer algo
 export async function updateAddressElements() {
   try {
@@ -980,8 +983,7 @@ export async function updateCouponTable() {
 }
 //Crea y actualiza los valores de phone & address del usuario loggeado (se supone que solo creamos phone & address de los usuarios)
 export async function handlePhoneFetch(bodyData, method) {
-  let fetchURL =
-      method == "POST" ? `/api/phone` : `/api/phone/${bodyData.id}`;
+  let fetchURL = method == "POST" ? `/api/phone` : `/api/phone/${bodyData.id}`;
   let response = await fetch(fetchURL, {
     method: method,
     headers: { "Content-Type": "application/json" },
@@ -1013,7 +1015,7 @@ export async function handlePhoneFetch(bodyData, method) {
 }
 export async function handleAddressFetch(bodyData, method) {
   let fetchURL =
-      method == "POST" ? `/api/address` : `/api/address/${bodyData.id}`;
+    method == "POST" ? `/api/address` : `/api/address/${bodyData.id}`;
   let response = await fetch(fetchURL, {
     method: method,
     headers: { "Content-Type": "application/json" },
@@ -1032,7 +1034,9 @@ export async function handleAddressFetch(bodyData, method) {
         (addressFromDB) => addressFromDB.id == bodyData.id
       );
       if (addressToChangeIndex < 0) return;
-      bodyData.province = provincesFromDB.find(prov=>prov.id == bodyData.provinces_id)
+      bodyData.province = provincesFromDB.find(
+        (prov) => prov.id == bodyData.provinces_id
+      );
       userLogged.addresses[addressToChangeIndex] = bodyData;
     }
     let responseMsg = response.msg;
@@ -1229,7 +1233,7 @@ export async function handleColorFetch(bodyData, method) {
 
 export async function handleCouponFetch(bodyData, method) {
   let fetchURL =
-      method == "POST" ? `/api/coupon` : `/api/coupon/${bodyData.id}`;
+    method == "POST" ? `/api/coupon` : `/api/coupon/${bodyData.id}`;
   let response = await fetch(fetchURL, {
     method: method,
     headers: { "Content-Type": "application/json" },
@@ -1241,8 +1245,8 @@ export async function handleCouponFetch(bodyData, method) {
     //Aca dio ok, entonces al ser de un usuario actualizo al usuarioLogged.phones
     if (method == "POST") {
       //Aca agrego
-      coupons?.push(response.address);
-    } 
+      coupons?.push(response.coupon);
+    }
     let responseMsg = response.msg;
     showCardMessage(true, responseMsg);
     return true;
@@ -1439,7 +1443,7 @@ export function getLastParamFromURL() {
 }
 
 export function getDateString(date, withTime = false) {
-  if(!date)return
+  if (!date) return;
   const orderDate = new Date(date);
   const locale = "es-ES"; // Idioma español
 
@@ -1507,9 +1511,9 @@ export async function scriptInitiator() {
     await checkForUserLogged();
     await setSettings();
     headerExportObject.headerScriptInitiator();
-    let payingOrder = handleOrderInLocalStorage({ type: 2 });    
+    let payingOrder = handleOrderInLocalStorage({ type: 2 });
     if (payingOrder && !isOnPage("post-compra")) {
-      return
+      return;
       //Aca tengo que dar de baja la orden
       let response = await fetch(`/api/order/paymentFailed/${payingOrder}`, {
         method: "DELETE",
@@ -1747,63 +1751,68 @@ export function checkIfIsInScreen(percentege, cb, arg) {
 
 export function animateSectionElements(section, perc = 0.4) {
   let element, observer;
-  let allElements = section.querySelectorAll(".animated_section");//animated_element
+  let allElements = section.querySelectorAll(".animated_section"); //animated_element
   // allElements.forEach((sectionElem) => {
   //   observer = checkIfIsInScreen(perc, animateElement, sectionElem);
   //   observer.observe(sectionElem);
   // });
   allElements.forEach((sectionElem, index) => {
-    observer = checkIfIsInScreen(perc, (el) => {
-      setTimeout(() => {
-        animateElement(el);
-      }, index * 50); // 50ms entre cada uno
-    }, sectionElem);
+    observer = checkIfIsInScreen(
+      perc,
+      (el) => {
+        setTimeout(() => {
+          animateElement(el);
+        }, index * 50); // 50ms entre cada uno
+      },
+      sectionElem
+    );
     observer.observe(sectionElem);
   });
-  
 }
 
 export function animateSectionsOnce() {
-  const observer = new IntersectionObserver((entries, obs) => {
-    entries.forEach(entry => {
-      if (!entry.isIntersecting) return;
+  const observer = new IntersectionObserver(
+    (entries, obs) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
 
-      const section = entry.target;
+        const section = entry.target;
 
-      // Animar bloque superior (logo, título, desc)
-      const introElements = section.querySelectorAll(
-        '.section_logo, .section_title, .section_desc'
-      );
-      introElements.forEach(el => el.classList.add('animate'));
+        // Animar bloque superior (logo, título, desc)
+        const introElements = section.querySelectorAll(
+          ".section_logo, .section_title, .section_desc"
+        );
+        introElements.forEach((el) => el.classList.add("animate"));
 
-      // Animar tarjetas con delay escalonado
-      const cards = section.querySelectorAll('.card_with_image');
-      cards.forEach((card, i) => {
-        card.style.animationDelay = `${i * 100}ms`;
-        card.classList.add('animate');
+        // Animar tarjetas con delay escalonado
+        const cards = section.querySelectorAll(".card_with_image");
+        cards.forEach((card, i) => {
+          card.style.animationDelay = `${i * 100}ms`;
+          card.classList.add("animate");
+        });
+
+        obs.unobserve(section); // 👈 Solo una vez
       });
+    },
+    {
+      threshold: 0,
+      rootMargin: "0px 0px -30% 0px", // dispara antes de que el 100% esté en pantalla
+    }
+  );
 
-      obs.unobserve(section); // 👈 Solo una vez
-    });
-  }, {
-    threshold: 0,
-    rootMargin: '0px 0px -30% 0px' // dispara antes de que el 100% esté en pantalla
-  });
-
-  document.querySelectorAll('.animated_section').forEach(section => {
+  document.querySelectorAll(".animated_section").forEach((section) => {
     const introElements = section.querySelectorAll(
-      '.section_logo, .section_title, .section_desc'
+      ".section_logo, .section_title, .section_desc"
     );
-    const cards = section.querySelectorAll('.card_with_image');
+    const cards = section.querySelectorAll(".card_with_image");
 
-    [...introElements, ...cards].forEach(el => {
-      el.classList.add('fade_in');
+    [...introElements, ...cards].forEach((el) => {
+      el.classList.add("fade_in");
     });
 
     observer.observe(section);
   });
 }
-
 
 export function getImgElement(fileObj, classnamesForImage) {
   if (!fileObj || !fileObj.file_urls || fileObj.file_urls.length === 0) {
@@ -1837,7 +1846,7 @@ export function getImgElement(fileObj, classnamesForImage) {
 export function displayPriceNumber(price) {
   let dolarPrice =
     settingsFromDB.find((set) => set.setting_types_id == 1)?.value || 2000;
-    
+
   return minDecimalPlaces(
     displayBigNumbers(parseFloat(price) * parseFloat(dolarPrice), 2),
     2
@@ -1848,11 +1857,17 @@ export function formatStringForTextarea(text) {
   return text ? text.replace(/\r\n|\r|\n/g, "<br>") : "";
 }
 
-export async function paintProductCardsInList(products = [], wrapper = null, append = false) {
+export async function paintProductCardsInList(
+  products = [],
+  wrapper = null,
+  append = false
+) {
   if (!settingsFromDB.length) await setSettings();
   if (!products.length) return;
 
-  const productsToIterate = products.length ? [...products] : [...productsFromDB];
+  const productsToIterate = products.length
+    ? [...products]
+    : [...productsFromDB];
 
   const productCardWrapper =
     wrapper || document.querySelector(".product_cards_wrapper_section");
@@ -1878,8 +1893,8 @@ export function getIdFromUrl() {
   return segments[segments.length - 1]; // Retorna el último segmento (el product id)
 }
 
-export function emulateEvent(element = undefined, event = undefined){
-  if(!element || !event) return
+export function emulateEvent(element = undefined, event = undefined) {
+  if (!element || !event) return;
   return element.dispatchEvent(new Event(event));
 }
 
@@ -1912,7 +1927,7 @@ export function removeDoblecloverOverlay() {
   }, 500);
 }
 
-export async function handleOutOfStockNotification(productData,event) {
+export async function handleOutOfStockNotification(productData, event) {
   try {
     const modal = document.querySelector(".ui.modal.active");
 
@@ -1925,11 +1940,15 @@ export async function handleOutOfStockNotification(productData,event) {
 
     // Obtener valores del formulario
     const email = modal.querySelector("input[name='email']")?.value?.trim();
-    const phoneCountryID = modal.querySelector("[name='phone_countries_id']")?.value?.trim();
-    const phoneNumber = modal.querySelector("input[name='phone_number']")?.value?.trim();
+    const phoneCountryID = modal
+      .querySelector("[name='phone_countries_id']")
+      ?.value?.trim();
+    const phoneNumber = modal
+      .querySelector("input[name='phone_number']")
+      ?.value?.trim();
     const sizeId = modal.querySelector("select[name='sizes_id']")?.value;
-    const sendingBtn = modal.querySelector('.send_modal_form_btn')
-    setSendingBtnLoader(sendingBtn,true);
+    const sendingBtn = modal.querySelector(".send_modal_form_btn");
+    setSendingBtnLoader(sendingBtn, true);
     // Enviar POST al servidor
     let response = await fetch("/api/stockAlert/", {
       method: "POST",
@@ -1942,18 +1961,24 @@ export async function handleOutOfStockNotification(productData,event) {
         phone_countries_id: phoneCountryID,
       }),
     });
-    setSendingBtnLoader(sendingBtn,false);
+    setSendingBtnLoader(sendingBtn, false);
     closeModal();
-    if(response.ok){
-      showCardMessage(true,"¡Te avisaremos cuando vuelva a estar disponible!");
+    if (response.ok) {
+      showCardMessage(true, "¡Te avisaremos cuando vuelva a estar disponible!");
     } else {
-      showCardMessage(false,"Hubo un problema al registrar el aviso. Intentá de nuevo.");
+      showCardMessage(
+        false,
+        "Hubo un problema al registrar el aviso. Intentá de nuevo."
+      );
     }
-    return 
+    return;
   } catch (error) {
     console.error("Error al guardar el aviso de stock:", error);
-    showCardMessage(false,"Hubo un problema al registrar el aviso. Intentá de nuevo.");
-    return 
+    showCardMessage(
+      false,
+      "Hubo un problema al registrar el aviso. Intentá de nuevo."
+    );
+    return;
   }
 }
 
@@ -1961,9 +1986,9 @@ export function setSendingBtnLoader(btn, isLoading) {
   if (!btn) return;
 
   if (isLoading) {
-    btn.classList.add('loading', 'disabled');
+    btn.classList.add("loading", "disabled");
   } else {
-    btn.classList.remove('loading', 'disabled');
+    btn.classList.remove("loading", "disabled");
   }
 }
 
@@ -1976,4 +2001,114 @@ export function getSelectedDropdownValuesForEntity(form, selector) {
   });
 
   return values;
+}
+
+export async function validateCoupon(code, messageTarget) {
+  try {
+    const userId = userLogged?.id || null; // Asegurate de tener el ID del usuario disponible en window o donde sea
+
+    if (!userId) {
+      showCouponMessage(
+        "Debes estar registrado para utilizar cupones",
+        false,
+        messageTarget
+      );
+      return;
+    }
+    setCouponLoader(true);
+    const queryParams = new URLSearchParams({ code, users_id: userId });
+    const response = await fetch(
+      `/api/coupon/validate?${queryParams.toString()}`
+    );
+    const result = await response.json();
+    setCouponLoader(false)
+    if (!result.ok) {
+      showCouponMessage(result.msg || "Cupón inválido", false, messageTarget);
+      return;
+    }
+
+    // Cupón válido
+    const coupon = result.data;
+    showCouponMessage("Cupón aplicado correctamente 🎉", true, messageTarget);
+
+    // Ocultar input, botón y select si existen
+    document
+      .querySelectorAll(".coupon_input_group")
+      ?.forEach((elem) => elem.classList.add("hidden"));
+    document
+      .querySelectorAll(".coupon_select")
+      ?.forEach((elem) => elem.classList.add("hidden"));
+
+    // Guardar y aplicar
+    setAppliedCoupon(coupon);
+    applyCouponToDetail(coupon);
+  } catch (err) {
+    console.error("❌ Error al validar el cupón:", err);
+    showCouponMessage("Error al validar el cupón", false, messageTarget);
+  }
+}
+
+function showCouponMessage(msg, success, targetEl) {
+  targetEl.textContent = msg;
+  targetEl.style.display = "block";
+  targetEl.style.color = success ? "#00aa55" : "#d01919";
+}
+
+export function applyCouponToDetail(coupon = null) {
+  if (!coupon) return;
+
+  const detailContainers = document.querySelectorAll(".detail_list_container");
+
+  detailContainers.forEach((container) => {
+    const totalRow = container.querySelector(".last-row");
+    const totalCostElement = totalRow.querySelector(".detail_row_total_cost");
+
+    // Eliminar fila de cupón previa si existía
+    const oldCouponRow = container.querySelector(".coupon_row_applied");
+    if (oldCouponRow) oldCouponRow.remove();
+
+    // Obtener total actual
+    const currentTotal = parseFloat(
+      totalCostElement.textContent.replace(/[^\d,]/g, "").replace(",", ".")
+    );
+
+    // Calcular descuento
+    const discountValue = currentTotal * (coupon.discount_percent / 100);
+    const discountedTotal = currentTotal - discountValue;
+
+    // Crear nueva fila para el cupón
+    const couponRow = document.createElement("div");
+    couponRow.className = "detail_list_row coupon_row_applied margin_top";
+
+    const label = document.createElement("p");
+    label.className = "detail_row_p";
+    label.innerHTML = `
+    ${coupon.code}<br>
+    <span class="shipping_note">${parseFloat(coupon.discount_percent)?.toFixed(0)}% de descuento</span>
+  `;
+
+    couponRow.appendChild(label);
+
+    const value = document.createElement("p");
+    value.className = "detail_row_p";
+    value.textContent = `- $${minDecimalPlaces(
+      displayBigNumbers(discountValue, 2),
+      2
+    )}`;
+    couponRow.appendChild(value);
+
+    // Insertar antes del total
+    container.insertBefore(couponRow, totalRow);
+
+    // Actualizar total
+    totalCostElement.textContent = `$${minDecimalPlaces(
+      displayBigNumbers(discountedTotal, 2),
+      2
+    )}`;
+  });
+}
+
+function setCouponLoader(isLoading = false){
+  const wrappers = document.querySelectorAll(".coupon_input_wrapper");
+  wrappers.forEach(elem => isLoading ? elem.classList.add("loading") : elem.classList.remove("loading"));
 }

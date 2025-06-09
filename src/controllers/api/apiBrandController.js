@@ -41,15 +41,16 @@ const BRANDS_FOLDER_NAME = "brands";
 const controller = {
   getBrands: async (req, res) => {
     try {
-      let { brands_id, withImages, withProductImages } = req.query;
+      let { brands_id, withImages, withProductImages, onlyMainImages } = req.query;
       brands_id = brands_id || undefined;
-      withProductImages = withProductImages || undefined;
-      console.log(withProductImages);
+      withProductImages = withProductImages ? true: false;
+      onlyMainImages = onlyMainImages ? true: false;
       
       let brandsFromDB = await getBrandsFromDB({
         id: brands_id,
         withImages,
         withProductImages,
+        onlyMainImages
       });
 
       // Mando la respuesta
@@ -270,6 +271,7 @@ export async function getBrandsFromDB({
   id = undefined,
   withImages = false,
   withProductImages = false,
+  onlyMainImages = false
 }) {
   try {
     let brandsToReturn, brandToReturn;
@@ -284,6 +286,7 @@ export async function getBrandsFromDB({
         brand: brandToReturn,
         withImages,
         withProductImages,
+        onlyMainImages
       });
       return brandToReturn;
     }
@@ -309,7 +312,7 @@ export async function getBrandsFromDB({
     }
     for (let i = 0; i < brandsToReturn.length; i++) {
       const brand = brandsToReturn[i];
-      await setBrandKeysToReturn({ brand, withImages, withProductImages });
+      await setBrandKeysToReturn({ brand, withImages, withProductImages, onlyMainImages });
     }
 
     return brandsToReturn;
@@ -380,6 +383,7 @@ async function setBrandKeysToReturn({
   brand,
   withImages = false,
   withProductImages = false,
+  onlyMainImages = false
 }) {
   try {
     if (brand.files?.length) {
@@ -401,6 +405,7 @@ async function setBrandKeysToReturn({
       await setProductKeysToReturn({
         product: brandProd,
         withImages: withProductImages,
+        onlyMainImages
       });
     }   
   } catch (error) {

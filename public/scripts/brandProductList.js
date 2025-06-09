@@ -1,19 +1,20 @@
-import { paintProductCardsInList, removeDoblecloverOverlay, scriptInitiator } from "./utils.js";
-
+import {
+  paintProductCardsInList,
+  removeDoblecloverOverlay,
+  scriptInitiator,
+} from "./utils.js";
+import { sortProductsByStockAndType } from "./helpers/productSortUtils.js";
 window.addEventListener("load", async () => {
   try {
     await scriptInitiator();
     const brand = await getBrand();
     // Ocultar loader al terminar
-    removeDoblecloverOverlay()
+    removeDoblecloverOverlay();
     renderBrandSections(brand);
-    if(brand.products.length){
-      await paintProductCardsInList(brand.products);
-    } else {
-      // TODO: pintar algo como que no hay productos
-    }
-    
-    
+    if (brand.products?.length) {
+      const sorted = sortProductsByStockAndType(brand.products);
+      await paintProductCardsInList(sorted);
+    } 
   } catch (error) {
     console.error("Error al cargar la marca:", error);
     // Mostrar mensaje al usuario si querés
@@ -37,29 +38,32 @@ const getBrand = async () => {
 
   // 3. Convertir la respuesta a JSON
   const brandData = await response.json();
-  return brandData.data
+  return brandData.data;
 };
 
 function renderBrandSections(brand) {
-    const bannerSection = document.querySelector(".brand_banner_section");
-    const productSection = document.querySelector(".product_cards_wrapper_section");
-  
-    // Obtener logo principal y logotipo
-    const logoUrl = brand.logo?.file_urls?.find(f => f.size === "1x")?.url;
-    const logotypeUrl = brand.logotype?.file_urls?.find(f => f.size === "1x")?.url;
-  
-    // Banner con logo centrado
-    if (logotypeUrl) {
-      const img = document.createElement("img");
-      img.src = logotypeUrl;
-      img.alt = `${brand.name} logo`;
-      img.classList.add("brand_logo");
-      bannerSection.appendChild(img);
-    }
-  
-    // // Trama de fondo con logotipo
-    // if (logoUrl) {
-    //   productSection.style.backgroundImage = `url("${logoUrl}")`;
-    // }
+  const bannerSection = document.querySelector(".brand_banner_section");
+  const productSection = document.querySelector(
+    ".product_cards_wrapper_section"
+  );
+
+  // Obtener logo principal y logotipo
+  const logoUrl = brand.logo?.file_urls?.find((f) => f.size === "1x")?.url;
+  const logotypeUrl = brand.logotype?.file_urls?.find(
+    (f) => f.size === "1x"
+  )?.url;
+
+  // Banner con logo centrado
+  if (logotypeUrl) {
+    const img = document.createElement("img");
+    img.src = logotypeUrl;
+    img.alt = `${brand.name} logo`;
+    img.classList.add("brand_logo");
+    bannerSection.appendChild(img);
   }
-  
+
+  // // Trama de fondo con logotipo
+  // if (logoUrl) {
+  //   productSection.style.backgroundImage = `url("${logoUrl}")`;
+  // }
+}

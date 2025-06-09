@@ -129,7 +129,7 @@ export async function setColors(){
 export let brandsFromDB = [];
 export async function setBrands(withProductImages = false){
     try {
-        const response = await fetch(`${window.location.origin}/api/brand${withProductImages ? '?withProductImages=true':''}`);
+        const response = await fetch(`${window.location.origin}/api/brand${withProductImages ? '?withProductImages=true&onlyMainImages=true':''}`);
         const json = await response.json();
         brandsFromDB =  json.data || [];
     } catch (error) {
@@ -163,6 +163,7 @@ export async function setSettings(){
 }
 
 export let coupons = [];
+export let appliedCoupon = null; // definida afuera
 export async function setCoupons(){
     try {
         const res = await fetch("/api/coupon");
@@ -171,4 +172,7 @@ export async function setCoupons(){
         console.log("Falle");
         return console.log(error);        
     }
+}
+export function setAppliedCoupon(coupon = null){
+    return appliedCoupon = coupon
 }

@@ -1,6 +1,7 @@
 import { userLogged } from "./checkForUserLogged.js";
 import {
   checkoutCard,
+  createCouponInputBox,
   form,
   generatePaymentButtonElement,
 } from "./componentRenderer.js";
@@ -13,6 +14,8 @@ import {
   setShippingTypes,
   settingsFromDB,
   shippingTypesFromDB,
+  appliedCoupon,
+  setAppliedCoupon,
 } from "./fetchEntitiesFromDB.js";
 import { checkCartItemsToPaintQuantity } from "./header.js";
 import {
@@ -21,6 +24,7 @@ import {
   setLocalStorageItem,
 } from "./localStorage.js";
 import {
+  applyCouponToDetail,
   displayBigNumbers,
   displayPriceNumber,
   emulateEvent,
@@ -45,6 +49,7 @@ let cartExportObj = {
 };
 //seteo los productos
 let cartProducts = [];
+
 window.addEventListener("load", async () => {
   try {
     if (!isOnPage("/carro")) return;
@@ -96,6 +101,9 @@ window.addEventListener("load", async () => {
         let newDetailContainer = createCartDetailContainer();
         // Reemplazar el contenedor antiguo con el nuevo
         cont.appendChild(newDetailContainer);
+        console.log(appliedCoupon);
+        
+        if(appliedCoupon) applyCouponToDetail(appliedCoupon)
       });
       checkForSectionButtons(); //Para los botones de "finalizar compra" o directo el de mp
     }
@@ -187,6 +195,7 @@ window.addEventListener("load", async () => {
             checkoutSectionForm.innerHTML = "";
             shippingCost = 0; //Reinicio el shippingCost
             sectionIndex = 0; //Reinicio el index
+            setAppliedCoupon()
             cartExportObj.pageConstructor();
             return main.classList.remove("active");
           } catch (error) {
@@ -818,7 +827,7 @@ window.addEventListener("load", async () => {
         } else if (!shippingTypeSelect || !shippingAddressSelect?.value) {
           shippingCostContainer.innerHTML = `
             <span class="detail_row_shipping-cost">A estimar</span><br>
-            <p class="shipping-note">Se coordina y cobra luego de la compra vía Andreani.</p>
+            <p class="shipping_note">Se coordina y cobra luego de la compra vía Andreani.</p>
           `;
         }
       } else {
@@ -826,8 +835,8 @@ window.addEventListener("load", async () => {
         setShippingCost();
         shippingCostContainer.innerHTML = `<span class="detail_row_shipping-cost">$${displayBigNumbers(
           shippingCost
-        )} <p class="shipping-note">Precio estimado.</p></span><br>
-            <p class="shipping-note">Se coordina y cobra luego de la compra vía Andreani.</p>`;
+        )} <p class="shipping_note">Precio estimado.</p></span><br>
+            <p class="shipping_note">Se coordina y cobra luego de la compra vía Andreani.</p>`;
       }
       shippingRow.appendChild(shippingCostContainer);
 
@@ -853,7 +862,7 @@ window.addEventListener("load", async () => {
       container.appendChild(detailListContainer);
 
       // Crear botón de finalizar compra
-      let finalizeButton;
+      let finalizeButton, couponSection;
 
       if (sectionIndex === 0) {
         finalizeButton = document.createElement("button");
@@ -863,8 +872,10 @@ window.addEventListener("load", async () => {
         if (cartProducts.length === 0) finalizeButton.classList.add("disabled");
         finalizeButton.textContent = "Finalizar compra";
       } else {
+        couponSection = createCouponInputBox()
         finalizeButton = generatePaymentButtonElement();
       }
+      couponSection ? container.appendChild(couponSection) : null;
       container.appendChild(finalizeButton);
 
       return container;

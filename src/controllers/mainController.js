@@ -224,6 +224,9 @@ const controller = {
     clearUserSession(req, res);
     return res.redirect(`${pathToReturn}`);
   },
+  dobleuso: (req, res) => {
+    return res.render("dobleuso");
+  },
 };
 
 export default controller;
