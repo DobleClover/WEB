@@ -40,8 +40,18 @@ export default [
     categories: [2, 9], // Calzado, Ojota
   },
   {
+    id: 72,
+    size: "US 6.5",
+    categories: [2, 9],
+  },
+  {
     id: 9,
     size: "US 7",
+    categories: [2, 9],
+  },
+  {
+    id: 73,
+    size: "US 7.5",
     categories: [2, 9],
   },
   {
@@ -50,8 +60,18 @@ export default [
     categories: [2, 9],
   },
   {
+    id: 74,
+    size: "US 8.5",
+    categories: [2, 9],
+  },
+  {
     id: 11,
     size: "US 9",
+    categories: [2, 9],
+  },
+  {
+    id: 75,
+    size: "US 9.5",
     categories: [2, 9],
   },
   {
@@ -60,8 +80,18 @@ export default [
     categories: [2, 9],
   },
   {
+    id: 76,
+    size: "US 10.5",
+    categories: [2, 9],
+  },
+  {
     id: 13,
     size: "US 11",
+    categories: [2, 9],
+  },
+  {
+    id: 77,
+    size: "US 11.5",
     categories: [2, 9],
   },
   {
@@ -70,8 +100,18 @@ export default [
     categories: [2, 9],
   },
   {
+    id: 78,
+    size: "US 12.5",
+    categories: [2, 9],
+  },
+  {
     id: 15,
     size: "US 13",
+    categories: [2, 9],
+  },
+  {
+    id: 79,
+    size: "US 13.5",
     categories: [2, 9],
   },
   {
@@ -79,7 +119,11 @@ export default [
     size: "US 14",
     categories: [2, 9],
   },
-
+  {
+    id: 80,
+    size: "US 14.5",
+    categories: [2, 9],
+  },  
   {
     id: 24,
     size: "Único",
@@ -320,4 +364,5 @@ export default [
     size: "44x36",
     categories: [3],
   },
+ 
 ];
