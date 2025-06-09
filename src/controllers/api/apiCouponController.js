@@ -28,41 +28,36 @@ import couponPrefix from "../../utils/staticDB/couponPrefix.js";
 // ENV
 
 const controller = {
-  getReservedCoupon: async (req, res) => {
+  getUserCoupons: async (req, res) => {
     try {
       const { users_id } = req.query;
-
+  
       if (!users_id) {
         return res.status(400).json({ ok: false, msg: "Falta users_id" });
       }
-
-      const reserved = await db.CouponUsage.findOne({
+  
+      const reservedCoupons = await db.CouponUsage.findAll({
         where: {
           users_id: users_id,
-          used_at: null,
+          used_at: null, // si querés incluir los usados, podés quitar esto
         },
         include: ["coupon"],
       });
-
-      if (!reserved) {
-        return res.status(200).json({ ok: true, data: null });
-      }
-
-      return res.status(200).json({
-        ok: true,
-        data: {
-          id: reserved.coupon.id,
-          code: reserved.coupon.code,
-          discount_percent: reserved.coupon.discount_percent,
-        },
-      });
+  
+      const data = reservedCoupons.map((entry) => ({
+        id: entry.coupon.id,
+        code: entry.coupon.code,
+        discount_percent: entry.coupon.discount_percent,
+      }));
+  
+      return res.status(200).json({ ok: true, data });
     } catch (err) {
-      console.log("Error in getReservedCoupon:", err);
+      console.log("Error in getUserCoupons:", err);
       return res
         .status(500)
         .json({ ok: false, msg: "Error interno del servidor" });
     }
-  },
+  },  
   getCoupons: async (req, res) => {
     try {
       const coupons = await db.Coupon.findAll({
@@ -296,6 +291,34 @@ export async function markCouponAsUsed(order) {
     `🎟️ Cupón ${coupons_id} marcado como usado por el usuario ${users_id}`
   );
 }
+
+export async function unmarkCouponAsUsed(order) {
+  const { coupons_id, users_id } = order;
+
+  if (!coupons_id || !users_id) return;
+
+  await db.CouponUsage.update(
+    { used_at: null },
+    {
+      where: {
+        coupons_id,
+        users_id,
+      },
+    }
+  );
+
+  await db.Coupon.decrement("usage_count", {
+    where: {
+      id: coupons_id,
+      usage_count: { [db.Sequelize.Op.gt]: 0 }, // solo si es mayor a 0
+    },
+  });
+
+  console.log(
+    `↩️ Cupón ${coupons_id} desmarcado como usado para el usuario ${users_id}`
+  );
+}
+
 
 async function destroyCouponFromDB(id) {
   const deleted = await db.Coupon.destroy({ where: { id } });

@@ -14,6 +14,8 @@ window.addEventListener("load", async () => {
     // Si no vino usuario loggeado, borro el cartItems
     if(!userLogged){
       deleteLocalStorageItem('cartItems')
+    } else{
+      userLogged.tempCartItems = [];
     }
     // Obtén el parámetro `order` de la URL
     const urlParams = new URLSearchParams(window.location.search);

@@ -80,6 +80,34 @@ function generateMailContent(order, isUser = true) {
       `
       : "";
 
+  const subtotal = order.orderItems.reduce(
+    (sum, item) => sum + item.quantity * item.price,
+    0
+  );
+
+  const discountValue = order.coupons_discount_percent
+    ? (subtotal * order.coupons_discount_percent) / 100
+    : 0;
+
+  const discountBlock = order.coupons_id
+    ? `
+          <div style="margin: 5px 0;">
+            <strong>Descuento:</strong> -$${discountValue.toFixed(0)}<br/>
+            <small style="color: #ccc;">Cupón: ${order.coupons_code} (${
+        order.coupons_discount_percent
+      }%)</small>
+          </div>
+        `
+    : "";
+
+  const totalBlock = `
+        <div style="font-size: 16px; font-weight: bold; margin-top: 10px;">
+          <div><strong>Subtotal:</strong> $${subtotal}</div>
+          ${discountBlock}
+          <div style="margin-top: 10px;"><strong>Total:</strong> $${order.total}</div>
+        </div>
+      `;
+
   return `
   <!DOCTYPE html>
   <html>
@@ -182,9 +210,7 @@ function generateMailContent(order, isUser = true) {
                             .join("")}
                         </table>
                         <hr style="border: none; border-top: 1px solid #ffffff30; margin: 20px 0;" />
-                        <div style="font-size: 16px; font-weight: bold; margin-top: 10px;">
-                          TOTAL: $${order.total}
-                        </div>
+                        ${totalBlock}
                         <hr style="border: none; border-top: 1px solid #ffffff30; margin: 20px 0;" />
                       </td>
                     </tr>

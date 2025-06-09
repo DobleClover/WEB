@@ -78,6 +78,9 @@ img {
 .margin_top {
   margin-top: 20px;
 }
+.margin_bottom {
+  margin-bottom: 20px;
+}
 .invert_color {
   filter: invert(1);
 }

@@ -722,7 +722,7 @@ export function checkoutCard(props) {
   metaVariationDiv.className = "meta";
   categorySpan = document.createElement("span");
   categorySpan.className = "card_desc";
-  categorySpan.textContent = `Color: ${props.colorFromDB?.name} ||Talle: ${props.sizeFromDB?.size}`;
+  categorySpan.textContent = `Color: ${props.colorFromDB?.name} || Talle: ${props.sizeFromDB?.size}`;
   metaVariationDiv.appendChild(categorySpan);
 
   // Price
@@ -2045,177 +2045,145 @@ function listenProductModalCategorySelect() {
 
 export function generateOrderDetailModal(order, isAdminModal = false) {
   destroyExistingModal();
-  // Crear modal principal
+
+  const subtotal = order.orderItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+
+  const discountValue = order.coupons_discount_percent
+    ? (subtotal * order.coupons_discount_percent) / 100
+    : 0;
+
+  const discountBlock = order.coupons_id
+    ? `
+      <span class="modal_card_content_row">
+        <span class="modal-card_content-span">Descuento</span>
+        <span class="modal-card_content-span">-$${displayBigNumbers(discountValue, 2)}</span>
+      </span>
+      <span class="modal-card_content-span small grey margin_bottom">
+        Cupón: ${order.coupons_code} (${order.coupons_discount_percent}%)
+      </span>
+    `
+    : "";
+
   const modal = document.createElement("div");
   modal.classList.add("ui", "small", "modal");
 
-  // Crear header
   const header = document.createElement("div");
   header.classList.add("header");
   const headerWording = "Detalle de la compra";
   header.innerHTML = `${headerWording} <i class="bx bx-x close_modal_btn"></i>`;
 
-  // Crear contenido principal
   const content = document.createElement("div");
   content.classList.add("content", "order_detail_modal_content");
 
-  // Crear tarjeta de orden
   const orderCard = document.createElement("div");
   orderCard.classList.add("ui", "card", "order_detail_card");
 
-  // Contenido de la tarjeta
   orderCard.innerHTML = `
-      <div class="content">
-          <div class="modal_card_header_span">${getDateString(
-            order.createdAt
-          )}</div>
-          <div class="modal_card_header_span border-left align-end">#${
-            order.tra_id
-          }</div>
-      </div>`;
+    <div class="content">
+      <div class="modal_card_header_span">${getDateString(order.createdAt)}</div>
+      <div class="modal_card_header_span border-left align-end">#${order.tra_id}</div>
+    </div>`;
+
   if (isAdminModal) {
-    orderCard.innerHTML +=
-      '<div class="content product_table_list_content"></div>'; //Esto es para pitnar los orderItems
+    orderCard.innerHTML += '<div class="content product_table_list_content"></div>';
   } else {
     orderCard.innerHTML += `
-        <div class="content">
-        <div class="modal_card_content_row">
-            <span class="modal-card_content-span">${
-              order.orderItemsPurchased
-            } producto${order.orderItemsPurchased > 1 ? "s" : ""}</span>
-            <span class="modal-card_content-span">$${displayBigNumbers(
-              order.orderItemsPurchasedPrice,
-              2
-            )}</span>
-        </div>
-        </div>`;
-  }
-  orderCard.innerHTML += `
       <div class="content">
-          <span class="modal_card_content_row">
-              <span class="modal-card_content-span bold">Total</span>
-              <span class="modal-card_content-span bold">$${displayBigNumbers(
-                order.total,
-                2
-              )}</span>
-          </span>
-      </div>
+        <div class="modal_card_content_row">
+          <span class="modal-card_content-span">${order.orderItemsPurchased} producto${order.orderItemsPurchased > 1 ? "s" : ""}</span>
+          <span class="modal-card_content-span">$${displayBigNumbers(order.orderItemsPurchasedPrice, 2)}</span>
+        </div>
+      </div>`;
+  }
+
+  orderCard.innerHTML += `
+    <div class="content">
+      <span class="modal_card_content_row">
+        <span class="modal-card_content-span">Subtotal</span>
+        <span class="modal-card_content-span">$${displayBigNumbers(subtotal, 2)}</span>
+      </span>
+      ${discountBlock}
+      <span class="modal_card_content_row margin-top">
+        <span class="modal-card_content-span bold">Total</span>
+        <span class="modal-card_content-span bold">$${displayBigNumbers(order.total, 2)}</span>
+      </span>
+    </div>
   `;
+
   let orderStatusSection = undefined;
   if (isAdminModal) {
-    // Sección Detalle de Pago
     orderStatusSection = document.createElement("section");
-    orderStatusSection.classList.add(
-      "card_status-detail",
-      "order_detail_card_section"
-    );
+    orderStatusSection.classList.add("card_status-detail", "order_detail_card_section");
     orderStatusSection.innerHTML = `
-        <label class="card_label label">Estado de orden</label>
- <select class="ui select ${
-   order.orderStatus.id == 6 ? "disabled" : ""
- }" id="orderStatusSelect">
-            ${statusesFromDB
-              .map(
-                (status) => `
-              <option value="${status.id}" ${
-                  status.id === order.orderStatus.id ? "selected" : ""
-                }>
+      <label class="card_label label">Estado de orden</label>
+      <select class="ui select ${order.orderStatus.id == 6 ? "disabled" : ""}" id="orderStatusSelect">
+        ${statusesFromDB
+          .map(
+            (status) => `
+              <option value="${status.id}" ${status.id === order.orderStatus.id ? "selected" : ""}>
                 ${status.status}
               </option>
             `
-              )
-              .join("")}
-              </select>
+          )
+          .join("")}
+      </select>
     `;
   }
 
-  // Sección Detalle de Pago
   const paymentSection = document.createElement("section");
-  paymentSection.classList.add(
-    "card-payment-detail",
-    "order_detail_card_section"
-  );
-
+  paymentSection.classList.add("card-payment-detail", "order_detail_card_section");
   paymentSection.innerHTML = `
-      <label class="card_label label">Detalle del pago</label>
-      <div class="ui card">
-          <div class="payment-logo-container card_logo_container">
-              <img src="./img/logo/${order.paymentType?.filename}" alt="payment-logo">
-          </div>
-          <div class="payment-label_container card_label_container">
-              <p class="payment-label card_label grey">${order.paymentType?.type}</p>
-          </div>
+    <label class="card_label label">Detalle del pago</label>
+    <div class="ui card">
+      <div class="payment-logo-container card_logo_container">
+        <img src="./img/logo/${order.paymentType?.filename}" alt="payment-logo">
       </div>
+      <div class="payment-label_container card_label_container">
+        <p class="payment-label card_label grey">${order.paymentType?.type}</p>
+      </div>
+    </div>
   `;
 
-  // Sección Detalle de Envío
   const shippingSection = document.createElement("section");
-  shippingSection.classList.add(
-    "card_shipping_detail",
-    "order_detail_card_section"
-  );
-  if (order.shippingType == 2) {
-  }
+  shippingSection.classList.add("card_shipping_detail", "order_detail_card_section");
   shippingSection.innerHTML = `
-      <label class="card_label label">Detalle del envío</label>
-      <div class="ui card">
-          <div class="shipping-logo-container card_logo_container">
-              <i class="${
-                order.shippingType?.iconClass
-              } card_logo_i" title = "${order.shippingType?.type}"></i>
-          </div>
-          <div class="card_label_container">
-              <p class="card_label grey no-margin">${
-                order.shippingType?.type
-              }</p>
-                
-              <p class="card_desc grey no-margin">${
-                order.shippingType.id == 1
-                  ? order.shipping_address_street
-                  : "A coordinar"
-              }</p>
-              <p class="card_desc grey no-margin">${
-                order.shippingType.id == 1
-                  ? order.shipping_address_detail || ""
-                  : ""
-              }</p>
-               <p class="card_desc grey no-margin">${
-                 order.shippingType.id == 1
-                   ? `CP: ${order.shipping_address_zip_code}`
-                   : ""
-               }</p>
-              <p class="card_desc grey no-margin">${
-                order.shippingType.id == 1
-                  ? `${order.shipping_address_city}, ${order.shipping_address_province}`
-                  : ""
-              }</p>
-          </div>
+    <label class="card_label label">Detalle del envío</label>
+    <div class="ui card">
+      <div class="shipping-logo-container card_logo_container">
+        <i class="${order.shippingType?.iconClass} card_logo_i" title="${order.shippingType?.type}"></i>
       </div>
+      <div class="card_label_container">
+        <p class="card_label grey no-margin">${order.shippingType?.type}</p>
+        <p class="card_desc grey no-margin">${order.shippingType.id == 1 ? order.shipping_address_street : "A coordinar"}</p>
+        <p class="card_desc grey no-margin">${order.shippingType.id == 1 ? order.shipping_address_detail || "" : ""}</p>
+        <p class="card_desc grey no-margin">${order.shippingType.id == 1 ? `CP: ${order.shipping_address_zip_code}` : ""}</p>
+        <p class="card_desc grey no-margin">${order.shippingType.id == 1 ? `${order.shipping_address_city}, ${order.shipping_address_province}` : ""}</p>
+      </div>
+    </div>
   `;
 
-  // Sección Detalle de facturacion
   const billingSection = document.createElement("section");
-  billingSection.classList.add(
-    "card_billing_detail",
-    "order_detail_card_section"
-  );
+  billingSection.classList.add("card_billing_detail", "order_detail_card_section");
   billingSection.innerHTML = `
-      <label class="card_label label">Detalle de facturacion</label>
-      <div class="ui card">
-          <div class="card_label_container">
-          <p class="card_label grey no-margin">Cliente</p>
-              <p class="card_desc grey no-margin">${order.first_name} ${order.last_name}</p>
-              <p class="card_desc grey no-margin">DNI: ${order.dni}</p>
-              <p class="card_desc grey no-margin">Email: ${order.email}</p>
-              <p class="card_desc grey">Telefono: +${order.phone_code}${order.phone_number}</p>
-              <p class="card_label grey no-margin">Direccion</p>
-              <p class="card_desc grey no-margin">${order.billing_address_street}</p>
-              <p class="card_desc grey no-margin">${order.billing_address_detail}</p>
-              <p class="card_desc grey no-margin">${order.billing_address_city}, ${order.billing_address_province}</p>
-          </div>
+    <label class="card_label label">Detalle de facturacion</label>
+    <div class="ui card">
+      <div class="card_label_container">
+        <p class="card_label grey no-margin">Cliente</p>
+        <p class="card_desc grey no-margin">${order.first_name} ${order.last_name}</p>
+        <p class="card_desc grey no-margin">DNI: ${order.dni}</p>
+        <p class="card_desc grey no-margin">Email: ${order.email}</p>
+        <p class="card_desc grey">Telefono: +${order.phone_code}${order.phone_number}</p>
+        <p class="card_label grey no-margin">Direccion</p>
+        <p class="card_desc grey no-margin">${order.billing_address_street}</p>
+        <p class="card_desc grey no-margin">${order.billing_address_detail}</p>
+        <p class="card_desc grey no-margin">${order.billing_address_city}, ${order.billing_address_province}</p>
       </div>
+    </div>
   `;
-  // Ensamblar modal
+
   content.appendChild(orderCard);
   orderStatusSection && content.appendChild(orderStatusSection);
   content.appendChild(paymentSection);
@@ -2226,13 +2194,12 @@ export function generateOrderDetailModal(order, isAdminModal = false) {
   modal.innerHTML += `<div class="ui dimmer">
     <div class="ui loader"></div>
   </div>`;
-  // Agrego el closemodal even
-  modal
-    .querySelector(".close_modal_btn")
-    ?.addEventListener("click", () => closeModal());
+
+  modal.querySelector(".close_modal_btn")?.addEventListener("click", () => closeModal());
 
   return modal;
 }
+
 
 export function disableAddressModal(address) {
   destroyExistingModal();

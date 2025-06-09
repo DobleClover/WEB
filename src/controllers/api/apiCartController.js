@@ -1,7 +1,5 @@
 import db from "../../database/models/index.js";
-import {
-  populateSize,
-} from "../../utils/helpers/populateStaticDb.js";
+import { populateSize } from "../../utils/helpers/populateStaticDb.js";
 import { getVariationsFromDB } from "./apiVariationsController.js";
 import { v4 as UUIDV4 } from "uuid";
 import { Op } from "sequelize";
@@ -28,12 +26,12 @@ const controller = {
           msg: "Internal server error",
           data: null,
         });
-      };
+      }
       const dbColors = await db.Color.findAll();
       tempCartItems.forEach((tempItem) => {
         const { sizes_id, colors_id } = tempItem;
         tempItem.size = populateSize(sizes_id);
-        tempItem.color = dbColors.find(dbColor=>dbColor.id == colors_id);
+        tempItem.color = dbColors.find((dbColor) => dbColor.id == colors_id);
       });
       return res.status(HTTP_STATUS.OK.code).json({
         ok: true,
@@ -61,8 +59,7 @@ const controller = {
         });
       }
       const { body } = req;
-      
-      
+
       const { variations_id } = body;
 
       const variationExists = await getVariationsFromDB(variations_id);
@@ -151,7 +148,7 @@ const controller = {
       });
       // Obtener los IDs de los productos enviados en el body
       const sentVariationIds = tempCartItems.map((item) => item.id);
-      
+
       // Determinar qué productos hay que eliminar (los que están en la DB pero no en `tempCartItems`)
       const itemsToDelete = cartItemsFromDB
         .filter((dbItem) => !sentVariationIds.includes(dbItem.id))
@@ -164,9 +161,9 @@ const controller = {
             id: itemsToDelete,
           },
         });
-      };
-    //   console.log(tempCartItems);
-      
+      }
+      //   console.log(tempCartItems);
+
       // Hago un bulkUpdate de las cantidades
       await db.TempCartItem.bulkCreate(tempCartItems, {
         updateOnDuplicate: ["quantity"],
@@ -184,6 +181,28 @@ const controller = {
       });
     }
   },
+  handleClearUserCart: async (req, res) => {
+    try {
+      const userId = req.params.userId;
+
+      if (!userId) {
+        return res.status(400).json({ ok: false, msg: "Falta userId" });
+      }
+
+      await clearUserCart(userId);
+
+      return res.status(200).json({
+        ok: true,
+        msg: "Carrito eliminado correctamente",
+      });
+    } catch (error) {
+      console.log("Error al vaciar el carrito:", error);
+      return res.status(500).json({
+        ok: false,
+        msg: "Error interno al vaciar el carrito",
+      });
+    }
+  },
 };
 
 export default controller;
@@ -198,7 +217,7 @@ async function findTempCartItemsByUserId(userId) {
     });
     if (!tempCartItems) return [];
     tempCartItems = getDeepCopy(tempCartItems);
-    tempCartItems.forEach(tempItem=>deleteSensitiveUserData(tempItem.user));
+    tempCartItems.forEach((tempItem) => deleteSensitiveUserData(tempItem.user));
     return tempCartItems;
   } catch (error) {
     console.log(`Error finding cart in db: ${error}`);
@@ -235,5 +254,22 @@ async function deleteCartItemInDb(cartItemId) {
   } catch (error) {
     console.log(`Error deleting item in db: ${error}`);
     return false;
+  }
+}
+
+export async function clearUserCart(users_id) {
+  if (!users_id) {
+    console.warn("⚠️ clearUserCart: users_id no proporcionado");
+    return;
+  }
+
+  try {
+    await db.TempCartItem.destroy({
+      where: { users_id },
+    });
+    console.log(`🧹 Carrito temporal del usuario ${users_id} eliminado`);
+  } catch (err) {
+    console.error("❌ Error al eliminar carrito temporal:", err);
+    throw err;
   }
 }

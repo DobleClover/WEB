@@ -46,7 +46,8 @@ import { HTTP_STATUS } from "../../utils/staticDB/httpStatusCodes.js";
 import { deleteSensitiveUserData } from "./apiUserController.js";
 import { getSettingsFromDB } from "./apiSettingController.js";
 import sendOrderMails from "../../utils/helpers/sendOrderMails.js";
-import { markCouponAsUsed } from "./apiCouponController.js";
+import { markCouponAsUsed, unmarkCouponAsUsed } from "./apiCouponController.js";
+import { clearUserCart } from "./apiCartController.js";
 
 // Agrega credenciales
 const mpClient = new MercadoPagoConfig({
@@ -123,7 +124,7 @@ const controller = {
         payment_types_id,
         shipping_types_id,
         variationsFromDB, //Del middleware
-        coupon_code,
+        coupons_id,
       } = req.body;
 
       // Si esta logueado y no tenia los nros y direcciones armadas...
@@ -193,12 +194,12 @@ const controller = {
         settingsFromDB.find((dbSetting) => dbSetting.setting_types_id == 1)
           ?.value || undefined;
 
-      // Verifico cupon
+      // Verifico cupón
       let coupon = null;
-      if (coupon_code) {
+      if (coupons_id && users_id) {
         coupon = await db.Coupon.findOne({
           where: {
-            code: coupon_code.toUpperCase().trim(),
+            id: coupons_id,
             expires_at: {
               [db.Sequelize.Op.or]: [
                 null,
@@ -290,7 +291,9 @@ const controller = {
           orderTotalPrice * (coupon.discount_percent / 100);
         orderTotalPrice -= discountAmount;
         orderDataToDB.total = orderTotalPrice;
-        orderDataToDB.coupons_id = coupon.id; // <-- vínculo con la orden
+        orderDataToDB.coupons_id = coupon.id; // <-- hago snapshot del cupon
+        orderDataToDB.coupons_code = coupon.code; // <-- hago snapshot del cupon
+        orderDataToDB.coupons_discount_percent = coupon.discount_percent; // <-- hago snapshot del cupon
       }
 
       // Hago los insert en la base de datos
@@ -327,6 +330,12 @@ const controller = {
         paymentOrderId = id;
         if (!paymentURL || !paymentOrderId)
           throw new Error("Could not generate mercado pago order");
+        orderDataToDB.entity_payments_id = paymentOrderId;
+        // Le actualizo el paypal_order_id en db
+        await db.Order.update(
+          { entity_payments_id: paymentOrderId },
+          { where: { id: orderDataToDB.id } }
+        );
       } else {
         // EFECTIVO || TRANSFERENCIA
         paymentOrderId = null;
@@ -340,13 +349,8 @@ const controller = {
         }
         await sendOrderMails(orderToSendEmails);
         console.log("📧 Mails de confirmación enviados correctamente");
+        if (orderToSendEmails.users_id) await clearUserCart(orderToSendEmails.users_id);
       }
-      orderDataToDB.entity_payments_id = paymentOrderId;
-      // Le actualizo el paypal_rder_id en db
-      await db.Order.update(
-        { entity_payments_id: paymentOrderId },
-        { where: { id: orderDataToDB.id } }
-      );
 
       // Mando la respuesta
       return res.status(200).json({
@@ -364,64 +368,20 @@ const controller = {
       console.log(error);
       // aca dio error, tengo que cancelar la compra si es que se creo
       const disableResponse = await disableCreatedOrder(orderDataToDB.id);
-      return res.status(500).json({ error });
-    }
-  },
-  updateOrder: async (req, res) => {
-    try {
-      // Traigo errores
-      let errors = validationResult(req);
-
-      if (!errors.isEmpty()) {
-        //Si hay errores en el back...
-        errors = errors.mapped();
-
-        // Ver como definir los errors
-        // return res.send(errors)
-        return res.status(422).json({
-          meta: {
-            status: 422,
-            url: "/api/user",
-            method: "POST",
+      // Intento desmarcar cupón si se había marcado como usado
+      if (orderDataToDB?.coupons_id && orderDataToDB?.users_id) {
+        const usage = await db.CouponUsage.findOne({
+          where: {
+            coupons_id: orderDataToDB.coupons_id,
+            users_id: orderDataToDB.users_id,
+            used_at: { [db.Sequelize.Op.ne]: null },
           },
-          ok: false,
-          errors,
-          msg: systemMessages.formMsg.validationError.es,
         });
+
+        if (usage) {
+          await unmarkCouponAsUsed(orderDataToDB);
+        }
       }
-
-      // Datos del body
-      let { order_id, order_statuses_id } = req.body;
-
-      let orderFromDB = await getOrdersFromDB({ id: order_id });
-      if (!orderFromDB)
-        return res
-          .status(404)
-          .json({ ok: false, msg: systemMessages.orderMsg.updateFailed });
-
-      let keysToUpdate = {
-        order_statuses_id,
-      };
-
-      await db.Order.update(keysToUpdate, {
-        where: {
-          id: order_id,
-        },
-      });
-
-      // Le  mando ok
-      return res.status(200).json({
-        meta: {
-          status: 200,
-          url: "/api/order",
-          method: "PUT",
-        },
-        ok: true,
-        msg: systemMessages.orderMsg.updateSuccesfull,
-      });
-    } catch (error) {
-      console.log(`Falle en apiOrderController.updateOrder`);
-      console.log(error);
       return res.status(500).json({ error });
     }
   },
@@ -438,6 +398,7 @@ const controller = {
       const {
         body: { order_statuses_id },
       } = req;
+
       const orderFromDB = await getOrdersFromDB({ id: orderId });
       if (!orderFromDB)
         return res.status(HTTP_STATUS.NOT_FOUND.code).json({
@@ -446,6 +407,8 @@ const controller = {
       if (order_statuses_id == 6) {
         //La quiere anular
         const disableResponse = await disableCreatedOrder(orderId);
+        // Desmarco el cupon que uso
+        await unmarkCouponAsUsed(orderFromDB);
       } else {
         //Esto es para ver si estaba cancelada y ahora la quiere
         const wasCanceled = orderFromDB.order_statuses_id == 6;

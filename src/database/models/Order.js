@@ -36,6 +36,9 @@ export default (sequelize, dataTypes) => {
     //Phone Snapshot
     phone_code: { type: dataTypes.STRING(50) },
     phone_number: { type: dataTypes.STRING(100) },
+    //Coupon Snapshot
+    coupons_code: { type: dataTypes.STRING(50) },
+    coupons_discount_percent: { type: dataTypes.DECIMAL(5, 2) },
   };
 
   let config = {

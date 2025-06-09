@@ -6,7 +6,7 @@ import adminCredentialsMiddleware from '../../middlewares/adminCredentialsMiddle
 
 // GET
 router.get("/", adminCredentialsMiddleware,  apiCouponController.getCoupons);
-router.get("/reserved", apiCouponController.getReservedCoupon);
+router.get("/user", apiCouponController.getUserCoupons);
 router.get("/validate", apiCouponController.validateCouponCode);
 // POST
 router.post("/", adminCredentialsMiddleware, apiCouponController.createCoupon);

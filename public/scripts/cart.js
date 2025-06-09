@@ -16,6 +16,7 @@ import {
   shippingTypesFromDB,
   appliedCoupon,
   setAppliedCoupon,
+  setUserCoupons,
 } from "./fetchEntitiesFromDB.js";
 import { checkCartItemsToPaintQuantity } from "./header.js";
 import {
@@ -49,7 +50,8 @@ let cartExportObj = {
 };
 //seteo los productos
 let cartProducts = [];
-
+// variable para saber si se fetcheo los cupones
+let userCouponsFetched = false;
 window.addEventListener("load", async () => {
   try {
     if (!isOnPage("/carro")) return;
@@ -71,6 +73,7 @@ window.addEventListener("load", async () => {
         if (sectionIndex == 1) {
           if (!countriesFromDB.length) await setCountries();
           if (!paymentTypesFromDB.length) await setPaymentTypes();
+          if (!userCouponsFetched) await setUserCoupons();
           //aca se que estoy en el formulario de pago
           await generateCheckoutForm();
           return;
@@ -100,9 +103,7 @@ window.addEventListener("load", async () => {
         //Lo genero
         let newDetailContainer = createCartDetailContainer();
         // Reemplazar el contenedor antiguo con el nuevo
-        cont.appendChild(newDetailContainer);
-        console.log(appliedCoupon);
-        
+        cont.appendChild(newDetailContainer);        
         if(appliedCoupon) applyCouponToDetail(appliedCoupon)
       });
       checkForSectionButtons(); //Para los botones de "finalizar compra" o directo el de mp
@@ -872,7 +873,7 @@ window.addEventListener("load", async () => {
         if (cartProducts.length === 0) finalizeButton.classList.add("disabled");
         finalizeButton.textContent = "Finalizar compra";
       } else {
-        couponSection = createCouponInputBox()
+        couponSection = createCouponInputBox(userLogged?.coupons || [])
         finalizeButton = generatePaymentButtonElement();
       }
       couponSection ? container.appendChild(couponSection) : null;
@@ -983,9 +984,11 @@ window.addEventListener("load", async () => {
           : null;
         bodyData.shippingAddress = shippingAddressObj || null;
       }
-
+      // Por ultimo, si hay un cupon que se uso le dejo el id
+      if(appliedCoupon)bodyData.coupons_id = appliedCoupon.id
       return bodyData;
-    }
+    };
+
     function modifyBillingLabel(justBilling) {
       //ESto modifica la label del form
       const billingAddressLabel = document.querySelector(
@@ -997,7 +1000,7 @@ window.addEventListener("load", async () => {
       }
       billingAddressLabel.textContent = "Dirección de Facturación & Envío";
       return;
-    }
+    };
 
     function checkCartFormIsComplete(form) {
       const requiredElements = form.querySelectorAll("[required]");
@@ -1017,7 +1020,7 @@ window.addEventListener("load", async () => {
         }
       });
       return formIsOK;
-    }
+    };
     cartExportObj.pageConstructor();
     function replacePayButtons() {
       const oldButtons = document.querySelectorAll(".finalize_order_button");
@@ -1027,7 +1030,7 @@ window.addEventListener("load", async () => {
         oldButton.replaceWith(clonedButton);
       });
       checkForSectionButtons();
-    }
+    };
   } catch (error) {
     console.log("falle");
     return console.log(error);
@@ -1035,8 +1038,6 @@ window.addEventListener("load", async () => {
 });
 
 export { cartExportObj };
-
-
 
 function disableAllSectionButtons() {
   const sectionHandlerBtns = document.querySelectorAll(

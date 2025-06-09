@@ -119,6 +119,7 @@ window.addEventListener("load", async () => {
   userProfileExportObj.pageConstructor = async function () {
     const placeholders = document.querySelectorAll(".placeholder");
     placeholders?.forEach((element) => element.remove());
+    mainContentWrapper.classList.remove('hidden')
     menuBtnConstructor(); //Pinto las opciones
     await contentConstructorHandler();
   };

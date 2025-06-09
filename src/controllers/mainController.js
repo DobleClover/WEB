@@ -15,7 +15,8 @@ import clearUserSession from "../utils/helpers/clearUserSession.js";
 import { disableCreatedOrder, getOneOrderFromDB, getOrdersFromDB } from "./api/apiOrderController.js";
 import { captureMercadoPagoPayment } from "./api/apiPaymentController.js";
 import sendOrderMails from "../utils/helpers/sendOrderMails.js";
-import { markCouponAsUsed } from "./api/apiCouponController.js";
+import { markCouponAsUsed, unmarkCouponAsUsed } from "./api/apiCouponController.js";
+import { clearUserCart } from "./api/apiCartController.js";
 // Obtener la ruta absoluta del archivo
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -184,12 +185,7 @@ const controller = {
       await sendOrderMails(orderFromDb);
       console.log("📧 Mails de confirmación enviados correctamente");
   
-      if (orderFromDb.users_id) {
-        await db.TempCartItem.destroy({
-          where: { users_id: orderFromDb.users_id },
-        });
-        console.log("🧹 Carrito temporal del usuario eliminado");
-      }
+      if (orderFromDb.users_id) await clearUserCart(orderFromDb.users_id);
   
       console.log("➡️ Redirigiendo a post-compra");
       return res.redirect(
@@ -211,6 +207,7 @@ const controller = {
       });
       if (orderCreatedToDisable) {
         await disableCreatedOrder(orderCreatedToDisable.id);
+        await unmarkCouponAsUsed(orderCreatedToDisable);
       }
       return res.redirect("/");
     } catch (error) {
