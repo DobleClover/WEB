@@ -197,6 +197,8 @@ const controller = {
       // Verifico cupón
       let coupon = null;
       if (coupons_id && users_id) {
+        console.log("🔎 Validando cupón:", coupons_id, "para usuario:", users_id);
+      
         coupon = await db.Coupon.findOne({
           where: {
             id: coupons_id,
@@ -211,30 +213,39 @@ const controller = {
             model: db.CouponUsage,
             as: "usages",
             where: { users_id },
-            required: true,
+            required: false,
           },
         });
-
+      
         if (!coupon) {
+          console.warn("❌ Cupón no encontrado o expirado");
           return res
             .status(400)
             .json({ ok: false, msg: "Cupón inválido o no aplicable" });
         }
-
-        const usage = coupon.usages[0];
-        if (usage.used_at) {
+      
+        console.log("✅ Cupón encontrado:", coupon.code);
+        console.log("📊 Uso actual:", coupon.usage_count, "/", coupon.usage_limit);
+      
+        const usage = coupon?.usages[0];
+        if (usage?.used_at) {
+          console.warn("⚠️ El usuario ya usó este cupón:", usage.used_at);
           return res
             .status(400)
             .json({ ok: false, msg: "Este cupón ya fue utilizado" });
         }
-
+      
         if (
           coupon.usage_limit !== null &&
           coupon.usage_count >= coupon.usage_limit
         ) {
+          console.warn("⛔️ Cupón alcanzó su límite de usos");
           return res.status(400).json({ ok: false, msg: "Cupón agotado" });
         }
+      
+        console.log("🟢 Cupón válido y disponible para este usuario");
       }
+      
 
       // Voy por las variaciones para restar stock
       variations.forEach((variation) => {
@@ -321,7 +332,8 @@ const controller = {
         // Pago con MP
         const mercadoPagoOrderResult = await handleCreateMercadoPagoOrder(
           orderItemsToDB,
-          mpClient
+          mpClient,
+          discount_percent = orderDataToDB.coupons_discount_percent || 0
         );
         // id es el id de la preferencia
         // init_point a donde hay que redirigir
