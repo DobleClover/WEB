@@ -1246,7 +1246,7 @@ async function paintAdminCoupons() {
 
   const gridTable = document.createElement("div");
   gridTable.className = "ag-theme-alpine";
-  gridTable.id = "couponGrid";
+  gridTable.id = "myGrid";
   // gridTable.style.height = "450px"; // Ajustá si necesitás otro tamaño
 
   tableContainer.appendChild(gridTable);
