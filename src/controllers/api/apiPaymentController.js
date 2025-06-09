@@ -27,16 +27,15 @@ export function getTokenFromUrl(url) {
   return parsedUrl.searchParams.get("token"); // Obtiene el valor del parámetro 'token'
 }
 
-export async function handleCreateMercadoPagoOrder(orderItemsToDb, mpClient) {
+export async function handleCreateMercadoPagoOrder(orderItemsToDb, mpClient, discount_percent = 0) {
   try {
-    console.log("✅ BACK URL SUCCESS:", process.env.BASE_URL + "/completar-pago");
     let body = {
       items: [],
       back_urls: {
         success: process.env.BASE_URL + '/completar-pago',
         failure: process.env.BASE_URL + '/cancelar-orden',
       },
-      // auto_return: "approved", //TODO: Activar
+      auto_return: "approved",
       payment_methods: {
         excluded_payment_types: [
           { id: "ticket" }, // Eliminar pagos en efectivo
@@ -45,10 +44,14 @@ export async function handleCreateMercadoPagoOrder(orderItemsToDb, mpClient) {
       },
     };
     orderItemsToDb.forEach((item) => {
+      const originalPrice = Number(item.price);
+      const discountedPrice = discount_percent > 0
+        ? Number((originalPrice * (1 - discount_percent / 100)).toFixed(2))
+        : originalPrice;
       const mercadoPagoItemObject = {
         title: item.name,
         quantity: Number(item.quantity),
-        unit_price: Number(item.price),
+        unit_price: discountedPrice,
         // currency_id: "ARS",
       };
       body.items.push(mercadoPagoItemObject);

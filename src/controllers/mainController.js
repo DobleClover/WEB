@@ -198,24 +198,29 @@ const controller = {
   },  
   cancelOrder: async (req, res) => {
     try {
+      console.log("📍 Entrando a cancelOrder con query:", req.query);
+  
       let { preference_id } = req.query;
       if (!preference_id) return res.redirect("/");
+  
       let entityPaymentID = preference_id;
-      //PAYPAL
+  
+      // PAYPAL
       const orderCreatedToDisable = await getOneOrderFromDB({
         entity_payments_id: entityPaymentID,
       });
+  
       if (orderCreatedToDisable) {
         await disableCreatedOrder(orderCreatedToDisable.id);
         await unmarkCouponAsUsed(orderCreatedToDisable);
       }
+  
       return res.redirect("/");
     } catch (error) {
-      console.error("Error capturing PayPal payment:", error);
-      console.error(error);
+      console.error("❌ Error capturing PayPal payment:", error);
       return res.redirect("/");
     }
-  },
+  },  
   logout: (req, res) => {
     let pathToReturn = req.session.returnTo;
     clearUserSession(req, res);

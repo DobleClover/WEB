@@ -1444,7 +1444,7 @@ export async function createAddressModal(address = undefined) {
           className: "",
           required: true,
           value: address ? address.label : "",
-          placeHolder: "Etiqueta (ej: Casa)",
+          placeholder: "Etiqueta (ej: Casa)",
         },
         {
           label: "Direccion",
@@ -1453,7 +1453,7 @@ export async function createAddressModal(address = undefined) {
           className: "",
           required: true,
           value: address ? address.street : "",
-          placeHolder: "Direccion completa",
+          placeholder: "Direccion completa",
         },
         {
           label: "Detalle",
@@ -1462,7 +1462,7 @@ export async function createAddressModal(address = undefined) {
           className: "",
           required: false,
           value: address ? address.detail || "" : "",
-          placeHolder: "Detalle (ej: 2b, apt 300)",
+          placeholder: "Detalle (ej: 2b, apt 300)",
         },
         {
           label: "Codigo Postal",
@@ -1471,7 +1471,7 @@ export async function createAddressModal(address = undefined) {
           className: "short-input",
           required: true,
           value: address ? address.zip_code : "",
-          placeHolder: "Codigo postal",
+          placeholder: "Codigo postal",
         },
         {
           label: "Ciudad",
@@ -1480,7 +1480,7 @@ export async function createAddressModal(address = undefined) {
           className: "",
           required: true,
           value: address ? address.city : "",
-          placeHolder: "Ciudad",
+          placeholder: "Ciudad",
         },
         {
           label: "Provincia",
@@ -1490,7 +1490,7 @@ export async function createAddressModal(address = undefined) {
             "ui search dropdown province_search_input form_search_dropdown",
           required: true,
           value: address ? address.provinces_id : "",
-          placeHolder: "Elegi una provinicia",
+          placeholder: "Elegi una provinicia",
         },
         {
           label: "Direccion predeterminada",
@@ -2797,7 +2797,7 @@ export function generatePostOrderCard(traId, shippingTypeId, paymentTypeId) {
     "</p>";
 
   buttonsContainer.appendChild(homeButton);
-  buttonsContainer.appendChild(purchasesButton);
+  userLogged ? buttonsContainer.appendChild(purchasesButton) : null;
 
   const logoContainer = document.createElement("div");
   logoContainer.classList.add("card_logo_container");
