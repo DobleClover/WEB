@@ -333,7 +333,7 @@ const controller = {
         const mercadoPagoOrderResult = await handleCreateMercadoPagoOrder(
           orderItemsToDB,
           mpClient,
-          discount_percent = orderDataToDB.coupons_discount_percent || 0
+          orderDataToDB.coupons_discount_percent || 0
         );
         // id es el id de la preferencia
         // init_point a donde hay que redirigir
