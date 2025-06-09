@@ -1512,25 +1512,25 @@ export async function scriptInitiator() {
     await setSettings();
     headerExportObject.headerScriptInitiator();
     let payingOrder = handleOrderInLocalStorage({ type: 2 });
-    if (payingOrder && !isOnPage("post-compra")) {
-      return;
-      //Aca tengo que dar de baja la orden
-      let response = await fetch(`/api/order/paymentFailed/${payingOrder}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      if (response.ok) {
-        response = await response.json();
-        //Ahora si se cancelo o se autoaprobo de db entonces lo elimino de localStorage
-        if (response.orderWasCanceled || response.orderWasFulfilled) {
-          handleOrderInLocalStorage({ type: 3 });
-          if (response.orderWasFulfilled)
-            return (window.location.href = `/post-compra?orderId=${response.tra_id}`);
-        }
-      }
-    }
+    // if (payingOrder && !isOnPage("post-compra")) {
+    //   return;
+    //   //Aca tengo que dar de baja la orden
+    //   let response = await fetch(`/api/order/paymentFailed/${payingOrder}`, {
+    //     method: "DELETE",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //   });
+    //   if (response.ok) {
+    //     response = await response.json();
+    //     //Ahora si se cancelo o se autoaprobo de db entonces lo elimino de localStorage
+    //     if (response.orderWasCanceled || response.orderWasFulfilled) {
+    //       handleOrderInLocalStorage({ type: 3 });
+    //       if (response.orderWasFulfilled)
+    //         return (window.location.href = `/post-compra?orderId=${response.tra_id}`);
+    //     }
+    //   }
+    // }
     // Inicip el header con la animacion
     const headerElement = document.querySelector(".header_element");
     setTimeout(() => {
