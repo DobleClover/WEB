@@ -22,6 +22,8 @@
   margin: 15vh 0;
   flex-direction: row;
   align-items: unset;
+  overflow-y: visible;
+  height: fit-content;
 }
 .main_content_wrapper {
   display: flex;
