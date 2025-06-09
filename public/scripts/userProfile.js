@@ -60,6 +60,8 @@ import {
   isInMobile,
   getDateString,
   handleFileInputChange,
+  copyElementValue,
+  activateCopyMsg,
 } from "./utils.js";
 
 let activeIndexSelected = 0; //index del array "items"
@@ -119,7 +121,7 @@ window.addEventListener("load", async () => {
   userProfileExportObj.pageConstructor = async function () {
     const placeholders = document.querySelectorAll(".placeholder");
     placeholders?.forEach((element) => element.remove());
-    mainContentWrapper.classList.remove('hidden')
+    mainContentWrapper.classList.remove("hidden");
     menuBtnConstructor(); //Pinto las opciones
     await contentConstructorHandler();
   };
@@ -131,7 +133,6 @@ window.addEventListener("load", async () => {
     try {
       //Despinto el wrapper
       mainContentWrapper.innerHTML = "";
-      
 
       //esta funcion dependiendo que viene invoca a la funcion que pinta/despinta las cosas
       switch (activeIndexSelected) {
@@ -703,7 +704,9 @@ async function getUserOrders() {
 }
 
 async function listenToAdminProductToolbar() {
-  const addProductBtn = document.querySelector(".admin_add_product_btn admin_primary_btn");
+  const addProductBtn = document.querySelector(
+    ".admin_add_product_btn admin_primary_btn"
+  );
   const sortSelect = document.getElementById("sort_by");
   const filterSelect = document.getElementById("filter_type");
 
@@ -1231,7 +1234,6 @@ async function paintAdminCoupons() {
   </div>
 `;
 
-
   mainWrapper.appendChild(toolbar);
   const titleRow = document.createElement("div");
   titleRow.className = "title_add_product_container";
@@ -1252,11 +1254,11 @@ async function paintAdminCoupons() {
   tableContainer.appendChild(gridTable);
   mainWrapper.appendChild(tableContainer);
 
-  if (!coupons.length) await setCoupons()
+  if (!coupons.length) await setCoupons();
 
   // Columnas para AG Grid
   const columnDefs = [
-    { headerName: "Nombre", field: "code", flex: 1 },
+    { headerName: "Nombre", cellClass: "copy_p", field: "code", flex: 1 },
     { headerName: "% Descuento", field: "discount_percent", flex: 1 },
     {
       headerName: "Activo",
@@ -1264,7 +1266,8 @@ async function paintAdminCoupons() {
       valueGetter: (params) => {
         const c = params.data;
         const expired = c.expires_at && new Date(c.expires_at) < new Date();
-        const reachedMax = c.usage_limit !== null && c.usage_count >= c.usage_limit;
+        const reachedMax =
+          c.usage_limit !== null && c.usage_count >= c.usage_limit;
         return !expired && !reachedMax ? "Sí" : "No";
       },
       flex: 1,
@@ -1274,7 +1277,9 @@ async function paintAdminCoupons() {
       field: "uses",
       valueGetter: (params) => {
         const c = params.data;
-        return c.usage_limit ? `${c.usage_count}/${c.usage_limit}` : `${c.usage_count}`;
+        return c.usage_limit
+          ? `${c.usage_count}/${c.usage_limit}`
+          : `${c.usage_count}`;
       },
       flex: 1,
     },
@@ -1295,21 +1300,35 @@ async function paintAdminCoupons() {
   agGrid.createGrid(gridTable, {
     columnDefs,
     rowData: [...coupons],
-    rowSelection: 'single' // 👈 Esto permite seleccionar solo una fila
+    rowSelection: "single", // 👈 Esto permite seleccionar solo una fila
   });
   // Listener para el botón
-  document.querySelector(".admin_add_coupon_btn").addEventListener("click", async() => {
-    await createCouponModal(); // 
+  document
+    .querySelector(".admin_add_coupon_btn")
+    .addEventListener("click", async () => {
+      await createCouponModal(); //
+    });
+  document
+    .querySelector(".admin_disable_coupon_btn")
+    .addEventListener("click", async () => {
+      const selected = gridTable.querySelector(".ag-row-selected");
+      if (!selected)
+        return showCardMessage(false, "Seleccioná un cupón de la lista.");
+
+      const rowIndex = selected.getAttribute("row-index");
+      const couponToDisable = coupons[parseInt(rowIndex)];
+      if (couponToDisable) await createDisableCouponModal(couponToDisable);
+    });
+  // Para ver si toca los nombres de los cupones
+  // Escuchar clicks en celdas con clase "copy_p"
+  gridTable.addEventListener("click", (e) => {
+    const target = e.target;
+    if (target.classList.contains("copy_p")) {
+      const textToCopy = target.innerText;
+      copyElementValue(textToCopy);
+      activateCopyMsg();
+    }
   });
-  document.querySelector(".admin_disable_coupon_btn").addEventListener("click", async () => {
-    const selected = gridTable.querySelector(".ag-row-selected");
-    if (!selected) return showCardMessage(false, "Seleccioná un cupón de la lista.");
-  
-    const rowIndex = selected.getAttribute("row-index");
-    const couponToDisable = coupons[parseInt(rowIndex)];
-    if (couponToDisable) await createDisableCouponModal(couponToDisable);
-  });
-  
 }
 
 export { userProfileExportObj };

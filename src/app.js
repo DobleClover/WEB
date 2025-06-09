@@ -48,6 +48,7 @@ import { createClient } from "redis";
 import session from "express-session";
 
 import memorystore from "memorystore";
+import isSiteEnabled from "./utils/helpers/isSiteEnabled.js";
 const MemoryStore = memorystore(session);
 
 let sessionStore;
@@ -91,6 +92,13 @@ app.use(cookieParser());
 
 // Mehtod-override --> Para usar put y delete (?_method=...)
 app.use(methodOverride("_method"));
+
+// app.use((req, res, next) => {
+//   if (!isSiteEnabled()) {
+//     return res.render("comingSoon"); // vista con el logo, timer y texto
+//   }
+//   next();
+// });
 
 // Rutas
 // Rutas

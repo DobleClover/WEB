@@ -341,6 +341,9 @@ select{
   opacity: 1;
   bottom: 0;
 }
+.copy_p:hover{
+  color: var(--green-color);
+}
 .password-field label {
   position: relative;
   width: fit-content;
