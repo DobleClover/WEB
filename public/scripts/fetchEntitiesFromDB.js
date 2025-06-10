@@ -143,20 +143,32 @@ export async function setColors() {
 }
 
 export let brandsFromDB = [];
-export async function setBrands(withProductImages = false) {
+export async function setBrands(withProductImages = false, onlyIsotype = false) {
   try {
-    const response = await fetch(
-      `${window.location.origin}/api/brand${
-        withProductImages ? "?withProductImages=true&onlyMainImages=true" : ""
-      }`
-    );
+    const params = new URLSearchParams();
+
+    if (withProductImages) {
+      params.append("withProductImages", "true");
+      params.append("onlyMainImages", "true");
+    }
+
+    if (onlyIsotype) {
+      params.append("onlyIsotype", "true");
+    }
+
+    const url = `${window.location.origin}/api/brand${
+      params.toString() ? `?${params.toString()}` : ""
+    }`;
+
+    const response = await fetch(url);
     const json = await response.json();
     brandsFromDB = json.data || [];
   } catch (error) {
     console.log("Falle");
-    return console.log(error);
+    console.log(error);
   }
 }
+
 
 export let dropsFromDB = [];
 export async function setDrops() {

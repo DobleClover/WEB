@@ -41,16 +41,18 @@ const BRANDS_FOLDER_NAME = "brands";
 const controller = {
   getBrands: async (req, res) => {
     try {
-      let { brands_id, withImages, withProductImages, onlyMainImages } = req.query;
+      let { brands_id, withImages, withProductImages, onlyMainImages, onlyIsotype } = req.query;
       brands_id = brands_id || undefined;
       withProductImages = withProductImages ? true: false;
       onlyMainImages = onlyMainImages ? true: false;
+      onlyIsotype = onlyIsotype ? true: false;
       
       let brandsFromDB = await getBrandsFromDB({
         id: brands_id,
         withImages,
         withProductImages,
-        onlyMainImages
+        onlyMainImages,
+        onlyIsotype
       });
 
       // Mando la respuesta
@@ -271,7 +273,8 @@ export async function getBrandsFromDB({
   id = undefined,
   withImages = false,
   withProductImages = false,
-  onlyMainImages = false
+  onlyMainImages = false,
+  onlyIsotype = false
 }) {
   try {
     let brandsToReturn, brandToReturn;
@@ -286,7 +289,8 @@ export async function getBrandsFromDB({
         brand: brandToReturn,
         withImages,
         withProductImages,
-        onlyMainImages
+        onlyMainImages,
+        onlyIsotype
       });
       return brandToReturn;
     }
@@ -312,7 +316,7 @@ export async function getBrandsFromDB({
     }
     for (let i = 0; i < brandsToReturn.length; i++) {
       const brand = brandsToReturn[i];
-      await setBrandKeysToReturn({ brand, withImages, withProductImages, onlyMainImages });
+      await setBrandKeysToReturn({ brand, withImages, withProductImages, onlyMainImages, onlyIsotype });
     }
 
     return brandsToReturn;
@@ -383,15 +387,33 @@ async function setBrandKeysToReturn({
   brand,
   withImages = false,
   withProductImages = false,
-  onlyMainImages = false
+  onlyMainImages = false,
+  onlyIsotype = false
 }) {
   try {
     if (brand.files?.length) {
-      await getFilesFromAWS({
-        folderName: BRANDS_FOLDER_NAME,
-        files: brand.files,
-      });
+      if (onlyIsotype) {
+        // 🔸 Solo traigo el isotype desde AWS
+        const isotypeFile = brand.files.find(
+          (file) => file.file_roles_id == sections.BRAND.roles.ISOTYPE
+        );
+
+        if (isotypeFile) {
+          await getFilesFromAWS({
+            folderName: BRANDS_FOLDER_NAME,
+            files: [isotypeFile],
+          });
+        }
+      } else {
+        // 🔸 Traigo todos los archivos
+        await getFilesFromAWS({
+          folderName: BRANDS_FOLDER_NAME,
+          files: brand.files,
+        });
+      }
     }
+
+    // Siempre busco los keys de logo/logotype/isotype
     brand.logo = brand.files?.find(
       (file) => file.file_roles_id == sections.BRAND.roles.LOGO
     );
@@ -401,17 +423,32 @@ async function setBrandKeysToReturn({
     brand.isotype = brand.files?.find(
       (file) => file.file_roles_id == sections.BRAND.roles.ISOTYPE
     );
-    for (const brandProd of brand.products) {
+
+    // 🔸 Productos
+    let selectedProducts = brand.products;
+
+    if (onlyMainImages && Array.isArray(brand.products)) {
+      selectedProducts = [...brand.products]
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 3);
+    }
+
+    for (const brandProd of selectedProducts) {
       await setProductKeysToReturn({
         product: brandProd,
         withImages: withProductImages,
-        onlyMainImages
+        onlyMainImages,
       });
-    }   
+    }
+
+    if (onlyMainImages) {
+      brand.products = selectedProducts;
+    }
   } catch (error) {
-    return console.log(error);
+    console.log(error);
   }
 }
+
 //TYPES: 1 logo || 2 isotipo || 3 logotipo
 async function handleBrandFileUpload({ file, brandID }) {
   try {
