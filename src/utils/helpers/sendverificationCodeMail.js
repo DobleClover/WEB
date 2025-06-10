@@ -126,9 +126,11 @@ async function sendCodesMail(type = 1, obj = {}) {
               </tr>
               <tr>
                   <td align="center" style="padding: 20px; font-size: 14px;">
-                      <strong>¿No fuiste vos?</strong><br>
-                      Si tú no lo solicitaste, <a href="#" style="color: #ffffff; font-weight: bold; text-decoration: underline;">haz click aquí</a>.
-                  </td>
+  <strong>¿No fuiste vos?</strong><br>
+  Si tú no solicitaste esto, <a href="${obj.logoutAllLink}" style="color: #ffffff; font-weight: bold; text-decoration: underline;">
+    haz click aquí para cerrar todas tus sesiones
+  </a>.
+</td>
               </tr>
           </table>
       </body>

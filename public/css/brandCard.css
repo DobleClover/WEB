@@ -1,58 +1,79 @@
-.section_wrapper_card.brand_card{
-    height: 60vh;
-    width: 80%;
-    max-width: 305px;
-    max-height: 490px;
-    position: relative;
-    margin-bottom: 2.5vh;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.4);
+.section_wrapper_card.brand_card {
+  height: 60vh;
+  width: 80%;
+  max-width: 305px;
+  max-height: 490px;
+  position: relative;
+  margin-bottom: 2.5vh;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.4);
 }
-.brand_product_image_wrapper{
-    width: 100%;
-    height: 100%;
-    position: relative;
-    background-size: cover;
+.brand_product_image_wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background-size: cover;
+  opacity: 1;
+  transition: opacity .8s ease;
 }
-.brand_product_image_wrapper .overlay{
-    position: absolute;
-    inset: 0;
-    background-color: rgba(0, 0, 0, 0.4);
-    z-index: 10;
+.brand_card.loading .brand_product_image_wrapper{
+    opacity: 0;
 }
-.brand_card_product_image{
-    position: absolute;
-    inset: 0;
-    object-fit: cover;
-    transition: opacity 1s ease-in-out; /* Transición suave */
-    opacity: 0; /* Ocultar todas las imágenes por defecto */
+.brand_product_image_wrapper .overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 10;
+}
+.brand_card_product_image {
+  position: absolute;
+  inset: 0;
+  object-fit: cover;
+  transition: opacity 1s ease-in-out; /* Transición suave */
+  opacity: 0; /* Ocultar todas las imágenes por defecto */
 }
 .brand_card_product_image.card_image_active {
-    opacity: 1; /* Mostrar solo la imagen activa */
+  opacity: 1; /* Mostrar solo la imagen activa */
 }
-.brand_card_logo{
-    position: absolute;
-    bottom: 25px;
-    height: 50px;
-    z-index: 100;
-    width: fit-content;
-    left: 50%;
-    transform: translateX(-50%);
-    aspect-ratio: 1/.4;
+.brand_card_logo {
+  position: absolute;
+  bottom: 25px;
+  height: 50px;
+  z-index: 100;
+  width: fit-content;
+  left: 50%;
+  transform: translate(-50%, 0);
+  transition: bottom 0.5s ease, opacity 0.5s ease, translate 0.6s ease, height .5s ease;
+  aspect-ratio: 1/0.4;
+  opacity: 1;
+  transform-origin: center center;
 }
-@media(min-width: 768px){
-    .section_wrapper_card.brand_card{
-        width: 70%;
-        height: 70vh;
-        max-width: 320px;
-    }
+/* Cuando carga la tarjeta */
+.brand_card.loading .brand_card_logo {
+    height: 75px;
+    transform: translate(-50%, 50%);
+    bottom: 50%;
+    opacity: 0.8;
+    animation: pulseBlur 2s ease-in-out infinite;
+  }
+.brand_card.loading {
+  background-color: black;
 }
-@media(min-width: 1024px){
-    .section_wrapper_card.brand_card{
-        width: 100%;
-        height: 60vh;
-        max-width: 300px;
-        margin-bottom: 0;
-    }
+
+
+@media (min-width: 768px) {
+  .section_wrapper_card.brand_card {
+    width: 70%;
+    height: 70vh;
+    max-width: 320px;
+  }
+}
+@media (min-width: 1024px) {
+  .section_wrapper_card.brand_card {
+    width: 100%;
+    height: 60vh;
+    max-width: 300px;
+    margin-bottom: 0;
+  }
 }

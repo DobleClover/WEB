@@ -261,6 +261,22 @@ export async function createUserLoginModal() {
           await handleUserLoginModal();
         }
       });
+    // Agregar link de "¿Olvidaste tu contraseña?"
+    const forgotPasswordLink = document.createElement("p");
+    forgotPasswordLink.className = "forgot_password_link";
+    forgotPasswordLink.textContent = "¿Olvidaste tu contraseña?";
+    forgotPasswordLink.style.cursor = "pointer";
+    forgotPasswordLink.style.marginTop = "1rem";
+    forgotPasswordLink.style.textAlign = "center";
+    forgotPasswordLink.classList.add("green-color");
+    forgotPasswordLink.addEventListener("click", () => {
+      showForgotPasswordModal();
+      handlePageModal(true);
+    });
+
+    document
+      .querySelector(".ui.modal .content")
+      .appendChild(forgotPasswordLink);
   } catch (error) {
     console.log("falle");
     return console.log(error);
@@ -330,6 +346,60 @@ export async function createUserSignUpModal() {
     console.log("falle");
     return console.log(error);
   }
+}
+
+function showForgotPasswordModal() {
+  destroyExistingModal();
+  createModal({
+    headerTitle: "Recuperar contraseña",
+    formFields: [
+      {
+        label: "Email asociado a tu cuenta",
+        type: "text",
+        name: "user-email",
+        required: true,
+        placeHolder: "tu-email@example.com",
+      },
+    ],
+    buttons: [
+      {
+        text: "Enviar enlace",
+        type: "button",
+        className: "ui button green send_modal_form_btn",
+        onClick: async (e) => {
+          const input = document.querySelector("input[name='user-email']");
+          const email = input?.value?.trim();
+
+          if (!email || !email.includes("@")) {
+            showCardMessage(false, "Ingresá un email válido.");
+            return;
+          }
+
+          try {
+            e.target.classList.add("loading","disabled");
+            const res = await fetch("/api/user/generate-password-token", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email }),
+            });
+
+            const data = await res.json();
+            e.target.classList.remove("loading","disabled");
+            if (!res.ok || !data.ok) {
+              showCardMessage(false, data.msg || "No se pudo enviar el email.");
+              return;
+            }
+
+            showCardMessage(true, "Te enviamos un email con el enlace para cambiar tu contraseña.");
+            closeModal();
+          } catch (err) {
+            console.error(err);
+            showCardMessage(false, "Hubo un error al conectar con el servidor.");
+          }
+        },
+      },
+    ],
+  });
 }
 
 export function createModal({
@@ -2059,7 +2129,10 @@ export function generateOrderDetailModal(order, isAdminModal = false) {
     ? `
       <span class="modal_card_content_row">
         <span class="modal-card_content-span">Descuento</span>
-        <span class="modal-card_content-span">-$${displayBigNumbers(discountValue, 2)}</span>
+        <span class="modal-card_content-span">-$${displayBigNumbers(
+          discountValue,
+          2
+        )}</span>
       </span>
       <span class="modal-card_content-span small grey margin_bottom">
         Cupón: ${order.coupons_code} (${order.coupons_discount_percent}%)
@@ -2083,18 +2156,28 @@ export function generateOrderDetailModal(order, isAdminModal = false) {
 
   orderCard.innerHTML = `
     <div class="content">
-      <div class="modal_card_header_span">${getDateString(order.createdAt)}</div>
-      <div class="modal_card_header_span border-left align-end">#${order.tra_id}</div>
+      <div class="modal_card_header_span">${getDateString(
+        order.createdAt
+      )}</div>
+      <div class="modal_card_header_span border-left align-end">#${
+        order.tra_id
+      }</div>
     </div>`;
 
   if (isAdminModal) {
-    orderCard.innerHTML += '<div class="content product_table_list_content"></div>';
+    orderCard.innerHTML +=
+      '<div class="content product_table_list_content"></div>';
   } else {
     orderCard.innerHTML += `
       <div class="content">
         <div class="modal_card_content_row">
-          <span class="modal-card_content-span">${order.orderItemsPurchased} producto${order.orderItemsPurchased > 1 ? "s" : ""}</span>
-          <span class="modal-card_content-span">$${displayBigNumbers(order.orderItemsPurchasedPrice, 2)}</span>
+          <span class="modal-card_content-span">${
+            order.orderItemsPurchased
+          } producto${order.orderItemsPurchased > 1 ? "s" : ""}</span>
+          <span class="modal-card_content-span">$${displayBigNumbers(
+            order.orderItemsPurchasedPrice,
+            2
+          )}</span>
         </div>
       </div>`;
   }
@@ -2103,12 +2186,18 @@ export function generateOrderDetailModal(order, isAdminModal = false) {
     <div class="content">
       <span class="modal_card_content_row">
         <span class="modal-card_content-span">Subtotal</span>
-        <span class="modal-card_content-span">$${displayBigNumbers(subtotal, 2)}</span>
+        <span class="modal-card_content-span">$${displayBigNumbers(
+          subtotal,
+          2
+        )}</span>
       </span>
       ${discountBlock}
       <span class="modal_card_content_row margin-top">
         <span class="modal-card_content-span bold">Total</span>
-        <span class="modal-card_content-span bold">$${displayBigNumbers(order.total, 2)}</span>
+        <span class="modal-card_content-span bold">$${displayBigNumbers(
+          order.total,
+          2
+        )}</span>
       </span>
     </div>
   `;
@@ -2116,14 +2205,21 @@ export function generateOrderDetailModal(order, isAdminModal = false) {
   let orderStatusSection = undefined;
   if (isAdminModal) {
     orderStatusSection = document.createElement("section");
-    orderStatusSection.classList.add("card_status-detail", "order_detail_card_section");
+    orderStatusSection.classList.add(
+      "card_status-detail",
+      "order_detail_card_section"
+    );
     orderStatusSection.innerHTML = `
       <label class="card_label label">Estado de orden</label>
-      <select class="ui select ${order.orderStatus.id == 6 ? "disabled" : ""}" id="orderStatusSelect">
+      <select class="ui select ${
+        order.orderStatus.id == 6 ? "disabled" : ""
+      }" id="orderStatusSelect">
         ${statusesFromDB
           .map(
             (status) => `
-              <option value="${status.id}" ${status.id === order.orderStatus.id ? "selected" : ""}>
+              <option value="${status.id}" ${
+              status.id === order.orderStatus.id ? "selected" : ""
+            }>
                 ${status.status}
               </option>
             `
@@ -2134,7 +2230,10 @@ export function generateOrderDetailModal(order, isAdminModal = false) {
   }
 
   const paymentSection = document.createElement("section");
-  paymentSection.classList.add("card-payment-detail", "order_detail_card_section");
+  paymentSection.classList.add(
+    "card-payment-detail",
+    "order_detail_card_section"
+  );
   paymentSection.innerHTML = `
     <label class="card_label label">Detalle del pago</label>
     <div class="ui card">
@@ -2148,25 +2247,47 @@ export function generateOrderDetailModal(order, isAdminModal = false) {
   `;
 
   const shippingSection = document.createElement("section");
-  shippingSection.classList.add("card_shipping_detail", "order_detail_card_section");
+  shippingSection.classList.add(
+    "card_shipping_detail",
+    "order_detail_card_section"
+  );
   shippingSection.innerHTML = `
     <label class="card_label label">Detalle del envío</label>
     <div class="ui card">
       <div class="shipping-logo-container card_logo_container">
-        <i class="${order.shippingType?.iconClass} card_logo_i" title="${order.shippingType?.type}"></i>
+        <i class="${order.shippingType?.iconClass} card_logo_i" title="${
+    order.shippingType?.type
+  }"></i>
       </div>
       <div class="card_label_container">
         <p class="card_label grey no-margin">${order.shippingType?.type}</p>
-        <p class="card_desc grey no-margin">${order.shippingType.id == 1 ? order.shipping_address_street : "A coordinar"}</p>
-        <p class="card_desc grey no-margin">${order.shippingType.id == 1 ? order.shipping_address_detail || "" : ""}</p>
-        <p class="card_desc grey no-margin">${order.shippingType.id == 1 ? `CP: ${order.shipping_address_zip_code}` : ""}</p>
-        <p class="card_desc grey no-margin">${order.shippingType.id == 1 ? `${order.shipping_address_city}, ${order.shipping_address_province}` : ""}</p>
+        <p class="card_desc grey no-margin">${
+          order.shippingType.id == 1
+            ? order.shipping_address_street
+            : "A coordinar"
+        }</p>
+        <p class="card_desc grey no-margin">${
+          order.shippingType.id == 1 ? order.shipping_address_detail || "" : ""
+        }</p>
+        <p class="card_desc grey no-margin">${
+          order.shippingType.id == 1
+            ? `CP: ${order.shipping_address_zip_code}`
+            : ""
+        }</p>
+        <p class="card_desc grey no-margin">${
+          order.shippingType.id == 1
+            ? `${order.shipping_address_city}, ${order.shipping_address_province}`
+            : ""
+        }</p>
       </div>
     </div>
   `;
 
   const billingSection = document.createElement("section");
-  billingSection.classList.add("card_billing_detail", "order_detail_card_section");
+  billingSection.classList.add(
+    "card_billing_detail",
+    "order_detail_card_section"
+  );
   billingSection.innerHTML = `
     <label class="card_label label">Detalle de facturacion</label>
     <div class="ui card">
@@ -2195,11 +2316,12 @@ export function generateOrderDetailModal(order, isAdminModal = false) {
     <div class="ui loader"></div>
   </div>`;
 
-  modal.querySelector(".close_modal_btn")?.addEventListener("click", () => closeModal());
+  modal
+    .querySelector(".close_modal_btn")
+    ?.addEventListener("click", () => closeModal());
 
   return modal;
 }
-
 
 export function disableAddressModal(address) {
   destroyExistingModal();
@@ -3492,24 +3614,26 @@ export async function createColorModal(color = undefined) {
 }
 
 export function createBrandCard(brand) {
-  // Crear el elemento <a> principal
   const card = document.createElement("a");
-  card.classList.add("brand_card", "card_with_image", "section_wrapper_card"); //"animated_element"
-  card.href = `/marcas/${brand.id}`; // Enlace vacío (puedes modificarlo si necesitas redirigir a otra página)
+  card.classList.add(
+    "brand_card",
+    "card_with_image",
+    "section_wrapper_card",
+    "loading"
+  );
+  card.href = `/marcas/${brand.id}`;
 
-  // Contenedor de imágenes de productos
   const productWrapper = document.createElement("div");
   productWrapper.classList.add("brand_product_image_wrapper");
 
-  // Overlay para el efecto visual
   const overlay = document.createElement("div");
   overlay.classList.add("overlay");
   productWrapper.appendChild(overlay);
 
-  // Obtener las imágenes principales de los productos con srcset
   const productsMainFile = brand.products
     .map((product) => product.files?.find((file) => file.main_file === 1))
-    .filter(Boolean); // Filtrar valores nulos
+    .filter(Boolean);
+
   const productImages = productsMainFile.map(
     (productMainFile) => productMainFile?.file_urls
   );
@@ -3519,43 +3643,34 @@ export function createBrandCard(brand) {
 
   productWrapper.style.backgroundImage = `url(${productThumb[0]})`;
 
-  // Agregar imágenes al contenedor con srcset
   productImages.forEach((fileUrls, index) => {
     if (!fileUrls || fileUrls.length === 0) return;
 
     const img = document.createElement("img");
     img.classList.add("brand_card_product_image", "card_image");
 
-    // Construir el atributo srcset con las distintas versiones
     const srcset = fileUrls
       .map((file) => `${file.url} ${file.size}`)
       .join(", ");
 
     img.src =
-      fileUrls.find((file) => file.size === "1x")?.url || fileUrls[0]?.url; // Fallback a 1x
+      fileUrls.find((file) => file.size === "1x")?.url || fileUrls[0]?.url;
     img.srcset = srcset;
-
     img.alt = `Producto de ${brand.name}`;
     img.loading = "lazy";
-    // La primera imagen se activa por defecto
+
     if (index === 0) {
-      if (img.complete) {
+      img.addEventListener("load", () => {
         img.classList.add("brand_card_product_image_active");
-      }
-      {
-        img.addEventListener("load", () => {
-          img.classList.add("brand_card_product_image_active");
-        });
-      }
+        card.classList.remove("loading");
+      });
     }
 
     productWrapper.appendChild(img);
   });
 
-  // Agregar contenedor de imágenes al card
   card.appendChild(productWrapper);
 
-  // Agregar el logo de la marca
   const brandLogo = document.createElement("img");
   brandLogo.src =
     brand.isotype?.file_urls?.find((f) => f.size === "2x")?.url || "";

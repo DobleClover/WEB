@@ -32,8 +32,8 @@ export async function handleCreateMercadoPagoOrder(orderItemsToDb, mpClient, dis
     let body = {
       items: [],
       back_urls: {
-        success: process.env.BASE_URL + '/completar-pago',
-        failure: process.env.BASE_URL + '/cancelar-orden',
+        success: process.env.BASE_URL + 'completar-pago',
+        failure: process.env.BASE_URL + 'cancelar-orden',
       },
       auto_return: "approved",
       payment_methods: {

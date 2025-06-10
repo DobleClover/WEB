@@ -17,6 +17,7 @@ import { captureMercadoPagoPayment } from "./api/apiPaymentController.js";
 import sendOrderMails from "../utils/helpers/sendOrderMails.js";
 import { markCouponAsUsed, unmarkCouponAsUsed } from "./api/apiCouponController.js";
 import { clearUserCart } from "./api/apiCartController.js";
+import { setNewVersionForUser, updateUserFromDB } from "./api/apiUserController.js";
 // Obtener la ruta absoluta del archivo
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -226,8 +227,42 @@ const controller = {
     clearUserSession(req, res);
     return res.redirect(`${pathToReturn}`);
   },
+  logoutAll: async (req, res) => {
+    try {
+      const { token } = req.query;
+  
+      if (!token) {
+        return res.redirect("/"); // Sin token → redirigir sin hacer nada
+      }
+  
+      const dbUser = await db.User.findOne({
+        where: { password_token: token },
+      });
+  
+      if (!dbUser) {
+        return res.redirect("/"); // Token inválido o vencido
+      }
+  
+      // Invalida sesiones/token persistente
+      await setNewVersionForUser(dbUser.id);
+  
+      // Invalidar el token de recuperación después
+      await updateUserFromDB({
+        password_token: null,
+        expiration_time: null,
+      }, dbUser.id);
+  
+      return res.redirect("/");
+    } catch (error) {
+      console.error("Error en logoutAll:", error);
+      return res.redirect("/");
+    }
+  },  
   dobleuso: (req, res) => {
     return res.render("dobleuso");
+  },
+  passwordReset: (req, res) => {
+    return res.render(`passwordReset`);
   },
 };
 

@@ -1,4 +1,4 @@
-import { changeCardImages } from "./brandCard.js";
+import { observeAndStartCardAnimations } from "./brandCard.js";
 import {
   createBrandCard,
   createDropCard,
@@ -56,7 +56,7 @@ window.addEventListener("load", async () => {
     });
     const dropSection = main.querySelector(".drop_cards_section");
     animateSectionsOnce();
-    changeCardImages();
+    observeAndStartCardAnimations();
   } catch (error) {
     console.log(error);
     return;

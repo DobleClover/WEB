@@ -449,6 +449,19 @@ select{
   }
 }
 
+@keyframes pulseBlur {
+  0%, 100% {
+    opacity: 0.7;
+    filter: blur(1.5px);
+  }
+  50% {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+
+
 .brand_loader_overlay.hide {
   opacity: 0;
   pointer-events: none;

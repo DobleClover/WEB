@@ -473,6 +473,22 @@
   flex-wrap: wrap;
   gap: 16px;
 }
+.change_password_btn {
+  margin-top: 1rem !important;
+  padding: 0.5rem 1rem;
+  background-color: var(--green-color) !important;
+  color: white !important;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition:  background-color .3s ease;
+}
+
+.change_password_btn:hover {
+  background-color: var(--green-cream-color);
+}
+
 @media (min-width: 768px) {
   .main {
     padding: 0;

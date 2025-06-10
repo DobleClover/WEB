@@ -413,57 +413,67 @@ const controller = {
   },
   generatePasswordToken: async (req, res) => {
     try {
-      const { id } = req.body;
-
-      if (!id) {
+      const { id, email } = req.body;
+  
+      if (!id && !email) {
         return res.status(HTTP_STATUS.BAD_REQUEST.code).json({
           ok: false,
+          msg: "Debe enviar el ID o el email del usuario",
         });
       }
-
-      // Buscar usuario por email
-      const dbUser = await getUsersFromDB(id);
-
+  
+      let dbUser;
+  
+      if (email) {
+        dbUser = await db.User.findOne({ where: { email } });
+      } else {
+        dbUser = await getUsersFromDB(id);
+      }
+  
       if (!dbUser) {
         return res.status(HTTP_STATUS.NOT_FOUND.code).json({
           ok: false,
           msg: "Usuario no encontrado",
         });
       }
-
-      // Generar token de recuperación
+  
       const resetToken = generateHexCode(20);
-
-      // Guardar token en la base de datos (opcional: con expiración)
-      let objToUpdate = {
-        password_token: resetToken,
-        expiration_time: new Date(Date.now() + 1800000), // Expira en 1 hora
-      };
-      await updateUserFromDB(objToUpdate, id);
-
-      // Enviar email con el token
-      const resetLink = `${process.env.BASE_URL}/reset-password?token=${resetToken}`;
-      let emailHasBeenSent = await sendCodesMail(2, {
+  
+      await updateUserFromDB(
+        {
+          password_token: resetToken,
+          expiration_time: new Date(Date.now() + 3600000), // 1 hora
+        },
+        dbUser.id
+      );
+  
+      const resetLink = `${process.env.BASE_URL}modificar-clave?token=${resetToken}`;
+      const logoutAllLink =  `${process.env.BASE_URL}logout-all?token=${resetToken}`;
+      const emailHasBeenSent = await sendCodesMail(2, {
         user: dbUser,
         link: resetLink,
+        logoutAllLink
       });
-      if (!emailHasBeenSent)
-        return res.status(HTTP_STATUS.NOT_FOUND.code).json({
+  
+      if (!emailHasBeenSent) {
+        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
           ok: false,
-          msg: "Error interno",
+          msg: "Error al enviar el email",
         });
+      }
+  
       return res.status(200).json({
         ok: true,
         msg: "Se envió un email con instrucciones para restablecer la contraseña.",
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
         ok: false,
         msg: "Error interno",
       });
     }
-  },
+  },  
   checkPasswordToken: async (req, res) => {
     try {
       // Traigo errores
@@ -476,7 +486,7 @@ const controller = {
         return res.status(HTTP_STATUS.BAD_REQUEST.code).json({
           meta: {
             status: HTTP_STATUS.BAD_REQUEST.code,
-            url: "/api/user/reset-password",
+            url: "/api/user/modificar-clave",
             method: "POST",
           },
           ok: false,
@@ -519,7 +529,7 @@ const controller = {
       };
 
       await updateUserFromDB(objToUpdate, dbUser.id);
-
+      await setNewVersionForUser(dbUser.id); //Lo deslogueo de todas las sesiones
       return res.status(200).json({
         ok: true,
         msg: "Contraseña restablecida con éxito.",

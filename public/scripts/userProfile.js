@@ -242,11 +242,14 @@ window.addEventListener("load", async () => {
   //FUNCINONES PARA PINTAR EL HTML DEL USER PANEL
   function paintUserProfile() {
     const { userInfoComponentElement, userForm } = createUserProfileComponent();
-    //le seteo las clases
+  
     mainContentWrapper.className = "main_content_wrapper user_info_wrapper";
     mainContentWrapper.appendChild(userInfoComponentElement);
     mainContentWrapper.appendChild(userForm);
+  
+    
   }
+  
   function paintUserAddresses() {
     let addressesToPaint = userLogged?.addresses;
     //le seteo las clases
@@ -308,6 +311,37 @@ window.addEventListener("load", async () => {
   }
   function createUserProfileComponent() {
     const userInfoComponentElement = userInfoComponent(userLogged);
+
+    // 🔹 Crear botón de cambio de contraseña
+    const changePassBtn = document.createElement("button");
+    changePassBtn.textContent = "Cambiar contraseña";
+    changePassBtn.className = "change_password_btn ui button";
+  
+    // Insertar el botón debajo del email o al final del form
+    userInfoComponentElement.appendChild(changePassBtn);
+  
+    // 🔹 Agregar evento
+    changePassBtn.addEventListener("click", async () => {
+      try {
+        changePassBtn.classList.add("loading","disabled")
+        const res = await fetch("/api/user/generate-password-token", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ id: userLogged.id }), // Enviar ID del usuario
+        });
+  
+        const data = await res.json();
+        changePassBtn.classList.remove("loading","disabled")
+        if (!res.ok) throw new Error(data.msg || "Error al solicitar enlace");
+  
+        showCardMessage(true, "Enlace enviado a tu correo para cambiar la contraseña.");
+      } catch (err) {
+        console.error(err);
+        showCardMessage(false, "Hubo un problema al generar el enlace.");
+      }
+    });
 
     let genderOptions = gendersFromDB.map((gender) => ({
       value: gender.id,
