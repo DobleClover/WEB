@@ -20,7 +20,7 @@ window.addEventListener("load", async () => {
     const hero = document.querySelector(".hero");
     hero.style.backgroundImage = "url('/img/index.jpg')"; // Carga programática
     await scriptInitiator();
-    await setBrands(true);
+    await setBrands(true, true); //el segundo true es para que solo me busque el isotype
     // Ocultar overlay
     removeDoblecloverOverlay();
     setTimeout(() => {
@@ -37,7 +37,7 @@ window.addEventListener("load", async () => {
       hero.classList.add("show_buttons"); // Muestra los botones
     }, 450);
 
-    await setDrops();
+    
 
     const main = document.querySelector(".main");
     const brandCardWrapper = main.querySelector(".brand_card_wrapper");
@@ -47,6 +47,8 @@ window.addEventListener("load", async () => {
       brandCardWrapper.appendChild(card);
     });
     const brandSection = main.querySelector(".brand_cards_section");
+    observeAndStartCardAnimations();
+    await setDrops();
     // animateSectionElements(brandSection);
     const dropCardWrapper = main.querySelector(".drop_card_wrapper");
     dropCardWrapper.innerHTML = "";

@@ -739,7 +739,7 @@ async function getUserOrders() {
 
 async function listenToAdminProductToolbar() {
   const addProductBtn = document.querySelector(
-    ".admin_add_product_btn admin_primary_btn"
+    ".admin_add_product_btn"
   );
   const sortSelect = document.getElementById("sort_by");
   const filterSelect = document.getElementById("filter_type");
