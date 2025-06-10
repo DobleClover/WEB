@@ -93,12 +93,12 @@ app.use(cookieParser());
 // Mehtod-override --> Para usar put y delete (?_method=...)
 app.use(methodOverride("_method"));
 
-// app.use((req, res, next) => {
-//   if (!isSiteEnabled()) {
-//     return res.render("comingSoon"); // vista con el logo, timer y texto
-//   }
-//   next();
-// });
+app.use((req, res, next) => {
+  if (!isSiteEnabled()) {
+    return res.render("comingSoon"); // vista con el logo, timer y texto
+  }
+  next();
+});
 
 // Rutas
 // Rutas
