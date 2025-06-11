@@ -80,14 +80,17 @@ import {
 } from "./utils.js";
 
 export function createProductCard(props) {
-  let { id, name, brand, price, files, discount, totalStock, is_dobleuso } =
+  let { id, name, brand, price, files, discount, totalStock, is_dobleuso, categories_id } =
     props;
   const productHasStock = !(!totalStock || totalStock == 0);
   const card = document.createElement("a");
   card.className = `card product_card ${discount ? "discount_card" : ""}`;
   card.href = `/producto/${id}`;
+  card.dataset.categories_id = categories_id;
   if (is_dobleuso) {
     card.classList.add("dobleuso_card");
+  } else {
+    card.classList.add("dobleclover_card");
   }
 
   const imagesWrapper = document.createElement("div");

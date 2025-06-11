@@ -18,6 +18,7 @@ import sendOrderMails from "../utils/helpers/sendOrderMails.js";
 import { markCouponAsUsed, unmarkCouponAsUsed } from "./api/apiCouponController.js";
 import { clearUserCart } from "./api/apiCartController.js";
 import { setNewVersionForUser, updateUserFromDB } from "./api/apiUserController.js";
+import { categories } from "../utils/staticDB/categories.js";
 // Obtener la ruta absoluta del archivo
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -37,7 +38,9 @@ const controller = {
     });
     brandsFromDB = getDeepCopy(brandsFromDB);
     await getBrandsLogos(brandsFromDB);
-    return res.render("productList", { dropsFromDB, brandsFromDB });
+    const categoriesFromDB = categories.sort((a, b) => a.name.localeCompare(b.name));
+
+    return res.render("productList", { dropsFromDB, brandsFromDB, categoriesFromDB });
   },
   brandProductList: async (req, res) => {
     let { brandId } = req.params;

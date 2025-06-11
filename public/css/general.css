@@ -103,6 +103,9 @@ img {
 .card_desc {
   color: #aaa;
 }
+button{
+  color: #000;
+}
 /*  */
 .number_button {
   padding: 5px !important;
