@@ -251,7 +251,7 @@ export async function createWelcomeCoupon(userId) {
   const newCoupon = await db.Coupon.create({
     id: uuidv4(),
     code,
-    discount_percent: 10, // Ajustá si querés otro valor
+    discount_percent: 15, // Ajustá si querés otro valor
     is_first_purchase_only: true,
     created_by_admin: false,
     usage_limit: 1,
