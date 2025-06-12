@@ -68,7 +68,7 @@ const controller = {
           .json({ msg: systemMessages.phoneMsg.createFailed });
       createdPhone.country = countries.find(
         (country) => country.id == createdPhone.countries_id
-      ); //TODO: armar file
+      );
       // Le  mando ok con el redirect al email verification view
       return res.status(HTTP_STATUS.CREATED.code).json({
         meta: {

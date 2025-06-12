@@ -487,81 +487,6 @@ const filterOrdersByDateRange = (orders, startDate, endDate) => {
   });
 };
 
-const constructTotalPeriodSelect = () => {
-  const select = document.createElement("select");
-
-  const options = [
-    { value: "7", text: "Últimos 7 días" },
-    { value: "15", text: "Últimos 15 días" },
-    { value: "30", text: "Último mes" },
-    { value: "90", text: "Últimos 3 meses" },
-  ];
-
-  options.forEach((optionData) => {
-    const option = document.createElement("option");
-    option.value = optionData.value;
-    option.textContent = optionData.text;
-    select.appendChild(option);
-  });
-  return select;
-};
-const constructTotalSalesCashSquares = () => {
-  const totalSalesAndCashContainer = document.createElement("div");
-  totalSalesAndCashContainer.className = "total_sales_cash_container";
-
-  const totalCashContainer = document.createElement("div");
-  totalCashContainer.className = "total_sales_container";
-
-  const today = new Date();
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(today.getDate() - 7);
-
-  const startDate = sevenDaysAgo.toISOString();
-  const endDate = today.toISOString();
-
-  const filteredOrders = filterOrdersByDateRange(
-    ordersFromDB,
-    startDate,
-    endDate
-  );
-
-  const { dolarSalesNumber, pesosSalesNumber } =
-    getTotalUsdAndPesosAccumulators(filteredOrders);
-
-  totalCashContainer.innerHTML = `
-    <i class= "bx bx-cart cart_icon"> </i>
-    <div class="totals_container">
-      <p class="total_label"> <strong class="sales-total">${filteredOrders.length}</strong> ventas </p> 
-      <p class="total_label"> USD <strong class="usd-total">${dolarSalesNumber}</strong> </p>
-      <p class="total_label"> ARS <strong class="ars-total"> ${pesosSalesNumber}</strong> </p>
-    </div>
-  `;
-
-  totalSalesAndCashContainer.appendChild(totalCashContainer);
-
-  return totalSalesAndCashContainer;
-};
-
-const getTotalUsdAndPesosAccumulators = (orders) => {
-  //TODO: Cambiar
-  let dolarSalesNumber = 0;
-  let pesosSalesNumber = 0;
-
-  orders.forEach((order) => {
-    const { payment_type_id, total } = order;
-
-    if (payment_type_id == 2) {
-      dolarSalesNumber += parseFloat(total);
-    } else {
-      pesosSalesNumber += parseFloat(total);
-    }
-  });
-
-  return {
-    dolarSalesNumber,
-    pesosSalesNumber,
-  };
-};
 
 const paintAdminProducts = async () => {
   if (!productsFromDB.length) await setProductsFromDB();
@@ -623,8 +548,8 @@ const handleOrderRowClick = async (order) => {
   order.orderItems.forEach((orderItem) => {
     orderItem.product =
       productsMap.get(orderItem.variation?.products_id) || null;
-    // Armo el html de la fila
-    // Obtener la imagen del producto o la default
+  
+    // Obtener imagen del producto o imagen default
     let productImage = "./img/product/default.png";
     let srcset = "";
     if (orderItem.product?.files?.length) {
@@ -636,33 +561,55 @@ const handleOrderRowClick = async (order) => {
         .map((urlObj) => `${urlObj.url} ${urlObj.size}`)
         .join(", ");
     }
-
-    // Calcular precio total
-    let totalPrice = displayBigNumbers(orderItem.price * orderItem.quantity);
-
-    // Crear el HTML de la fila
-    let orderItemRow = `
-        <div class="modal_card_content_row order_item_row">
-            <!-- Columna Imagen -->
-            <div class="order_item_image">
-                <img src="${productImage}" srcset="${srcset}" alt="${orderItem.name}" class="product_image">
-            </div>
-            
-            <!-- Columna Descripción -->
-            <div class="order_item_description">
-                <span class="product-name">${orderItem.name}</span>
-                <span class="product-details grey">${orderItem.color} - ${orderItem.size}</span>
-                <span class="product-quantity grey">Cantidad: ${orderItem.quantity}</span>
-            </div>
-
-            <!-- Columna Precio -->
-            <div class="order_item_price">
-                <span class="total-price">$${totalPrice}</span>
-            </div>
+  
+    // Cálculos de precios y descuentos
+    const quantity = orderItem.quantity;
+    const finalUnitPrice = orderItem.price;
+    const productDiscount = orderItem.product_discount || 0;
+    const couponDiscount = orderItem.coupon_discount || 0;
+  
+    const priceBase =
+      finalUnitPrice / ((1 - productDiscount / 100) * (1 - couponDiscount / 100));
+    const totalBase = priceBase * quantity;
+    const totalFinal = finalUnitPrice * quantity;
+  
+    const showOriginalPrice = productDiscount > 0 || couponDiscount > 0;
+  
+    const discountNote = couponDiscount > 0
+      ? `<span class="coupon-note grey">Con cupón aplicado (${couponDiscount}%)</span>`
+      : "";
+  
+    // Crear HTML de la fila
+    const orderItemRow = `
+      <div class="modal_card_content_row order_item_row">
+        <!-- Columna Imagen -->
+        <div class="order_item_image">
+          <img src="${productImage}" srcset="${srcset}" alt="${orderItem.name}" class="product_image">
         </div>
+  
+        <!-- Columna Descripción -->
+        <div class="order_item_description">
+          <span class="product-name">${orderItem.name}</span>
+          <span class="product-details grey">${orderItem.color} - ${orderItem.size}</span>
+          <span class="product-quantity grey">Cantidad: ${orderItem.quantity}</span>
+        </div>
+  
+        <!-- Columna Precio -->
+        <div class="order_item_price">
+          ${
+            showOriginalPrice
+              ? `<span class="original-price grey">$${displayBigNumbers(totalBase)}</span>`
+              : ""
+          }
+          <span class="total-price bold">$${displayBigNumbers(totalFinal)}</span>
+          ${discountNote}
+        </div>
+      </div>
     `;
+  
     orderItemsListInTable.innerHTML += orderItemRow;
   });
+  
 };
 
 const handleChangeOrderStatusWrapper = async (e, order) => {

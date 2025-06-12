@@ -197,8 +197,13 @@ const controller = {
       // Verifico cupón
       let coupon = null;
       if (coupons_id && users_id) {
-        console.log("🔎 Validando cupón:", coupons_id, "para usuario:", users_id);
-      
+        console.log(
+          "🔎 Validando cupón:",
+          coupons_id,
+          "para usuario:",
+          users_id
+        );
+
         coupon = await db.Coupon.findOne({
           where: {
             id: coupons_id,
@@ -216,17 +221,22 @@ const controller = {
             required: false,
           },
         });
-      
+
         if (!coupon) {
           console.warn("❌ Cupón no encontrado o expirado");
           return res
             .status(400)
             .json({ ok: false, msg: "Cupón inválido o no aplicable" });
         }
-      
+
         console.log("✅ Cupón encontrado:", coupon.code);
-        console.log("📊 Uso actual:", coupon.usage_count, "/", coupon.usage_limit);
-      
+        console.log(
+          "📊 Uso actual:",
+          coupon.usage_count,
+          "/",
+          coupon.usage_limit
+        );
+
         const usage = coupon?.usages[0];
         if (usage?.used_at) {
           console.warn("⚠️ El usuario ya usó este cupón:", usage.used_at);
@@ -234,7 +244,7 @@ const controller = {
             .status(400)
             .json({ ok: false, msg: "Este cupón ya fue utilizado" });
         }
-      
+
         if (
           coupon.usage_limit !== null &&
           coupon.usage_count >= coupon.usage_limit
@@ -242,48 +252,70 @@ const controller = {
           console.warn("⛔️ Cupón alcanzó su límite de usos");
           return res.status(400).json({ ok: false, msg: "Cupón agotado" });
         }
-      
+
         console.log("🟢 Cupón válido y disponible para este usuario");
       }
-      
 
       // Voy por las variaciones para restar stock
       variations.forEach((variation) => {
-        let { quantityRequested, id } = variation; //Tengo que chequear con esa variacion
-        // Agarro el producto de DB
-        let variationFromDBIndex = variationsFromDB.findIndex(
-          (dbVariation) => dbVariation.id == id
-        );
-        let variationFromDB = variationsFromDB[variationFromDBIndex];
-        quantityRequested = parseInt(quantityRequested); //Lo parseo
-        //Aca paso el chequeo de stock ==> lo resto al stock que tenia
-        variationFromDB.quantity -= quantityRequested; //Le resto el stock
-        //Hago el snapshot del  precio y nombre
-        let orderItemName = variationFromDB.product?.name;
-        //Si pago en mp entonces es precio pesos, sino precio usd
-
-        let orderItemPrice =
-          parseFloat(
-            variationFromDB.product?.discounted_price ||
-              variationFromDB.product?.price
-          ) * parseFloat(dolarPrice);
-
-        orderItemPrice = orderItemPrice && parseFloat(orderItemPrice);
-        let orderItemQuantity = parseInt(quantityRequested);
-        // Voy armando el array de orderItems para hacer un bulkcreate
-        let orderItemData = {
+        // 1. Extraigo datos básicos de la variación del carrito
+        let { quantityRequested, id } = variation;
+      
+        // 2. Busco la variación real desde DB (para validar stock y datos)
+        const variationFromDB = variationsFromDB.find((v) => v.id == id);
+        quantityRequested = parseInt(quantityRequested);
+      
+        // 3. Resto el stock disponible de la variación en DB
+        variationFromDB.quantity -= quantityRequested;
+      
+        // 4. Preparo los datos del ítem de la orden
+        const orderItemName = variationFromDB.product?.name;
+        const orderItemQuantity = quantityRequested;
+        const isDobleUso = variationFromDB.product?.is_dobleuso;
+      
+        // 5. Obtengo el precio base del producto en USD (sin descuento aplicado)
+        const basePriceUSD = parseFloat(variationFromDB.product?.price);
+        if (!basePriceUSD || isNaN(basePriceUSD)) {
+          throw new Error(`Precio inválido para el producto ${orderItemName || "sin nombre"}`);
+        }
+      
+        // 6. Aplico descuento del producto (si tiene)
+        const productDiscountPercent = variationFromDB.product.discount || 0;
+        let priceAfterProductDiscount = basePriceUSD;
+        if (productDiscountPercent > 0) {
+          priceAfterProductDiscount *= (1 - productDiscountPercent / 100);
+        }
+      
+        // 7. Aplico descuento del cupón SOLO si el producto NO es dobleuso
+        const couponDiscountPercent = coupon && !isDobleUso ? coupon.discount_percent : 0;
+        let finalPriceUSD = priceAfterProductDiscount;
+        if (couponDiscountPercent > 0) {
+          finalPriceUSD *= (1 - couponDiscountPercent / 100);
+        }
+      
+        // 8. Convierto el precio final a pesos y redondeo a 2 decimales
+        const finalPrice = Math.round(finalPriceUSD * dolarPrice * 100) / 100;
+      
+        // 9. Armo el objeto del item para guardar en DB
+        const orderItemData = {
           id: uuidv4(),
           order_id: orderDataToDB.id,
           variations_id: variationFromDB.id,
           name: orderItemName,
-          price: orderItemPrice,
+          price: finalPrice,
           quantity: orderItemQuantity,
           color: variationFromDB.color?.name,
           size: variationFromDB.size?.size,
-          discount: variationFromDB.product.discount || 0,
+          // Guardo los descuentos como snapshot
+          discount: productDiscountPercent,
+          coupon_discount: couponDiscountPercent,
+          is_dobleuso: isDobleUso
         };
+      
+        // 10. Agrego el item al array para hacer bulkCreate más adelante
         orderItemsToDB.push(orderItemData);
       });
+      
       //Aca ya reste a las variaciones el stock, mapeo y dejo solo id y stock para luego hacer el bulkupdate de eso nomas
       variationsFromDB = variationsFromDB.map((variationFromDB) => ({
         id: variationFromDB.id,
@@ -298,10 +330,6 @@ const controller = {
       orderDataToDB.total = orderTotalPrice;
       // Si tiene cupon entonces modifica el total
       if (coupon) {
-        const discountAmount =
-          orderTotalPrice * (coupon.discount_percent / 100);
-        orderTotalPrice -= discountAmount;
-        orderDataToDB.total = orderTotalPrice;
         orderDataToDB.coupons_id = coupon.id; // <-- hago snapshot del cupon
         orderDataToDB.coupons_code = coupon.code; // <-- hago snapshot del cupon
         orderDataToDB.coupons_discount_percent = coupon.discount_percent; // <-- hago snapshot del cupon
@@ -332,8 +360,7 @@ const controller = {
         // Pago con MP
         const mercadoPagoOrderResult = await handleCreateMercadoPagoOrder(
           orderItemsToDB,
-          mpClient,
-          orderDataToDB.coupons_discount_percent || 0
+          mpClient
         );
         // id es el id de la preferencia
         // init_point a donde hay que redirigir
@@ -361,7 +388,8 @@ const controller = {
         }
         await sendOrderMails(orderToSendEmails);
         console.log("📧 Mails de confirmación enviados correctamente");
-        if (orderToSendEmails.users_id) await clearUserCart(orderToSendEmails.users_id);
+        if (orderToSendEmails.users_id)
+          await clearUserCart(orderToSendEmails.users_id);
       }
 
       // Mando la respuesta

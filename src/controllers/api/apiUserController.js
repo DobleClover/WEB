@@ -170,7 +170,7 @@ const controller = {
           method: "DELETE",
         },
         ok: true,
-        msg: systemMessages.userMsg.destroySuccesfull, //TODO: ver tema idioma
+        msg: systemMessages.userMsg.destroySuccesfull,
         redirect: "/",
       });
     } catch (error) {

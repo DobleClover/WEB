@@ -333,7 +333,8 @@
   height: 100%;
 }
 .product_table_list_content .order_item_description {
-  width: 50%;
+  flex: 1;
+  padding-left: 25px;
   display: flex;
   flex-direction: column;
   align-content: space-between;
@@ -464,11 +465,11 @@
 .field.image_box .image_container img {
   object-fit: cover;
 }
-.setting_cards_wrapper{
+.setting_cards_wrapper {
   flex-direction: column;
   gap: 30px;
 }
-.products_cards_wrapper{
+.products_cards_wrapper {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
@@ -482,11 +483,35 @@
   border-radius: 6px;
   cursor: pointer;
   font-weight: 500;
-  transition:  background-color .3s ease;
+  transition: background-color 0.3s ease;
 }
 
 .change_password_btn:hover {
   background-color: var(--green-cream-color);
+}
+.order_item_price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
+}
+
+.original-price {
+  text-decoration: line-through;
+  font-size: 0.85rem;
+  color: #999;
+}
+
+.total-price {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #333;
+}
+
+.coupon-note {
+  font-size: 0.75rem;
+  color: #888;
 }
 
 @media (min-width: 768px) {
@@ -528,9 +553,7 @@
   .product_table_list_content .order_item_image {
     width: fit-content;
   }
-  .product_table_list_content .order_item_description {
-    width: 50%;
-  }
+
 }
 @media (min-width: 1024px) {
   .ui.placeholder.menu_placeholder {

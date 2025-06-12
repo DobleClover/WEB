@@ -80,8 +80,17 @@ import {
 } from "./utils.js";
 
 export function createProductCard(props) {
-  let { id, name, brand, price, files, discount, totalStock, is_dobleuso, categories_id } =
-    props;
+  let {
+    id,
+    name,
+    brand,
+    price,
+    files,
+    discount,
+    totalStock,
+    is_dobleuso,
+    categories_id,
+  } = props;
   const productHasStock = !(!totalStock || totalStock == 0);
   const card = document.createElement("a");
   card.className = `card product_card ${discount ? "discount_card" : ""}`;
@@ -379,7 +388,7 @@ function showForgotPasswordModal() {
           }
 
           try {
-            e.target.classList.add("loading","disabled");
+            e.target.classList.add("loading", "disabled");
             const res = await fetch("/api/user/generate-password-token", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -387,17 +396,23 @@ function showForgotPasswordModal() {
             });
 
             const data = await res.json();
-            e.target.classList.remove("loading","disabled");
+            e.target.classList.remove("loading", "disabled");
             if (!res.ok || !data.ok) {
               showCardMessage(false, data.msg || "No se pudo enviar el email.");
               return;
             }
 
-            showCardMessage(true, "Te enviamos un email con el enlace para cambiar tu contraseña.");
+            showCardMessage(
+              true,
+              "Te enviamos un email con el enlace para cambiar tu contraseña."
+            );
             closeModal();
           } catch (err) {
             console.error(err);
-            showCardMessage(false, "Hubo un error al conectar con el servidor.");
+            showCardMessage(
+              false,
+              "Hubo un error al conectar con el servidor."
+            );
           }
         },
       },
@@ -745,7 +760,9 @@ export function checkoutCard(props) {
   const productMainFile = productFromDB.files?.find((file) => file.main_file);
   props.quantity = props.quantity || 1;
   const container = document.createElement("div");
-  container.className = "card checkout-card";
+  container.className = `card checkout-card ${
+    productFromDB.is_dobleuso ? "dobleuso_item" : ""
+  }`;
   container.dataset.variations_id = props.variations_id;
   const productPrice = productFromDB.price;
   // Image section
@@ -879,6 +896,13 @@ export function checkoutCard(props) {
   container.innerHTML += `<div class="ui dimmer">
     <div class="ui loader"></div>
   </div>`;
+  if (productFromDB.is_dobleuso) {
+    const tag = document.createElement("div");
+    tag.className = "doubleuse_tag";
+    tag.textContent = "DobleUso";
+    container.appendChild(tag);
+  }
+
   return container;
 }
 
@@ -1111,6 +1135,13 @@ export function orderCard(order) {
       orderItem.quantity
     })`;
 
+    if (orderItem.is_dobleuso) {
+      const badge = document.createElement("span");
+      badge.className = "doubleuse_badge";
+      badge.textContent = "DobleUso";
+      header.appendChild(badge);
+    }
+
     const metaCategoryDiv = document.createElement("div");
     metaCategoryDiv.className = "meta";
     const categorySpan = document.createElement("span");
@@ -1131,18 +1162,60 @@ export function orderCard(order) {
     }`;
     metaVariationDiv.appendChild(variationSpan);
 
-    const priceSpan = document.createElement("span");
-    priceSpan.className = "card_price";
-    priceSpan.textContent = `$${displayBigNumbers(
-      (orderItem.quantity * orderItem.price).toFixed(2),
-      2
-    )}`;
+    // Precios y descuentos
+    const quantity = orderItem.quantity;
+    const finalUnitPrice = orderItem.price;
+    const productDiscount = orderItem.product_discount || 0;
+    const couponDiscount = orderItem.coupon_discount || 0;
+
+    // Reconstruir precio base
+    const priceBase =
+      finalUnitPrice /
+      ((1 - productDiscount / 100) * (1 - couponDiscount / 100));
+    const totalBase = priceBase * quantity;
+    const totalFinal = finalUnitPrice * quantity;
+
+    const priceWrapper = document.createElement("div");
+    priceWrapper.className = "price_wrapper";
+
+    const priceRow = document.createElement("div");
+    priceRow.className = "price_row";
+
+    // Precio original
+    if (productDiscount > 0 || couponDiscount > 0) {
+      const originalPriceSpan = document.createElement("span");
+      originalPriceSpan.className = "card_price original_price";
+      originalPriceSpan.textContent = `$${displayBigNumbers(totalBase, 2)}`;
+      priceRow.appendChild(originalPriceSpan);
+
+      // Flechita
+      const arrow = document.createElement("span");
+      arrow.className = "price_arrow";
+      arrow.textContent = "→";
+      priceRow.appendChild(arrow);
+    }
+
+    // Precio final
+    const discountedPriceSpan = document.createElement("span");
+    discountedPriceSpan.className = "card_price discounted_price";
+    discountedPriceSpan.textContent = `$${displayBigNumbers(totalFinal, 2)}`;
+    priceRow.appendChild(discountedPriceSpan);
+
+    priceWrapper.appendChild(priceRow);
+
+    // Mensaje de cupón debajo (si aplicó)
+    if (couponDiscount > 0) {
+      const couponNote = document.createElement("span");
+      couponNote.className = "discount_info";
+      couponNote.textContent = `Con cupón aplicado (${couponDiscount}%)`;
+      priceWrapper.appendChild(couponNote);
+    }
 
     // Agregar todos los elementos al contenedor de contenido
     contentDiv.appendChild(header);
     contentDiv.appendChild(metaCategoryDiv);
     contentDiv.appendChild(metaVariationDiv);
-    contentDiv.appendChild(priceSpan);
+    contentDiv.appendChild(priceWrapper);
 
     // Agregar imagen y contenido al contenedor del ítem
     itemContainer.appendChild(imageDiv);
@@ -2119,29 +2192,63 @@ function listenProductModalCategorySelect() {
 export function generateOrderDetailModal(order, isAdminModal = false) {
   destroyExistingModal();
 
-  const subtotal = order.orderItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
+  // 🧮 Cálculos reales de precios y descuentos
+  let subtotal = 0;
+  let subtotalWithProductDiscount = 0;
+  let subtotalWithBothDiscounts = 0;
+  let itemsWithCouponDiscount = 0;
+  order.orderItems.forEach((item) => {
+    const quantity = item.quantity || 1;
+    const productDiscount = item.product_discount || 0;
+    const couponDiscount = item.coupon_discount || 0;
 
-  const discountValue = order.coupons_discount_percent
-    ? (subtotal * order.coupons_discount_percent) / 100
-    : 0;
+    // Precio base sin ningún descuento aplicado
+    const priceBase =
+      item.price / ((1 - productDiscount / 100) * (1 - couponDiscount / 100));
 
-  const discountBlock = order.coupons_id
-    ? `
-      <span class="modal_card_content_row">
-        <span class="modal-card_content-span">Descuento</span>
-        <span class="modal-card_content-span">-$${displayBigNumbers(
-          discountValue,
-          2
-        )}</span>
-      </span>
-      <span class="modal-card_content-span small grey margin_bottom">
-        Cupón: ${order.coupons_code} (${order.coupons_discount_percent}%)
-      </span>
-    `
-    : "";
+    const itemSubtotal = priceBase * quantity;
+    subtotal += itemSubtotal;
+
+    const discountedByProduct =
+      priceBase * (1 - productDiscount / 100) * quantity;
+    subtotalWithProductDiscount += discountedByProduct;
+
+    const finalPaid = item.price * quantity;
+    subtotalWithBothDiscounts += finalPaid;
+    if (couponDiscount > 0) {
+      itemsWithCouponDiscount += quantity;
+    }
+  });
+
+  const productDiscountValue = subtotal - subtotalWithProductDiscount;
+  const couponDiscountValue =
+    subtotalWithProductDiscount - subtotalWithBothDiscounts;
+  const totalDiscountValue = subtotal - subtotalWithBothDiscounts;
+
+  // 🧾 Bloque visual de descuentos
+  const discountBlock =
+    totalDiscountValue > 0
+      ? `
+    <span class="modal_card_content_row">
+      <span class="modal-card_content-span">Descuento</span>
+      <span class="modal-card_content-span">-$${displayBigNumbers(
+        totalDiscountValue,
+        2
+      )}</span>
+    </span>
+    ${
+      order.coupons_id
+        ? `<span class="modal-card_content-span small grey margin_bottom">
+    Cupón: ${order.coupons_code} (${
+            order.coupons_discount_percent
+          }%) — aplicado a ${itemsWithCouponDiscount} producto${
+            itemsWithCouponDiscount === 1 ? "" : "s"
+          }
+  </span>`
+        : ""
+    }
+  `
+      : "";
 
   const modal = document.createElement("div");
   modal.classList.add("ui", "small", "modal");
@@ -2292,15 +2399,15 @@ export function generateOrderDetailModal(order, isAdminModal = false) {
     "order_detail_card_section"
   );
   billingSection.innerHTML = `
-    <label class="card_label label">Detalle de facturacion</label>
+    <label class="card_label label">Detalle de facturación</label>
     <div class="ui card">
       <div class="card_label_container">
         <p class="card_label grey no-margin">Cliente</p>
         <p class="card_desc grey no-margin">${order.first_name} ${order.last_name}</p>
         <p class="card_desc grey no-margin">DNI: ${order.dni}</p>
         <p class="card_desc grey no-margin">Email: ${order.email}</p>
-        <p class="card_desc grey">Telefono: +${order.phone_code}${order.phone_number}</p>
-        <p class="card_label grey no-margin">Direccion</p>
+        <p class="card_desc grey">Teléfono: +${order.phone_code}${order.phone_number}</p>
+        <p class="card_label grey no-margin">Dirección</p>
         <p class="card_desc grey no-margin">${order.billing_address_street}</p>
         <p class="card_desc grey no-margin">${order.billing_address_detail}</p>
         <p class="card_desc grey no-margin">${order.billing_address_city}, ${order.billing_address_province}</p>
@@ -2315,9 +2422,7 @@ export function generateOrderDetailModal(order, isAdminModal = false) {
   content.appendChild(billingSection);
   modal.appendChild(header);
   modal.appendChild(content);
-  modal.innerHTML += `<div class="ui dimmer">
-    <div class="ui loader"></div>
-  </div>`;
+  modal.innerHTML += `<div class="ui dimmer"><div class="ui loader"></div></div>`;
 
   modal
     .querySelector(".close_modal_btn")
@@ -4186,6 +4291,11 @@ export function createCouponInputBox(userCouponsFromDB = []) {
 
     validateCoupon(code, message);
   });
+  const note = document.createElement("p");
+  note.className = "coupon_note";
+  note.textContent =
+    "Los cupones aplican únicamente a productos DobleClover (no DobleUso).";
+  couponWrapper.appendChild(note);
 
   return couponWrapper;
 }

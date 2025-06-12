@@ -52,7 +52,6 @@ let variationIncludeArray = [
     association: "product",
     include: ["files","brand"],
   },
-  "orderItems",
 ];
 
 export const getVariationsFromDB = async (variationsID) => {

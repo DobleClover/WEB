@@ -2021,7 +2021,7 @@ export async function validateCoupon(code, messageTarget) {
       `/api/coupon/validate?${queryParams.toString()}`
     );
     const result = await response.json();
-    setCouponLoader(false)
+    setCouponLoader(false);
     if (!result.ok) {
       showCouponMessage(result.msg || "Cupón inválido", false, messageTarget);
       return;
@@ -2056,10 +2056,15 @@ function showCouponMessage(msg, success, targetEl) {
 
 export function applyCouponToDetail(coupon = null) {
   if (!coupon) return;
-
+  
+  // Suponiendo que ya las cargaste del backend
+  const variationsMap = Object.fromEntries(
+    variationsFromDB.map((v) => [v.id, v])
+  );
   const detailContainers = document.querySelectorAll(".detail_list_container");
 
   detailContainers.forEach((container) => {
+    let itemsWithCoupon = 0;
     const totalRow = container.querySelector(".last-row");
     const totalCostElement = totalRow.querySelector(".detail_row_total_cost");
 
@@ -2067,14 +2072,42 @@ export function applyCouponToDetail(coupon = null) {
     const oldCouponRow = container.querySelector(".coupon_row_applied");
     if (oldCouponRow) oldCouponRow.remove();
 
-    // Obtener total actual
-    const currentTotal = parseFloat(
-      totalCostElement.textContent.replace(/[^\d,]/g, "").replace(",", ".")
-    );
+    // 🔁 Recalcular el subtotal total y el subtotal aplicable
+    let subtotal = 0;
+    let subtotalWithCoupon = 0;
 
-    // Calcular descuento
-    const discountValue = currentTotal * (coupon.discount_percent / 100);
-    const discountedTotal = currentTotal - discountValue;
+    const checkoutCards = document.querySelectorAll(".checkout-card");
+    checkoutCards.forEach((card) => {
+      const variationId = card.dataset.variations_id;
+      const variation = variationsMap[variationId];
+
+      if (!variation) return;
+
+      const quantity = parseInt(
+        card.querySelector(".card_product_amount")?.textContent || 1
+      );
+
+      const priceEl =
+        card.querySelector(".discounted_price") ||
+        card.querySelector(".card_price");
+      const price = parseFloat(
+        priceEl.textContent.replace(/[^\d,]/g, "").replace(",", ".")
+      );
+
+      const isDobleUso = variation.product?.is_dobleuso;
+
+      const itemTotal = price * quantity;
+      subtotal += itemTotal;
+
+      if (!isDobleUso) {
+        subtotalWithCoupon += itemTotal;
+        itemsWithCoupon += quantity; // acumulás cantidad, no solo ítems únicos
+      }
+    });
+
+    // 🧮 Calcular descuento solo sobre productos NO dobleuso
+    const discountValue = subtotalWithCoupon * (coupon.discount_percent / 100);
+    const discountedTotal = subtotal - discountValue;
 
     // Crear nueva fila para el cupón
     const couponRow = document.createElement("div");
@@ -2083,10 +2116,15 @@ export function applyCouponToDetail(coupon = null) {
     const label = document.createElement("p");
     label.className = "detail_row_p";
     label.innerHTML = `
-    ${coupon.code}<br>
-    <span class="shipping_note">${parseFloat(coupon.discount_percent)?.toFixed(0)}% de descuento</span>
-  `;
-
+  ${coupon.code}<br>
+  <span class="shipping_note">
+    ${parseFloat(coupon.discount_percent)?.toFixed(
+      0
+    )}% de descuento aplicado a ${itemsWithCoupon} ${
+      itemsWithCoupon === 1 ? "producto" : "productos"
+    }.
+  </span>
+`;
     couponRow.appendChild(label);
 
     const value = document.createElement("p");
@@ -2097,7 +2135,6 @@ export function applyCouponToDetail(coupon = null) {
     )}`;
     couponRow.appendChild(value);
 
-    // Insertar antes del total
     container.insertBefore(couponRow, totalRow);
 
     // Actualizar total
@@ -2108,7 +2145,9 @@ export function applyCouponToDetail(coupon = null) {
   });
 }
 
-function setCouponLoader(isLoading = false){
+function setCouponLoader(isLoading = false) {
   const wrappers = document.querySelectorAll(".coupon_input_wrapper");
-  wrappers.forEach(elem => isLoading ? elem.classList.add("loading") : elem.classList.remove("loading"));
+  wrappers.forEach((elem) =>
+    isLoading ? elem.classList.add("loading") : elem.classList.remove("loading")
+  );
 }

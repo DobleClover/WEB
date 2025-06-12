@@ -88,16 +88,23 @@ function generateMailContent(order, isUser = true) {
   const discountValue = order.coupons_discount_percent
     ? (subtotal * order.coupons_discount_percent) / 100
     : 0;
-
+  const itemsWithCouponDiscount = order.orderItems.filter(
+    (item) => item.coupon_discount > 0
+  ).length;
+  
   const discountBlock = order.coupons_id
     ? `
-          <div style="margin: 5px 0;">
-            <strong>Descuento:</strong> -$${discountValue.toFixed(0)}<br/>
-            <small style="color: #ccc;">Cupón: ${order.coupons_code} (${
+      <div style="margin: 5px 0;">
+        <strong>Descuento:</strong> -$${discountValue.toFixed(0)}<br/>
+        <small style="color: #ccc;">
+          Cupón: ${order.coupons_code} (${
         order.coupons_discount_percent
-      }%)</small>
-          </div>
-        `
+      }%) — aplicado a ${itemsWithCouponDiscount} producto${
+        itemsWithCouponDiscount === 1 ? "" : "s"
+      }
+        </small>
+      </div>
+    `
     : "";
 
   const totalBlock = `
