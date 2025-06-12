@@ -4,51 +4,85 @@
     <%- include('./partials/head.ejs') %>
     <title>DobleClover</title>
   </head>
-  <body style="margin: 0; background-color: #000; color: #fff; height: 100vh; display: flex; justify-content: center; align-items: center; text-align: center;">
-
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
-  
+  <body
+    style="
+      margin: 0;
+      background-color: #000;
+      color: #fff;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    "
+  >
+    <div
+      style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+      "
+    >
       <!-- Logo -->
-      <img src="/img/logo/branding/Variante_Verde/Logo_Icono.png" alt="Logo DobleClover" style="max-width: 250px;" />
-  
+      <img
+        src="/img/logo/branding/Variante_Verde/Logo_Icono.png"
+        alt="Logo DobleClover"
+        style="max-width: 250px"
+      />
+
       <!-- Texto descriptivo -->
-      <p style="font-size: 1.35rem; max-width: 350px; line-height: 1.4;margin:5vh 0">
+      <p
+        style="
+          font-size: 1.35rem;
+          max-width: 350px;
+          line-height: 1.4;
+          margin: 5vh 0;
+        "
+      >
         Estamos renovando nuestra web.<br />
         Volvemos con todo este jueves a las 20hs.
       </p>
       <!-- Countdown -->
-      <div id="countdown" style="font-size: 1.8rem;"></div>
+      <div id="countdown" style="font-size: 1.8rem"></div>
     </div>
-  
+
     <script>
       function updateCountdown() {
         const now = new Date();
-        const target = new Date();
-  
-        const day = now.getDay(); // 0=domingo
-        const diffToThursday = (4 - day + 7) % 7 || 7;
-        target.setDate(now.getDate() + diffToThursday);
-        target.setHours(20, 0, 0, 0);
-  
+        const target = new Date(now);
+
+        // Seteamos para este jueves 20:00hs
+        const currentDay = now.getDay(); // 0 = domingo, 4 = jueves
+        const isThursday = currentDay === 4;
+
+        if (isThursday && now.getHours() < 20) {
+          target.setHours(20, 0, 0, 0);
+        } else {
+          const daysToAdd = (4 - currentDay + 7) % 7 || 7;
+          target.setDate(now.getDate() + daysToAdd);
+          target.setHours(20, 0, 0, 0);
+        }
+
         const diffMs = target - now;
         if (diffMs <= 0) {
-            window.location.href = "/";
-            return;
+          window.location.href = "/";
+          return;
         }
-  
+
         const totalSeconds = Math.floor(diffMs / 1000);
         const days = Math.floor(totalSeconds / 86400);
         const hours = Math.floor((totalSeconds % 86400) / 3600);
         const minutes = Math.floor((totalSeconds % 3600) / 60);
         const seconds = totalSeconds % 60;
-  
-        document.getElementById("countdown").innerText =
-          `${days}d ${hours}h ${minutes}m ${seconds}s`;
+
+        document.getElementById(
+          "countdown"
+        ).innerText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
       }
-  
+
       setInterval(updateCountdown, 1000);
       updateCountdown();
     </script>
   </body>
-  
 </html>
