@@ -1,6 +1,7 @@
 import { userLogged } from "./checkForUserLogged.js";
 import {
   createUserLoginModal,
+  createUserSignUpModal,
   generateUserLoggedDropdown,
 } from "./componentRenderer.js";
 import { getLocalStorageItem } from "./localStorage.js";
@@ -9,7 +10,7 @@ import { handlePageModal } from "./utils.js";
 const headerExportObject = {
   headerScriptInitiator: null,
 };
-window.addEventListener("DOMContentLoaded", () => window.scrollTo(0, 0))
+window.addEventListener("DOMContentLoaded", () => window.scrollTo(0, 0));
 window.addEventListener("load", async () => {
   try {
     const header = document.querySelector("header");
@@ -55,7 +56,7 @@ window.addEventListener("load", async () => {
         document.body.classList.add("noScroll");
       });
       closeMenu.addEventListener("click", () => {
-        closeMobileMenu()
+        closeMobileMenu();
       });
       // Cerrar menú si se hace clic fuera
       document.addEventListener("click", (event) => {
@@ -70,7 +71,7 @@ window.addEventListener("load", async () => {
       $(".mobile_menu .ui.accordion").accordion();
     }
     activateMobileMenu();
-    function closeMobileMenu(){
+    function closeMobileMenu() {
       menuMobile.classList.remove("mobile_menu_active");
       document.body.classList.remove("noScroll");
     }
@@ -84,6 +85,14 @@ window.addEventListener("load", async () => {
           createUserLoginModal();
           handlePageModal(true);
         });
+      });
+      const registerBtn = document.querySelector(".btn_register");
+      if (registerBtn.dataset.listened) return;
+      registerBtn.dataset.listened = true;
+      registerBtn.addEventListener("click", () => {
+        closeMobileMenu();
+        createUserSignUpModal();
+        handlePageModal(true);
       });
     }
     listenToUserLogoClick();
@@ -100,9 +109,7 @@ export const paintUserIconOrLetter = () => {
   const unloggedContainers = document.querySelectorAll(
     ".unlogged_user_container"
   );
-  const loggedContainers = document.querySelectorAll(
-    ".logged_user_container"
-  );
+  const loggedContainers = document.querySelectorAll(".logged_user_container");
 
   if (userLogged) {
     unloggedContainers.forEach((element) => element.classList.add("hidden"));
