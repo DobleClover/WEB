@@ -84,6 +84,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin: auto;
 }
 .user_info_placeholder > * {
   width: 100%;
@@ -513,7 +514,14 @@
   font-size: 0.75rem;
   color: #888;
 }
-
+/* PLaceholders */
+.user_addresses_placeholder {
+  margin: 0 auto !important;
+  height: 200px;
+}
+.user_addresses_placeholder * {
+  height: 100%;
+}
 @media (min-width: 768px) {
   .main {
     padding: 0;
@@ -553,7 +561,6 @@
   .product_table_list_content .order_item_image {
     width: fit-content;
   }
-
 }
 @media (min-width: 1024px) {
   .ui.placeholder.menu_placeholder {
