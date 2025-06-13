@@ -3121,7 +3121,8 @@ export function generateUserVerifySection() {
 
   for (let i = 0; i < 6; i++) {
     const input = document.createElement("input");
-    input.type = "text";
+    input.type = "number";
+    input.inputMode = "numeric"; // muestra teclado numérico en móviles
     input.className = "numeric_only_input verify-code-input";
     codeInputSection.appendChild(input);
   }
