@@ -1,7 +1,8 @@
 .hero {
   position: relative;
   background-color: black;
-  height: calc(var(--vh, 1vh) * 100);
+  min-height: calc(var(--vh) * 100);
+  height: auto;
   width: auto;
   display: flex;
   justify-content: center;
@@ -162,7 +163,8 @@
 }
 @media (min-width: 1024px) {
   .hero {
-    height: calc(var(--vh, 1vh) * 100); /* Ocupa toda la altura del viewport */
+    min-height: calc(var(--vh) * 100);
+    height: auto;
     background-attachment: fixed; /* 🔥 Efecto parallax */
     background-size: cover;
     background-position: center 40%;

@@ -74,7 +74,8 @@
 }
 
 .footer_logo_container{
-    height: calc(var(--vh, 1vh) * 7.5);
+    min-height: calc(var(--vh) * 7.5);
+    height: auto;
     margin-bottom: 2.5vh;
 }
 

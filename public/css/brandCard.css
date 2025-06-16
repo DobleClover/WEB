@@ -1,5 +1,6 @@
 .section_wrapper_card.brand_card {
-  height: calc(var(--vh, 1vh) * 60);
+  min-height: calc(var(--vh) * 60);
+  height: auto;
   width: 80%;
   max-width: 305px;
   max-height: 490px;
@@ -65,14 +66,16 @@
 @media (min-width: 768px) {
   .section_wrapper_card.brand_card {
     width: 70%;
-    height: calc(var(--vh, 1vh) * 70);
+    min-height: calc(var(--vh) * 70);
+    height: auto;
     max-width: 320px;
   }
 }
 @media (min-width: 1024px) {
   .section_wrapper_card.brand_card {
     width: 100%;
-    height: calc(var(--vh, 1vh) * 60);
+    min-height: calc(var(--vh) * 60);
+    height: auto;
     max-width: 300px;
     margin-bottom: 0;
   }
