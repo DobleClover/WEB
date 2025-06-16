@@ -1,5 +1,5 @@
 .section_wrapper_card.brand_card {
-  height: 60vh;
+  height: calc(var(--vh, 1vh) * 60);
   width: 80%;
   max-width: 305px;
   max-height: 490px;
@@ -65,14 +65,14 @@
 @media (min-width: 768px) {
   .section_wrapper_card.brand_card {
     width: 70%;
-    height: 70vh;
+    height: calc(var(--vh, 1vh) * 70);
     max-width: 320px;
   }
 }
 @media (min-width: 1024px) {
   .section_wrapper_card.brand_card {
     width: 100%;
-    height: 60vh;
+    height: calc(var(--vh, 1vh) * 60);
     max-width: 300px;
     margin-bottom: 0;
   }

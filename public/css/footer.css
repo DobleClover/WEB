@@ -12,7 +12,8 @@
     padding: 5vh 15vw;
     position: relative;
     z-index: 1000;
-    min-height: 100vh;align-items: flex-start;
+    min-height: calc(var(--vh, 1vh) * 20);
+    align-items: flex-start;
 }
 .footer_logo_container {
     grid-area: footer_logo_container;
@@ -73,7 +74,7 @@
 }
 
 .footer_logo_container{
-    height: 7.5vh;
+    height: calc(var(--vh, 1vh) * 7.5);
     margin-bottom: 2.5vh;
 }
 
@@ -90,7 +91,7 @@
     
     .footer_logo_container {
         margin-top: 5vh;
-        height: 15vh;
+        height: calc(var(--vh, 1vh) * 15);
     }
 }
 @media (min-width: 1024px) { /* Desktop (opcional) */

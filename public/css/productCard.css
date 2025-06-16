@@ -3,7 +3,7 @@
   max-width: 240px;
   flex-direction: column;
   justify-content: space-between;
-  height: 60vh;
+  height: calc(var(--vh, 1vh) * 60);
   overflow: hidden;
   border-radius: 1.25rem;
   margin: 0 auto;
