@@ -1,6 +1,6 @@
 .brand_banner_section {
     background-color: #000;
-    height: 20vh;
+    height: 20svh;
     width: 100vw;
     display: flex;
     align-items: center;
@@ -29,7 +29,7 @@
     position: relative;
     z-index: 1;
     padding: 5vh 5vw;
-    min-height: 80vh;
+    min-height: 80svh;
     width: 100vw;
     overflow: hidden;
   }

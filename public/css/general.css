@@ -48,7 +48,7 @@ img {
 }
 .black_bg{
   width: 100%;
-  height: calc(var(--vh, 1vh) * 20);
+  height: 20svh;
   background-color: #000;
   position: relative;
 }
@@ -423,12 +423,12 @@ select{
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-bottom: 5vh;
+  margin-bottom: 5svh;
   padding: 0 2.5vw;
 }
 .section_logo {
   width: 35px;
-  margin-bottom: 2vh;
+  margin-bottom: 2svh;
   height: auto;
 }
 .section_title {

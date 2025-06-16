@@ -1,6 +1,6 @@
 .main{
     padding: 25vh 0;
-    padding-bottom: 5vh;
+    padding-bottom: 5svh;
 }
 .section_desc_container{
     text-align: center;
@@ -8,7 +8,7 @@
 .faq_cards_section{
     width: 80%;
     max-width: 500px;
-    margin-top: 10vh;
+    margin-top: 10svh;
 }
 .section_bg_image{
     z-index: -1;

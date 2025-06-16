@@ -17,7 +17,7 @@
 }
 
 .main {
-  min-height: 70vh;
+  min-height: 70svh;
   padding: 2.5vh 5vw;
   margin: 15vh 0;
   flex-direction: row;
@@ -72,15 +72,15 @@
 }
 .ui.placeholder.menu_placeholder,
 .ui.placeholder.image_placeholder {
-  height: 55vh;
+  height: 55svh;
 }
 .ui.placeholder.menu_placeholder {
-  margin-top: 9.5vh;
+  margin-top: 9.5svh;
   display: none;
 }
 .user_info_placeholder {
   width: 60%;
-  height: 55vh;
+  height: 55svh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -98,7 +98,7 @@
 }
 .table_container {
   width: 100%;
-  height: 50vh;
+  height: 50svh;
 }
 #myGrid {
   width: 100%;
@@ -345,7 +345,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 5vh;
+  margin-top: 5svh;
 }
 .order_detail_card_section .card_label.label {
   font-size: large;

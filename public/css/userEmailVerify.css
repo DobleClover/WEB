@@ -1,7 +1,7 @@
 
 .main {
-    margin-top: 25vh;
-    min-height: 70vh;
+    margin-top: 25svh;
+    min-height: 70svh;
 }
 .verify_section{
     margin: 0 auto;
@@ -20,7 +20,7 @@
 .desc_container {
     width: 100%;
     display: flex;
-    margin-bottom: 5vh;
+    margin-bottom: 5svh;
     flex-direction: column;
     align-items: center;
 }
@@ -69,7 +69,7 @@
 .button_container {
     width: 100%;
     text-align: center;
-    margin-top: 5vh;
+    margin-top: 5svh;
 }
 
 @media(min-width:768px) {
@@ -101,7 +101,7 @@
     }
 
     .button_container {
-        margin-top: 10vh;
+        margin-top: 10svh;
     }
 
     .verify_button {

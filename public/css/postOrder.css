@@ -1,8 +1,8 @@
 .main {
   align-items: center;
   justify-content: center;
-  min-height: 70vh;
-  margin-top: 20vh;
+  min-height: 70svh;
+  margin-top: 20svh;
   padding: 5vh 0;
 }
 .ui.card.post_order_card {
@@ -70,7 +70,7 @@
 }
 .card_logo_container {
   max-width: 150px;
-  margin-top: 5vh;
+  margin-top: 5svh;
 }
 
 @media (min-width: 768px) {

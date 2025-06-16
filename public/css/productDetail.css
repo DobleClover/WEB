@@ -1,11 +1,11 @@
 .main {
-  min-height: 70vh;
+  min-height: 70svh;
   flex-direction: column;
 }
 .product_images_section {
   display: flex;
-  height: 70vh;
-  margin-top: 15vh;
+  height: 70svh;
+  margin-top: 15svh;
 }
 .images_wrapper {
   display: flex;
@@ -54,7 +54,7 @@
 }
 .related_products_section .page_title {
   text-align: center;
-  margin-bottom: 4vh;
+  margin-bottom: 4svh;
 }
 .product_detail_section {
   display: flex;
@@ -89,7 +89,7 @@
 }
 .image_placeholder,
 .text_placeholder {
-  height: 70vh;
+  height: 70svh;
 }
 .ui.breadcrumb * {
   font-size: 0.8rem;
@@ -102,7 +102,7 @@
 }
 
 .product_detail_section {
-  margin-bottom: 5vh;
+  margin-bottom: 5svh;
 }
 .discounted_price {
   text-decoration: line-through;
@@ -142,7 +142,7 @@
 
 @media (min-width: 768px) {
   .product_images_section {
-    margin-top: 5vh;
+    margin-top: 5svh;
   }
   .ui.breadcrumb * {
     font-size: 0.85rem;
@@ -156,7 +156,7 @@
   }
   .product_images_section {
     width: 45%;
-    height: 70vh;
+    height: 70svh;
     margin-top: 0;
     border-radius: .5rem;
     overflow: hidden;
@@ -168,7 +168,7 @@
   }
   .images_wrapper {
     height: 100%;
-    margin-bottom: 3vh;
+    margin-bottom: 3svh;
     scroll-snap-type: none;
     overflow-x: hidden;
   }
@@ -215,7 +215,7 @@
     margin-bottom: 5px;
   }
   .button_container {
-    margin-top: 5vh;
+    margin-top: 5svh;
     justify-content: flex-start;
   }
   .button_container .add_to_cart_btn {
@@ -244,7 +244,7 @@
   .main {
     max-width: 1300px;
     margin: 0 auto;
-    margin-top: 15vh;
+    margin-top: 15svh;
     padding: 5vh 5vw;
     flex-direction: row;
     flex-wrap: wrap;
@@ -256,7 +256,7 @@
     margin-top: 15px;
   }
   .related_products_section {
-    margin-top: 10vh;
+    margin-top: 10svh;
   }
   .small_image_element:hover {
     opacity: 0.7;

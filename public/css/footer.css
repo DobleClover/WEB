@@ -75,7 +75,7 @@
 
 .footer_logo_container{
     height: 7.5svh;
-    margin-bottom: 2.5vh;
+    margin-bottom: 2.5svh;
 }
 
 
@@ -90,7 +90,7 @@
     }
     
     .footer_logo_container {
-        margin-top: 5vh;
+        margin-top: 5svh;
         height: 15svh;
     }
 }
