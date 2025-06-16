@@ -1,6 +1,5 @@
 .section_wrapper_card.drop_card {
-  min-height: calc(var(--vh) * 40);
-  height: auto;
+    height: 40svh;
   width: 80%;
   max-width: 300px;
   position: relative;
@@ -55,8 +54,7 @@
     background-color: rgba(0, 0, 0, 0.56);
   }
   .section_wrapper_card.drop_card {
-    min-height: calc(var(--vh) * 40);
-    height: auto;
+    height: 40svh;
     width: 100%;
     max-height: 280px;
   }
