@@ -220,7 +220,8 @@ body {
 
 .accordion_inner {
   display: flex;
-  justify-content: space-evenly;
+  flex-wrap: wrap;
+  justify-content: flex-start;
   padding: 1rem 1.2rem;
   background: #fff;
   border-radius: 0 0 12px 12px;
