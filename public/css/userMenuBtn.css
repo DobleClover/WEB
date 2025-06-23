@@ -62,7 +62,7 @@
     .ui.dropdown.user_menu_btn > .menu .header{
         font-size: 1.4rem;
         margin-top: 0;
-        margin-bottom: 4.5svh;
+        margin-bottom: calc(var(--real-vh, 1vh) * 4.5);
     }
     .ui.dropdown.user_menu_btn > .menu .item{
         margin-bottom: 1.15rem;

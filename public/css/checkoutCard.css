@@ -6,7 +6,7 @@
     background-color: #fff;
     overflow: hidden;
     width: 90vw;
-    height: 32svh;
+    height: calc(var(--real-vh, 1vh) * 32);
     max-width: 450px;
     max-height: 160px;
     box-shadow: none;
@@ -94,7 +94,7 @@
   }
 @media(min-width:1024px){
     .checkout-card{
-        height: 35svh;
+        height: calc(var(--real-vh, 1vh) * 35);
     }
     .checkout-card .card_image{
         width: 30%;

@@ -28,7 +28,7 @@
   .product_cards_wrapper_section {
     position: relative;
     z-index: 1;
-    padding: 5vh 5vw;
+    padding: calc(var(--real-vh, 1vh) * 5) 5vw;
     min-height: calc(var(--real-vh, 1vh) * 80);
     width: 100vw;
     overflow: hidden;

@@ -1,6 +1,6 @@
 .main{
-    padding: 25vh 0;
-    padding-bottom: 5svh;
+    padding: calc(var(--real-vh, 1vh) * 25) 0;
+    padding-bottom: calc(var(--real-vh, 1vh) * 5);
 }
 .section_desc_container{
     text-align: center;
@@ -8,7 +8,7 @@
 .faq_cards_section{
     width: 80%;
     max-width: 500px;
-    margin-top: 10svh;
+    margin-top: calc(var(--real-vh, 1vh) * 10);
 }
 .section_bg_image{
     z-index: -1;

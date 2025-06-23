@@ -1,6 +1,6 @@
 .home_label{
     border-left: 10px solid var(--green-color);
-    margin-bottom: 2.5svh;
+    margin-bottom: calc(var(--real-vh, 1vh) * 2.5);
     background-color: #fff;
 }
 .home_label ul{

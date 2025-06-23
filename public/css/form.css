@@ -27,7 +27,7 @@
     border: 1px solid var(--dark-grey-color);
 }
 .form_container .button_container{
-    margin-top: 2.5svh;
+    margin-top: calc(var(--real-vh, 1vh) * 2.5);
     width: 100%;
     display: flex;
     justify-content: center;

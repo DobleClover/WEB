@@ -10,7 +10,7 @@
   color: inherit;
   margin: 0 auto;
   width: 100%;
-  height: 60svh;
+  height: calc(var(--real-vh, 1vh) * 60);
   position: relative;
   border-radius: 1rem;
 }
