@@ -31,6 +31,7 @@ import {
   setLocalStorageItem,
 } from "./localStorage.js";
 import { userProfileExportObj } from "./userProfile.js";
+import setRealVhUnit from "./viewportHeightFix.js";
 // import { userProfileExportObj } from "./userProfile.js";
 
 export function listenToProductCards() {
@@ -1508,6 +1509,7 @@ export function isOnPage(path) {
 
 export async function scriptInitiator() {
   try {
+    setRealVhUnit();
     await checkForUserLogged();
     await setSettings();
     headerExportObject.headerScriptInitiator();

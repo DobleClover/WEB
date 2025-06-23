@@ -12,7 +12,7 @@
     padding: 5vh 15vw;
     position: relative;
     z-index: 1000;
-    min-height: 100svh;
+    min-height: calc(var(--real-vh, 1vh) * 100);
     align-items: flex-start;
 }
 .footer_logo_container {
