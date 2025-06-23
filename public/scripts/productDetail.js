@@ -201,7 +201,7 @@ window.addEventListener("load", async () => {
     checkForImageClick();
     productDetailExportObj.paintRelatedProductCards = function () {
       let relatedProductCardWrapper = document.querySelector(
-        ".related_products_section .product_cards_wrapper"
+        ".related_products_section .product_cards_wrapper_section"
       );
       relatedProductCardWrapper.innerHTML = "";
       let productsToPaint = [...relatedProducts];
@@ -214,7 +214,7 @@ window.addEventListener("load", async () => {
         paintProductCardsInList(productsToPaint, relatedProductCardWrapper);
         //   una vez lo pinto, agrego las aniamciones
         relatedProductCardWrapper = document.querySelector(
-          ".related_products_section .product_cards_wrapper"
+          ".related_products_section .product_cards_wrapper_section"
         );
         animateSectionElements(relatedProductCardWrapper, 0.1);
       }
