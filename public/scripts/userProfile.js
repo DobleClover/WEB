@@ -1339,16 +1339,16 @@ function setUserProfilePlaceholder() {
   //esta funcion dependiendo que viene invoca a la funcion que pinta/despinta las cosas
   switch (activeIndexSelected) {
     case 0: //Profile | Ventas
-    placeholderElement = typeOfPanel === 2 ? renderProfilePlaceholder() : null;
+    placeholderElement = typeOfPanel === 2 ? renderProfilePlaceholder() : '';
       break;
     case 1: //Addresses | Products
-    placeholderElement = typeOfPanel === 2 ? renderUserAddressesPlaceholder() : null;
+    placeholderElement = typeOfPanel === 2 ? renderUserAddressesPlaceholder() : '';
       break;
     case 2: //Phones | marcas & drops
-    placeholderElement = typeOfPanel === 2 ? renderUserPhonesPlaceholder() : null;
+    placeholderElement = typeOfPanel === 2 ? renderUserPhonesPlaceholder() : '';
       break;
     case 3: //Order History | coupons
-    placeholderElement = typeOfPanel === 2 ? renderUserOrdersPlaceholder() : null;
+    placeholderElement = typeOfPanel === 2 ? renderUserOrdersPlaceholder() : '';
       break;
     case 4: 
     placeholderElement = typeOfPanel === 2 ? null : null;
