@@ -2,37 +2,37 @@ export default [
   {
     id: 1,
     size: "XXS",
-    categories: [4, 5, 6, 8,10,11,12], //  Remera, Buzo, Campera, Jogging
+    categories: [4, 5, 6, 8, 10, 11, 12], //  Remera, Buzo, Campera, Jogging
   },
   {
     id: 2,
     size: "XS",
-    categories: [4, 5, 6, 8,10,11,12],
+    categories: [4, 5, 6, 8, 10, 11, 12],
   },
   {
     id: 3,
     size: "S",
-    categories: [4, 5, 6, 8,10,11,12],
+    categories: [4, 5, 6, 8, 10, 11, 12],
   },
   {
     id: 4,
     size: "M",
-    categories: [4, 5, 6, 8,10,11,12],
+    categories: [4, 5, 6, 8, 10, 11, 12],
   },
   {
     id: 5,
     size: "L",
-    categories: [4, 5, 6, 8,10,11,12],
+    categories: [4, 5, 6, 8, 10, 11, 12],
   },
   {
     id: 6,
     size: "XL",
-    categories: [4, 5, 6, 8,10,11,12],
+    categories: [4, 5, 6, 8, 10, 11, 12],
   },
   {
     id: 7,
     size: "XXL",
-    categories: [4, 5, 6, 8,10,11,12],
+    categories: [4, 5, 6, 8, 10, 11, 12],
   },
   {
     id: 8,
@@ -123,7 +123,7 @@ export default [
     id: 80,
     size: "US 14.5",
     categories: [2, 9],
-  },  
+  },
   {
     id: 24,
     size: "Único",
@@ -132,23 +132,53 @@ export default [
   {
     id: 241,
     size: "XS/S",
-    categories: [1,], // Gorra, Accesorio
+    categories: [1], // Gorra, Accesorio
   },
   {
     id: 242,
     size: "S/M",
-    categories: [1,], // Gorra, Accesorio
+    categories: [1], // Gorra, Accesorio
   },
   {
     id: 243,
     size: "M/L",
-    categories: [1,], // Gorra, Accesorio
+    categories: [1], // Gorra, Accesorio
   },
   {
     id: 244,
     size: "L/XL",
-    categories: [1,], // Gorra, Accesorio
+    categories: [1], // Gorra, Accesorio
   },
+  {
+    id: 244,
+    size: "L/XL",
+    categories: [1], // Gorra, Accesorio
+  },
+  {
+    id: 244,
+    size: "L/XL",
+    categories: [1], // Gorra, Accesorio
+  },
+  {
+    id: 244,
+    size: "L/XL",
+    categories: [1], // Gorra, Accesorio
+  },
+  {
+    id: 244,
+    size: "L/XL",
+    categories: [1], // Gorra, Accesorio
+  },
+  { id: 245, size: "6 3/4", categories: [1] },
+  { id: 246, size: "6 7/8", categories: [1] },
+  { id: 247, size: "7", categories: [1] },
+  { id: 248, size: "7 1/8", categories: [1] },
+  { id: 249, size: "7 1/4", categories: [1] },
+  { id: 250, size: "7 3/8", categories: [1] },
+  { id: 251, size: "7 1/2", categories: [1] },
+  { id: 252, size: "7 5/8", categories: [1] },
+  { id: 253, size: "7 3/4", categories: [1] },
+  { id: 254, size: "8", categories: [1] },
   {
     id: 25,
     size: "28x30",
@@ -384,5 +414,4 @@ export default [
     size: "44x36",
     categories: [3],
   },
- 
 ];
