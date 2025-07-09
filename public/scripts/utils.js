@@ -478,6 +478,7 @@ export async function fetchDBProducts({
   limit = null,
   offset = null,
   id = null,
+  onlyActive = null
 } = {}) {
   try {
     const queryParams = new URLSearchParams();
@@ -485,6 +486,7 @@ export async function fetchDBProducts({
     if (categoryId) queryParams.append("categoryId", categoryId);
     if (limit) queryParams.append("limit", limit);
     if (offset) queryParams.append("offset", offset);
+    if (onlyActive) queryParams.append("only_active", '1');
     // Agregar los valores del array `id` a los parámetros de la query
     if (Array.isArray(id)) {
       id.forEach((value) => queryParams.append("productId", value));
@@ -860,12 +862,12 @@ export function buildDropBodyData(form) {
     });
   });
 
-  // PAra los ids de productos
-  const productsIDS = form?.querySelectorAll(".product_search_input a.label");
-  productsIDS?.forEach((prod) => {
-    const prodID = prod.dataset.value;
-    bodyDataToReturn.productIDS.push(prodID);
-  });
+  // // PAra los ids de productos
+  // const productsIDS = form?.querySelectorAll(".product_search_input a.label");
+  // productsIDS?.forEach((prod) => {
+  //   const prodID = prod.dataset.value;
+  //   bodyDataToReturn.productIDS.push(prodID);
+  // });
   // Crear FormData
   const formData = new FormData();
 

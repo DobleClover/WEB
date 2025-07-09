@@ -269,7 +269,7 @@ const controller = {
 
 export default controller;
 
-let brandIncludeArray = [{association: "products", include: productIncludeArray}, "files"];
+let brandIncludeArray = [{association: "products",where: { active: true },  include: productIncludeArray}, "files"];
 
 export async function getBrandsFromDB({
   id = undefined,

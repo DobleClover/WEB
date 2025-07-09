@@ -3557,21 +3557,21 @@ export async function createDropModal(drop = undefined) {
           containerClassName: "required",
           value: drop ? drop.name : "",
         },
-        {
-          type: "select",
-          label: "Productos",
-          name: "drop_products",
-          className:
-            "ui search dropdown product_search_input form_search_dropdown",
-          containerClassName: "required",
-          placeholder: "Cargando...",
-          dataAttributes: {
-            array_name: "productsFromDB",
-            entity_name: "Product",
-          },
-          required: true,
-          multiple: true,
-        },
+        // {
+        //   type: "select",
+        //   label: "Productos",
+        //   name: "drop_products",
+        //   className:
+        //     "ui search dropdown product_search_input form_search_dropdown",
+        //   containerClassName: "required",
+        //   placeholder: "Cargando...",
+        //   dataAttributes: {
+        //     array_name: "productsFromDB",
+        //     entity_name: "Product",
+        //   },
+        //   required: true,
+        //   multiple: true,
+        // },
         {
           type: "datetime-local",
           label: "Lanzamiento",

@@ -186,13 +186,16 @@ window.addEventListener("load", async () => {
     await setProductsFromDB({ id: productId }); //Seteo el producto
 
     const productFromDB = (productsFromDB?.length && productsFromDB[0]) || null;
+
     if (!productFromDB) return (window.location.href = "/tienda"); //Lo mando a la tienda si no encontro
+    
     let productCategoryID = productFromDB?.categories_id;
     let productBrandID = productFromDB?.brands_id;
 
     const relatedProducts = await fetchDBProducts({
       categoryId: productCategoryID,
       limit: 4,
+      onlyActive: true
     });
     document.title = `Tienda - ${productFromDB.name}`;
     // Una vez que esta despintp y pinto
@@ -282,6 +285,13 @@ window.addEventListener("load", async () => {
 
       Promise.all(imagePromises).then(() => {
         imagesWrapper.scrollLeft = 0;
+        if (productFromDB?.files?.length) {
+      const imageCount = productFromDB.files.length;
+      const container = document.querySelector(".small_images_container");
+      if (container) {
+        container.style.setProperty("--image-count", imageCount);
+      }
+    }
         removeDoblecloverOverlay(); // Oculta loader cuando todo está listo
       });
     }

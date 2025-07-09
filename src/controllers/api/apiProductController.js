@@ -51,13 +51,23 @@ const PRODUCTS_FOLDER_NAME = "products";
 const controller = {
   handleGetAllProducts: async (req, res) => {
     try {
-      let { categoryId, productId, limit, offset, is_dobleuso, has_stock } =
-        req.query;
+      let {
+        categoryId,
+        productId,
+        limit,
+        offset,
+        is_dobleuso,
+        has_stock,
+        only_active,
+      } = req.query;
       if (limit) limit = parseInt(limit);
       if (categoryId) categoryId = parseInt(categoryId);
       if (offset) offset = parseInt(offset);
       if (typeof is_dobleuso !== "undefined") {
         is_dobleuso = is_dobleuso === "1" || is_dobleuso === "true";
+      }
+      if (typeof only_active !== "undefined") {
+        only_active = only_active === "1" || only_active === "true";
       }
       if (typeof has_stock !== "undefined") {
         has_stock = has_stock === "1" || has_stock === "true";
@@ -73,6 +83,7 @@ const controller = {
           offset,
           is_dobleuso,
           hasStock: has_stock,
+          onlyActive: only_active,
         });
         if (!foundProduct) {
           return res.status(HTTP_STATUS.NOT_FOUND.code).json({
@@ -96,6 +107,7 @@ const controller = {
           offset,
           is_dobleuso,
           hasStock: has_stock,
+          onlyActive: only_active,
         });
         products = productsFetched;
       }
@@ -281,7 +293,7 @@ const controller = {
           ok: false,
           msg: updateFailed.en,
         });
-      };
+      }
       // Ahora veo que productos tiene
       let { drops } = req.body;
       drops = JSON.parse(drops);
@@ -481,12 +493,13 @@ export async function getProductsFromDB({
   withImages = false,
   limit,
   offset,
+  onlyActive = false,
 }) {
   try {
     let where = {};
     if (categoryId) where.categories_id = categoryId;
     if (typeof is_dobleuso === "boolean") where.is_dobleuso = is_dobleuso;
-
+    if (onlyActive) where.active = true; // ✅ Aquí agregás el filtro
     // Filtro opcional por ID
     let productsToReturn, productToReturn;
 
@@ -657,7 +670,6 @@ export async function setProductKeysToReturn({
     return console.log(error);
   }
 }
-
 
 async function handleProductAWSFilesUpload({ files = [], filesFromBody = [] }) {
   try {

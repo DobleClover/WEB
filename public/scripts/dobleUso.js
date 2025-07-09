@@ -59,7 +59,7 @@ window.addEventListener("load", async () => {
       wrapperSelector: ".dobleuso_wrapper",
       buttonSelector: "#loadMoreDobleuso",
       queryBuilder: ({ offset, hasStock, limit }) =>
-        `/api/product?is_dobleuso=1&has_stock=${hasStock}&limit=${limit}&offset=${offset}`,
+        `/api/product?is_dobleuso=1&has_stock=${hasStock}&limit=${limit}&offset=${offset}&only_active=1`,
       onInitialRender: animateSectionElements,
     });
 
