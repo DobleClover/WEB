@@ -3400,14 +3400,21 @@ export async function createBrandModal(brand = undefined) {
       formClassName: "",
       formFields: [
         {
-          type: "text",
-          label: "Nombre",
-          name: "brand_name",
-          placeholder: "Adidas",
-          required: true,
-          containerClassName: "required",
-          value: brand ? brand.name : "",
-        },
+              type: "toggle",
+              name: "show_in_home",
+              labelForToggle: "Mostrar en Home",
+              containerClassName: "margin_field",
+              checked: brand ? brand?.show_in_home : false,
+            },
+        {
+              type: "text",
+              label: "Nombre",
+              name: "brand_name",
+              placeholder: "Adidas",
+              required: true,
+              containerClassName: "required",
+              value: brand ? brand.name : "",
+            },
         {
           type: "three-fields",
           fields: [
@@ -3487,6 +3494,7 @@ export async function createBrandModal(brand = undefined) {
     });
     // Una vez lo creo, lo abro
     handlePageModal(true);
+    activateCheckboxTogglers();
     if (brand) {
       const { logo, logotype, isotype } = brand;
       //Para pintar las imagenes

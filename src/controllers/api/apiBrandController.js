@@ -41,18 +41,20 @@ const BRANDS_FOLDER_NAME = "brands";
 const controller = {
   getBrands: async (req, res) => {
     try {
-      let { brands_id, withImages, withProductImages, onlyMainImages, onlyIsotype } = req.query;
+      let { brands_id, withImages, withProductImages, onlyMainImages, onlyIsotype, onlyHomeBrands } = req.query;
       brands_id = brands_id || undefined;
       withProductImages = withProductImages ? true: false;
       onlyMainImages = onlyMainImages ? true: false;
       onlyIsotype = onlyIsotype ? true: false;
+      onlyHomeBrands = onlyHomeBrands ? true : false;
       
       let brandsFromDB = await getBrandsFromDB({
         id: brands_id,
         withImages,
         withProductImages,
         onlyMainImages,
-        onlyIsotype
+        onlyIsotype,
+        onlyHomeBrands
       });
 
       // Mando la respuesta
@@ -274,7 +276,8 @@ export async function getBrandsFromDB({
   withImages = false,
   withProductImages = false,
   onlyMainImages = false,
-  onlyIsotype = false
+  onlyIsotype = false,
+  onlyHomeBrands = false
 }) {
   try {
     let brandsToReturn, brandToReturn;
@@ -295,28 +298,33 @@ export async function getBrandsFromDB({
       return brandToReturn;
     }
 
-    // Condición si id es un array
-    else if (Array.isArray(id)) {
-      brandsToReturn = await db.Brand.findAll({
-        where: {
-          id: id, // id es un array, se hace un WHERE id IN (id)
-        },
-        include: brandIncludeArray,
-      });
-      if (!brandsToReturn || !brandsToReturn.length) return null;
-      brandsToReturn = getDeepCopy(brandsToReturn);
+   // Construir cláusula where si aplica
+    const where = {};
+    if (Array.isArray(id)) {
+      where.id = id;
     }
-    // Condición si id es undefined
-    else {
-      brandsToReturn = await db.Brand.findAll({
-        include: brandIncludeArray,
-      });
-      if (!brandsToReturn || !brandsToReturn.length) return null;
-      brandsToReturn = getDeepCopy(brandsToReturn);
+    if (onlyHomeBrands) {
+      where.show_in_home = true;
     }
+
+    // Buscar según si id es array o undefined
+    brandsToReturn = await db.Brand.findAll({
+      where: Object.keys(where).length ? where : undefined,
+      include: brandIncludeArray,
+    });
+
+    if (!brandsToReturn || !brandsToReturn.length) return null;
+    brandsToReturn = getDeepCopy(brandsToReturn);
+
     for (let i = 0; i < brandsToReturn.length; i++) {
       const brand = brandsToReturn[i];
-      await setBrandKeysToReturn({ brand, withImages, withProductImages, onlyMainImages, onlyIsotype });
+      await setBrandKeysToReturn({
+        brand,
+        withImages,
+        withProductImages,
+        onlyMainImages,
+        onlyIsotype
+      });
     }
 
     return brandsToReturn;
@@ -374,11 +382,12 @@ export async function destroyBrandFromDB(id) {
 }
 export function generateBrandObject(obj) {
   // objeto para armar la address
-  let { name } = obj;
+  let { name, show_in_home } = obj;
 
   let dataToDB = {
     id: uuidv4(),
     name: name.trim().toLowerCase(),
+    show_in_home: show_in_home || false,
   };
   return dataToDB;
 }

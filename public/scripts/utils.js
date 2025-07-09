@@ -759,6 +759,7 @@ export function buildUserLoginBodyData(form) {
 export function buildBrandBodyData(form) {
   let bodyDataToReturn = {
     name: form["brand_name"]?.value,
+    show_in_home: form["show_in_home"]?.checked || false,
   };
 
   const logoInput = form["brand_logo"];

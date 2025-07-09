@@ -10,7 +10,8 @@ export default (sequelize, dataTypes) => {
             primaryKey: true,
             allowNull: false,
         },
-        name: { type: dataTypes.STRING(60) }
+        name: { type: dataTypes.STRING(60) },
+        show_in_home: { type: dataTypes.BOOLEAN },
     }
 
     let config = {
