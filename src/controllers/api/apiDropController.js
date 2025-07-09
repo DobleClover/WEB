@@ -371,7 +371,7 @@ const controller = {
 export default controller;
 
 let dropIncludeArray = [
-  { association: "products",where: { active: true }, include: productIncludeArray },
+  { association: "products",where: { active: true },required: false , include: productIncludeArray },
   "files",
 ];
 
