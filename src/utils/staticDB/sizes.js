@@ -414,4 +414,11 @@ export default [
     size: "44x36",
     categories: [3],
   },
+  //Bermudas
+  { id: 255, size: "W28", categories: [10] },
+  { id: 256, size: "W30", categories: [10] },
+  { id: 257, size: "W32", categories: [10] },
+  { id: 258, size: "W34", categories: [10] },
+  { id: 259, size: "W36", categories: [10] },
+  { id: 260, size: "W38", categories: [10] },
 ];
