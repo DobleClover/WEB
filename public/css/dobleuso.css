@@ -91,7 +91,9 @@
     color: #fff;
     background-color: #000;
   }
-  
+  .load_more_container.dobleuso_element{
+    width: 100%;
+  }
   
 /* Layout horizontal en pantallas medianas o más */
 @media (min-width: 768px) {
