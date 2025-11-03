@@ -9,10 +9,11 @@
         "footer_nav_container"
         "footer_contact_container"
         "footer_media_container";
-    padding: 5vh 15vw;
+    padding: calc(var(--real-vh, 1vh) * 5) 15vw;
     position: relative;
     z-index: 1000;
-    min-height: 100vh;align-items: flex-start;
+    min-height: calc(var(--real-vh, 1vh) * 100);
+    align-items: flex-start;
 }
 .footer_logo_container {
     grid-area: footer_logo_container;
@@ -73,8 +74,8 @@
 }
 
 .footer_logo_container{
-    height: 7.5vh;
-    margin-bottom: 2.5vh;
+    height: calc(var(--real-vh, 1vh) * 7.5);
+    margin-bottom: calc(var(--real-vh, 1vh) * 2.5);
 }
 
 
@@ -89,8 +90,8 @@
     }
     
     .footer_logo_container {
-        margin-top: 5vh;
-        height: 15vh;
+        margin-top: calc(var(--real-vh, 1vh) * 5);
+        height: calc(var(--real-vh, 1vh) * 15);
     }
 }
 @media (min-width: 1024px) { /* Desktop (opcional) */

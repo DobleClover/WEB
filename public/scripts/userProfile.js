@@ -39,6 +39,7 @@ import {
 } from "./fetchEntitiesFromDB.js";
 import { paintUserIconOrLetter } from "./header.js";
 import { generateDashboardSettings } from "./renderers/dashboardSettings.js";
+import { renderProfilePlaceholder, renderUserAddressesPlaceholder, renderUserOrdersPlaceholder, renderUserPhonesPlaceholder } from "./renderers/placeholders.js";
 import {
   handleNewAddressButtonClick,
   handleNewPhoneButtonClick,
@@ -62,6 +63,7 @@ import {
   handleFileInputChange,
   copyElementValue,
   activateCopyMsg,
+  removeDoblecloverOverlay,
 } from "./utils.js";
 
 let activeIndexSelected = 0; //index del array "items"
@@ -72,18 +74,27 @@ let userProfileExportObj = {
 
 window.addEventListener("load", async () => {
   if (!isOnPage("/perfil")) return;
+
   await scriptInitiator(); //Inicio userLogged
   if (!userLogged) return (window.location.href = "/");
   typeOfPanel = userLogged?.user_roles_id || 1;
-  await setOrderStatuses();
   // Obtén el parámetro `index` de la URL
   const urlParams = new URLSearchParams(window.location.search);
   const indexFromURL = urlParams.get("index");
-  // Si existe el parámetro, actualiza `activeIndexSelected`
   // esto es por si toca desde el dropdown
   if (indexFromURL !== null) {
     activeIndexSelected = parseInt(indexFromURL, 10); //El 10 es por algo tecnico del parseInt
   }
+  // Ocultar overlay
+  removeDoblecloverOverlay();
+  // Ahora, depende quien sea y donde este pinto el placeholder correspondiente
+  setUserProfilePlaceholder();
+  // return;
+  await setOrderStatuses();
+  
+ 
+  // Si existe el parámetro, actualiza `activeIndexSelected`
+
   let userOrders = [];
   // return
   await setGenders(); //Setea el genero
@@ -242,14 +253,12 @@ window.addEventListener("load", async () => {
   //FUNCINONES PARA PINTAR EL HTML DEL USER PANEL
   function paintUserProfile() {
     const { userInfoComponentElement, userForm } = createUserProfileComponent();
-  
+
     mainContentWrapper.className = "main_content_wrapper user_info_wrapper";
     mainContentWrapper.appendChild(userInfoComponentElement);
     mainContentWrapper.appendChild(userForm);
-  
-    
   }
-  
+
   function paintUserAddresses() {
     let addressesToPaint = userLogged?.addresses;
     //le seteo las clases
@@ -316,14 +325,14 @@ window.addEventListener("load", async () => {
     const changePassBtn = document.createElement("button");
     changePassBtn.textContent = "Cambiar contraseña";
     changePassBtn.className = "change_password_btn ui button";
-  
+
     // Insertar el botón debajo del email o al final del form
     userInfoComponentElement.appendChild(changePassBtn);
-  
+
     // 🔹 Agregar evento
     changePassBtn.addEventListener("click", async () => {
       try {
-        changePassBtn.classList.add("loading","disabled")
+        changePassBtn.classList.add("loading", "disabled");
         const res = await fetch("/api/user/generate-password-token", {
           method: "POST",
           headers: {
@@ -331,12 +340,15 @@ window.addEventListener("load", async () => {
           },
           body: JSON.stringify({ id: userLogged.id }), // Enviar ID del usuario
         });
-  
+
         const data = await res.json();
-        changePassBtn.classList.remove("loading","disabled")
+        changePassBtn.classList.remove("loading", "disabled");
         if (!res.ok) throw new Error(data.msg || "Error al solicitar enlace");
-  
-        showCardMessage(true, "Enlace enviado a tu correo para cambiar la contraseña.");
+
+        showCardMessage(
+          true,
+          "Enlace enviado a tu correo para cambiar la contraseña."
+        );
       } catch (err) {
         console.error(err);
         showCardMessage(false, "Hubo un problema al generar el enlace.");
@@ -487,82 +499,6 @@ const filterOrdersByDateRange = (orders, startDate, endDate) => {
   });
 };
 
-const constructTotalPeriodSelect = () => {
-  const select = document.createElement("select");
-
-  const options = [
-    { value: "7", text: "Últimos 7 días" },
-    { value: "15", text: "Últimos 15 días" },
-    { value: "30", text: "Último mes" },
-    { value: "90", text: "Últimos 3 meses" },
-  ];
-
-  options.forEach((optionData) => {
-    const option = document.createElement("option");
-    option.value = optionData.value;
-    option.textContent = optionData.text;
-    select.appendChild(option);
-  });
-  return select;
-};
-const constructTotalSalesCashSquares = () => {
-  const totalSalesAndCashContainer = document.createElement("div");
-  totalSalesAndCashContainer.className = "total_sales_cash_container";
-
-  const totalCashContainer = document.createElement("div");
-  totalCashContainer.className = "total_sales_container";
-
-  const today = new Date();
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(today.getDate() - 7);
-
-  const startDate = sevenDaysAgo.toISOString();
-  const endDate = today.toISOString();
-
-  const filteredOrders = filterOrdersByDateRange(
-    ordersFromDB,
-    startDate,
-    endDate
-  );
-
-  const { dolarSalesNumber, pesosSalesNumber } =
-    getTotalUsdAndPesosAccumulators(filteredOrders);
-
-  totalCashContainer.innerHTML = `
-    <i class= "bx bx-cart cart_icon"> </i>
-    <div class="totals_container">
-      <p class="total_label"> <strong class="sales-total">${filteredOrders.length}</strong> ventas </p> 
-      <p class="total_label"> USD <strong class="usd-total">${dolarSalesNumber}</strong> </p>
-      <p class="total_label"> ARS <strong class="ars-total"> ${pesosSalesNumber}</strong> </p>
-    </div>
-  `;
-
-  totalSalesAndCashContainer.appendChild(totalCashContainer);
-
-  return totalSalesAndCashContainer;
-};
-
-const getTotalUsdAndPesosAccumulators = (orders) => {
-  //TODO: Cambiar
-  let dolarSalesNumber = 0;
-  let pesosSalesNumber = 0;
-
-  orders.forEach((order) => {
-    const { payment_type_id, total } = order;
-
-    if (payment_type_id == 2) {
-      dolarSalesNumber += parseFloat(total);
-    } else {
-      pesosSalesNumber += parseFloat(total);
-    }
-  });
-
-  return {
-    dolarSalesNumber,
-    pesosSalesNumber,
-  };
-};
-
 const paintAdminProducts = async () => {
   if (!productsFromDB.length) await setProductsFromDB();
 
@@ -623,8 +559,8 @@ const handleOrderRowClick = async (order) => {
   order.orderItems.forEach((orderItem) => {
     orderItem.product =
       productsMap.get(orderItem.variation?.products_id) || null;
-    // Armo el html de la fila
-    // Obtener la imagen del producto o la default
+
+    // Obtener imagen del producto o imagen default
     let productImage = "./img/product/default.png";
     let srcset = "";
     if (orderItem.product?.files?.length) {
@@ -637,30 +573,63 @@ const handleOrderRowClick = async (order) => {
         .join(", ");
     }
 
-    // Calcular precio total
-    let totalPrice = displayBigNumbers(orderItem.price * orderItem.quantity);
+    // Cálculos de precios y descuentos
+    const quantity = orderItem.quantity;
+    const finalUnitPrice = orderItem.price;
+    const productDiscount = orderItem.product_discount || 0;
+    const couponDiscount = orderItem.coupon_discount || 0;
 
-    // Crear el HTML de la fila
-    let orderItemRow = `
-        <div class="modal_card_content_row order_item_row">
-            <!-- Columna Imagen -->
-            <div class="order_item_image">
-                <img src="${productImage}" srcset="${srcset}" alt="${orderItem.name}" class="product_image">
-            </div>
-            
-            <!-- Columna Descripción -->
-            <div class="order_item_description">
-                <span class="product-name">${orderItem.name}</span>
-                <span class="product-details grey">${orderItem.color} - ${orderItem.size}</span>
-                <span class="product-quantity grey">Cantidad: ${orderItem.quantity}</span>
-            </div>
+    const priceBase =
+      finalUnitPrice /
+      ((1 - productDiscount / 100) * (1 - couponDiscount / 100));
+    const totalBase = priceBase * quantity;
+    const totalFinal = finalUnitPrice * quantity;
 
-            <!-- Columna Precio -->
-            <div class="order_item_price">
-                <span class="total-price">$${totalPrice}</span>
-            </div>
+    const showOriginalPrice = productDiscount > 0 || couponDiscount > 0;
+
+    const discountNote =
+      couponDiscount > 0
+        ? `<span class="coupon-note grey">Con cupón aplicado (${couponDiscount}%)</span>`
+        : "";
+
+    // Crear HTML de la fila
+    const orderItemRow = `
+      <div class="modal_card_content_row order_item_row">
+        <!-- Columna Imagen -->
+        <div class="order_item_image">
+          <img src="${productImage}" srcset="${srcset}" alt="${
+      orderItem.name
+    }" class="product_image">
         </div>
+  
+        <!-- Columna Descripción -->
+        <div class="order_item_description">
+          <span class="product-name">${orderItem.name}</span>
+          <span class="product-details grey">${orderItem.color} - ${
+      orderItem.size
+    }</span>
+          <span class="product-quantity grey">Cantidad: ${
+            orderItem.quantity
+          }</span>
+        </div>
+  
+        <!-- Columna Precio -->
+        <div class="order_item_price">
+          ${
+            showOriginalPrice
+              ? `<span class="original-price grey">$${displayBigNumbers(
+                  totalBase
+                )}</span>`
+              : ""
+          }
+          <span class="total-price bold">$${displayBigNumbers(
+            totalFinal
+          )}</span>
+          ${discountNote}
+        </div>
+      </div>
     `;
+
     orderItemsListInTable.innerHTML += orderItemRow;
   });
 };
@@ -738,9 +707,7 @@ async function getUserOrders() {
 }
 
 async function listenToAdminProductToolbar() {
-  const addProductBtn = document.querySelector(
-    ".admin_add_product_btn"
-  );
+  const addProductBtn = document.querySelector(".admin_add_product_btn");
   const sortSelect = document.getElementById("sort_by");
   const filterSelect = document.getElementById("filter_type");
 
@@ -1366,3 +1333,30 @@ async function paintAdminCoupons() {
 }
 
 export { userProfileExportObj };
+
+function setUserProfilePlaceholder() {
+  let placeholderElement;
+  //esta funcion dependiendo que viene invoca a la funcion que pinta/despinta las cosas
+  switch (activeIndexSelected) {
+    case 0: //Profile | Ventas
+    placeholderElement = typeOfPanel === 2 ? renderProfilePlaceholder() : '';
+      break;
+    case 1: //Addresses | Products
+    placeholderElement = typeOfPanel === 2 ? renderUserAddressesPlaceholder() : '';
+      break;
+    case 2: //Phones | marcas & drops
+    placeholderElement = typeOfPanel === 2 ? renderUserPhonesPlaceholder() : '';
+      break;
+    case 3: //Order History | coupons
+    placeholderElement = typeOfPanel === 2 ? renderUserOrdersPlaceholder() : '';
+      break;
+    case 4: 
+    placeholderElement = typeOfPanel === 2 ? null : null;
+      break;
+    default:
+      break;
+  };
+   //aca ya tengo el placeholder, lo agrego primero
+   document.querySelector('.main').prepend(placeholderElement);
+   return 
+}

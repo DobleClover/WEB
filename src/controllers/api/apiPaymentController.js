@@ -27,7 +27,7 @@ export function getTokenFromUrl(url) {
   return parsedUrl.searchParams.get("token"); // Obtiene el valor del parámetro 'token'
 }
 
-export async function handleCreateMercadoPagoOrder(orderItemsToDb, mpClient, discount_percent = 0) {
+export async function handleCreateMercadoPagoOrder(orderItemsToDb, mpClient) {
   try {
     let body = {
       items: [],
@@ -45,13 +45,10 @@ export async function handleCreateMercadoPagoOrder(orderItemsToDb, mpClient, dis
     };
     orderItemsToDb.forEach((item) => {
       const originalPrice = Number(item.price);
-      const discountedPrice = discount_percent > 0
-        ? Number((originalPrice * (1 - discount_percent / 100)).toFixed(2))
-        : originalPrice;
       const mercadoPagoItemObject = {
         title: item.name,
         quantity: Number(item.quantity),
-        unit_price: discountedPrice,
+        unit_price: originalPrice,
         // currency_id: "ARS",
       };
       body.items.push(mercadoPagoItemObject);

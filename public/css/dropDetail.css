@@ -5,11 +5,11 @@
 }
 
 .product_cards_wrapper_section{
-    padding: 7.5vh 0;
+    padding: calc(var(--real-vh, 1vh) * 7.5) 0;
 }
 
 @media(min-width: 768px){
     .product_cards_wrapper_section{
-        padding: 15vh 0;
+        padding: calc(var(--real-vh, 1vh) * 15) 0;
     }
 }

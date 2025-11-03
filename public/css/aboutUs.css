@@ -1,6 +1,6 @@
 .main {
-  padding: 15vh 0;
-  padding-bottom: 5vh;
+  padding: calc(var(--real-vh, 1vh) * 15) 0;
+  padding-bottom: calc(var(--real-vh, 1vh) * 5);
 }
 
 .about_us_section {
@@ -52,7 +52,7 @@
   border-bottom: 3px solid #5aa343;
   display: inline-block;
   width: fit-content;
-  margin: 2vh auto;
+  margin: calc(var(--real-vh, 1vh) * 2) auto;
   padding: 5px 0.5em;
 }
 

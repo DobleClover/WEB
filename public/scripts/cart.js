@@ -1063,7 +1063,7 @@ async function updateUserCart() {
         body: JSON.stringify({ tempCartItems: checkoutCards }),
       });
       if (!response.ok) {
-        //Aca ver que hacer si da error TODO:
+        return window.location.reload();
       }
       response = await response.json();
       userLogged.tempCartItems = response.updatedCardItems;

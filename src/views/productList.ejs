@@ -56,55 +56,83 @@
       </section>
       <section class="product_list_buttons_container">
         <div class="product_filter_wrapper">
-          <label for="productFilter" class="filter_label">Filtrar por:</label>
-          <select id="productFilter" class="product_filter_select">
-            <option value="all">Todos los productos</option>
-            <option value="dobleclover">DobleClover</option>
-            <option value="dobleuso">DobleUso</option>
-          </select>
+          <div class="custom_filter_dropdown">
+            <button class="filter_toggle_btn">
+              Filtros aplicados (<span id="filter_count">0</span>)
+              <span class="dropdown_arrow">+</span>
+            </button>
+        
+            <div class="filter_dropdown_content">
+              <div class="filter_group">
+                <label><input type="checkbox" name="type" value="dobleclover" /> <span>DobleClover</span></label>
+                <label><input type="checkbox" name="type" value="dobleuso" /> <span>DobleUso</span></label>
+              </div>
+        
+              <hr />
+        
+              <div class="filter_group category_dropdown">
+                <div class="category_toggle">
+                  <strong>Categorías:</strong>
+                  <span class="category_arrow">+</span>
+                </div>
+        
+                <div class="category_list collapsed">
+                  <% categoriesFromDB.forEach(cat => { %>
+                    <label>
+                      <input type="checkbox" name="category" value="<%= cat.id %>" />
+                      <span><%= cat.name %></span>
+                    </label>
+                  <% }) %>
+                </div>
+                <div class="filter_actions">
+                  <button id="clearFiltersBtn" type="button">Limpiar filtros</button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+        
+      
+        <!-- DROPS -->
         <div class="button_row_container">
-          <div class="section_title_container drop_title_container">
-            <img
-              src="./img/logo/branding/Variante_Crema/Icono.png"
-              alt=""
-              class="section_logo animated_element"
-            />
-            <h4 class="section_title animated_element">Drops</h4>
+          <div class="section_title_container accordion_header">
+            <h4 class="section_title">DROPS</h4>
+            <span class="accordion_toggle">+</span>
           </div>
-          <div class="drop_buttons_wrapper buttons_wrapper">
-            <% dropsFromDB.forEach(drop => { %>
-            <a
-              href="/drop/<%= drop.id %>"
-              class="drop_btn product_list_btn animated_element"
-              ><%= drop.name %></a
-            >
-            <% }) %>
+          <div class="accordion_content collapsed">
+            <div class="accordion_inner">
+              <% dropsFromDB.forEach(drop => { %>
+                <a href="/drop/<%= drop.id %>" class="drop_btn product_list_btn"><%= drop.name %></a>
+              <% }) %>
+            </div>
           </div>
         </div>
+      
+        <!-- MARCAS -->
         <div class="button_row_container">
-          <div class="section_title_container brand_title_container">
-            <h4 class="section_title animated_element">Marcas</h4>
+          <div class="section_title_container accordion_header">
+            <h4 class="section_title">MARCAS</h4>
+            <span class="accordion_toggle">+</span>
           </div>
-          <div class="brand_buttons_wrapper buttons_wrapper">
-            <% brandsFromDB.forEach(brand => { %> <% if (brand.logo &&
-            brand.logo.file_urls) { %> <% let srcset =
-            brand.logo.file_urls.map(file => `${file.url}
-            ${file.size}`).join(','); %>
-            <a
-              href="/marcas/<%= brand.id %>"
-              class="brand_btn product_list_btn animated_element"
-            >
-              <img
-                src="<%= brand.logo.file_urls?.find(file => file.size === '1x')?.url %>"
-                srcset="<%= srcset %>"
-                alt="<%= brand.name %>"
-              />
-            </a>
-            <% } %> <% }) %>
+          <div class="accordion_content collapsed">
+            <div class="accordion_inner">
+              <% brandsFromDB.forEach(brand => { %> 
+                <% if (brand.logo && brand.logo.file_urls) { 
+                  let srcset = brand.logo.file_urls.map(file => `${file.url} ${file.size}`).join(','); %>
+                  <a href="/marcas/<%= brand.id %>" class="brand_btn product_list_btn">
+                    <img
+                      src="<%= brand.logo.file_urls?.find(file => file.size === '1x')?.url %>"
+                      srcset="<%= srcset %>"
+                      alt="<%= brand.name %>"
+                    />
+                  </a>
+                <% } %>
+              <% }) %>
+            </div>
           </div>
         </div>
-      </section>
+      </section>  
+
       <section class="product_section">
         <div class="product_section_title dobleclover_element">
           <h2>Nuevos Ingresos - DobleClover</h2>

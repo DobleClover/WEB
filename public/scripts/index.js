@@ -20,7 +20,7 @@ window.addEventListener("load", async () => {
     const hero = document.querySelector(".hero");
     hero.style.backgroundImage = "url('/img/index.jpg')"; // Carga programática
     await scriptInitiator();
-    await setBrands(true, true); //el segundo true es para que solo me busque el isotype
+    await setBrands(true, true, true); //el segundo true es para que solo me busque el isotype, el tercero para las homebrands
     // Ocultar overlay
     removeDoblecloverOverlay();
     setTimeout(() => {

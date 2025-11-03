@@ -143,7 +143,7 @@ export async function setColors() {
 }
 
 export let brandsFromDB = [];
-export async function setBrands(withProductImages = false, onlyIsotype = false) {
+export async function setBrands(withProductImages = false, onlyIsotype = false, onlyHomeBrands = false) {
   try {
     const params = new URLSearchParams();
 
@@ -154,6 +154,9 @@ export async function setBrands(withProductImages = false, onlyIsotype = false) 
 
     if (onlyIsotype) {
       params.append("onlyIsotype", "true");
+    }
+    if (onlyHomeBrands) {
+      params.append("onlyHomeBrands", "true");
     }
 
     const url = `${window.location.origin}/api/brand${

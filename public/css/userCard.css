@@ -44,7 +44,7 @@
     border-style: dashed;
     background: none;
     cursor: pointer;
-    padding: 5vh 0;
+    padding: calc(var(--real-vh, 1vh) * 5) 0;
 }
 .card.card_empty .add_icon{
     font-size: 4rem;

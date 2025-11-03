@@ -1,81 +1,166 @@
-.main_content_wrapper.user_orders_wrapper{
+.main_content_wrapper.user_orders_wrapper {
     flex-direction: column;
     align-items: center;
-}
-.order_card{
+  }
+  
+  .order_card {
     position: relative;
     display: flex;
-    box-shadow: 2px 5px 3px var(--box-shadow-color);
-    height: auto;
-    background-color: #fff;
-    overflow: hidden;
+    flex-direction: column;
     width: 95%;
     max-width: 800px;
-    flex-direction: column;
-    box-shadow: 1px 2px 3px var(--box-shadow-color);
+    background-color: #fff;
     border: 1px solid var(--black-transparent-color);
     border-radius: 1rem;
+    box-shadow: 1px 2px 3px var(--box-shadow-color);
+    overflow: hidden;
     cursor: pointer;
-}
-.order_card:hover{
-    opacity: .8;
-}
-.card_top_content{
-    height: fit-content;
-    padding: 10px;
+  }
+  
+  .order_card:hover {
+    opacity: 0.8;
+  }
+  
+  /* --- Encabezado de la orden --- */
+  .card_top_content {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
     width: 100%;
-    border-bottom: 2px solid var(--black-transparent-color);
-    display: flex;
-    justify-content: space-between;
-}
-
-.card_top_content > p{
-    font-weight: 600;
-    font-size: clamp(1rem, 2vw + .05rem, 1.2rem);
-    margin: 0;
-}
-.card_order_item_container{
-    height: 8rem;
-    display: flex;
-    justify-content: flex-start;
     padding: 10px;
-    position: relative;
-    border-bottom: 1px solid var(--black-transparent-color);
-}
-.order_card .card_image{
-    padding: 0;
-    width: 30%;
-    margin-right: 15px;
-    max-width: 70px;
-}
-.order_card .card_image img{
-    object-fit: cover;
-}
-.order_card .card_content{
-    padding-top: 0;
-    height: 100%;
-    justify-content: space-between;
-}
-.order_card .card_header{
-    font-size: clamp(.85rem, 2vw + .2rem, 1.2rem);
-}
-.order_card .card_desc,
-.order_card .card_price{
-    font-size: small;
-}
-
-
-@media(min-width:768px){
-    .order_card .card_price{
-        font-size: medium;
-    }
-    .card_order_item_container{
-        height: 8.5rem;
-    }
-    .order_card .card_image{
-        width: 35%;
-    }
-}
-@media(min-width:1024px){
+    border-bottom: 2px solid var(--black-transparent-color);
   }
+  
+  .card_top_content > p {
+    font-weight: 600;
+    font-size: clamp(1rem, 2vw + 0.05rem, 1.2rem);
+    margin: 0;
+  }
+  
+  /* --- Ítems de la orden --- */
+  .card_order_item_container {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid var(--black-transparent-color);
+    gap: 15px;
+    min-height: 7rem;
+  }
+  
+  /* Imagen */
+  .order_card .card_image {
+    flex-shrink: 0;
+    width: 70px;
+    height: 70px;
+    overflow: hidden;
+    border-radius: 8px;
+  }
+  
+  .order_card .card_image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  /* Contenido */
+  .order_card .card_content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex: 1;
+    height: 100%;
+  }
+  
+  .order_card .card_header {
+    font-size: clamp(0.85rem, 2vw + 0.2rem, 1.2rem);
+    margin-bottom: 5px;
+  }
+  
+  .order_card .card_desc,
+  .order_card .card_price {
+    font-size: small;
+  }
+  
+  /* Precios y descuentos */
+  .price_wrapper {
+    display: flex;
+    flex-direction: column;
+    margin-top: 5px;
+  }
+  
+  .original_price {
+    text-decoration: line-through;
+    color: #999;
+    font-size: 0.9rem;
+  }
+  
+  .discounted_price {
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .discount_info {
+    font-size: 0.75rem;
+    color: #888;
+  }
+  .doubleuse_badge {
+    background-color: #222;
+    color: var(--green-color);
+    font-size: 0.8rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 8px;
+    font-weight: 500;
+    vertical-align: middle;
+  }
+  .price_wrapper {
+    display: flex;
+    flex-direction: column;
+    margin-top: 5px;
+  }
+  
+  .price_row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .original_price {
+    text-decoration: line-through;
+    color: #999;
+    font-size: 0.9rem;
+  }
+  
+  .discounted_price {
+    font-weight: bold;
+    color: #333;
+    font-size: 1rem;
+  }
+  
+  .price_arrow {
+    color: #999;
+    font-size: 0.85rem;
+  }
+  
+  .discount_info {
+    font-size: 0.75rem;
+    color: #888;
+    margin-top: 2px;
+  }
+  
+  /* --- Media Queries --- */
+  @media (min-width: 768px) {
+    .card_order_item_container {
+      min-height: 8.5rem;
+    }
+  
+    .order_card .card_price {
+      font-size: medium;
+    }
+  
+    .order_card .card_image {
+      width: 90px;
+      height: 90px;
+    }
+  }
+  

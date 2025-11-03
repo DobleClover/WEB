@@ -31,6 +31,7 @@ import {
   setLocalStorageItem,
 } from "./localStorage.js";
 import { userProfileExportObj } from "./userProfile.js";
+import setRealVhUnit from "./viewportHeightFix.js";
 // import { userProfileExportObj } from "./userProfile.js";
 
 export function listenToProductCards() {
@@ -477,6 +478,7 @@ export async function fetchDBProducts({
   limit = null,
   offset = null,
   id = null,
+  onlyActive = null
 } = {}) {
   try {
     const queryParams = new URLSearchParams();
@@ -484,6 +486,7 @@ export async function fetchDBProducts({
     if (categoryId) queryParams.append("categoryId", categoryId);
     if (limit) queryParams.append("limit", limit);
     if (offset) queryParams.append("offset", offset);
+    if (onlyActive) queryParams.append("only_active", '1');
     // Agregar los valores del array `id` a los parámetros de la query
     if (Array.isArray(id)) {
       id.forEach((value) => queryParams.append("productId", value));
@@ -758,6 +761,7 @@ export function buildUserLoginBodyData(form) {
 export function buildBrandBodyData(form) {
   let bodyDataToReturn = {
     name: form["brand_name"]?.value,
+    show_in_home: form["show_in_home"]?.checked || false,
   };
 
   const logoInput = form["brand_logo"];
@@ -858,12 +862,12 @@ export function buildDropBodyData(form) {
     });
   });
 
-  // PAra los ids de productos
-  const productsIDS = form?.querySelectorAll(".product_search_input a.label");
-  productsIDS?.forEach((prod) => {
-    const prodID = prod.dataset.value;
-    bodyDataToReturn.productIDS.push(prodID);
-  });
+  // // PAra los ids de productos
+  // const productsIDS = form?.querySelectorAll(".product_search_input a.label");
+  // productsIDS?.forEach((prod) => {
+  //   const prodID = prod.dataset.value;
+  //   bodyDataToReturn.productIDS.push(prodID);
+  // });
   // Crear FormData
   const formData = new FormData();
 
@@ -1508,29 +1512,30 @@ export function isOnPage(path) {
 
 export async function scriptInitiator() {
   try {
+    setRealVhUnit();
     await checkForUserLogged();
     await setSettings();
     headerExportObject.headerScriptInitiator();
     let payingOrder = handleOrderInLocalStorage({ type: 2 });
-    if (payingOrder && !isOnPage("post-compra")) {
-      return;
-      //Aca tengo que dar de baja la orden
-      let response = await fetch(`/api/order/paymentFailed/${payingOrder}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      if (response.ok) {
-        response = await response.json();
-        //Ahora si se cancelo o se autoaprobo de db entonces lo elimino de localStorage
-        if (response.orderWasCanceled || response.orderWasFulfilled) {
-          handleOrderInLocalStorage({ type: 3 });
-          if (response.orderWasFulfilled)
-            return (window.location.href = `/post-compra?orderId=${response.tra_id}`);
-        }
-      }
-    }
+    // if (payingOrder && !isOnPage("post-compra")) {
+    //   return;
+    //   //Aca tengo que dar de baja la orden
+    //   let response = await fetch(`/api/order/paymentFailed/${payingOrder}`, {
+    //     method: "DELETE",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //   });
+    //   if (response.ok) {
+    //     response = await response.json();
+    //     //Ahora si se cancelo o se autoaprobo de db entonces lo elimino de localStorage
+    //     if (response.orderWasCanceled || response.orderWasFulfilled) {
+    //       handleOrderInLocalStorage({ type: 3 });
+    //       if (response.orderWasFulfilled)
+    //         return (window.location.href = `/post-compra?orderId=${response.tra_id}`);
+    //     }
+    //   }
+    // }
     // Inicip el header con la animacion
     const headerElement = document.querySelector(".header_element");
     setTimeout(() => {
@@ -2021,7 +2026,7 @@ export async function validateCoupon(code, messageTarget) {
       `/api/coupon/validate?${queryParams.toString()}`
     );
     const result = await response.json();
-    setCouponLoader(false)
+    setCouponLoader(false);
     if (!result.ok) {
       showCouponMessage(result.msg || "Cupón inválido", false, messageTarget);
       return;
@@ -2056,10 +2061,15 @@ function showCouponMessage(msg, success, targetEl) {
 
 export function applyCouponToDetail(coupon = null) {
   if (!coupon) return;
-
+  
+  // Suponiendo que ya las cargaste del backend
+  const variationsMap = Object.fromEntries(
+    variationsFromDB.map((v) => [v.id, v])
+  );
   const detailContainers = document.querySelectorAll(".detail_list_container");
 
   detailContainers.forEach((container) => {
+    let itemsWithCoupon = 0;
     const totalRow = container.querySelector(".last-row");
     const totalCostElement = totalRow.querySelector(".detail_row_total_cost");
 
@@ -2067,14 +2077,42 @@ export function applyCouponToDetail(coupon = null) {
     const oldCouponRow = container.querySelector(".coupon_row_applied");
     if (oldCouponRow) oldCouponRow.remove();
 
-    // Obtener total actual
-    const currentTotal = parseFloat(
-      totalCostElement.textContent.replace(/[^\d,]/g, "").replace(",", ".")
-    );
+    // 🔁 Recalcular el subtotal total y el subtotal aplicable
+    let subtotal = 0;
+    let subtotalWithCoupon = 0;
 
-    // Calcular descuento
-    const discountValue = currentTotal * (coupon.discount_percent / 100);
-    const discountedTotal = currentTotal - discountValue;
+    const checkoutCards = document.querySelectorAll(".checkout-card");
+    checkoutCards.forEach((card) => {
+      const variationId = card.dataset.variations_id;
+      const variation = variationsMap[variationId];
+
+      if (!variation) return;
+
+      const quantity = parseInt(
+        card.querySelector(".card_product_amount")?.textContent || 1
+      );
+
+      const priceEl =
+        card.querySelector(".discounted_price") ||
+        card.querySelector(".card_price");
+      const price = parseFloat(
+        priceEl.textContent.replace(/[^\d,]/g, "").replace(",", ".")
+      );
+
+      const isDobleUso = variation.product?.is_dobleuso;
+
+      const itemTotal = price * quantity;
+      subtotal += itemTotal;
+
+      if (!isDobleUso) {
+        subtotalWithCoupon += itemTotal;
+        itemsWithCoupon += quantity; // acumulás cantidad, no solo ítems únicos
+      }
+    });
+
+    // 🧮 Calcular descuento solo sobre productos NO dobleuso
+    const discountValue = subtotalWithCoupon * (coupon.discount_percent / 100);
+    const discountedTotal = subtotal - discountValue;
 
     // Crear nueva fila para el cupón
     const couponRow = document.createElement("div");
@@ -2083,10 +2121,15 @@ export function applyCouponToDetail(coupon = null) {
     const label = document.createElement("p");
     label.className = "detail_row_p";
     label.innerHTML = `
-    ${coupon.code}<br>
-    <span class="shipping_note">${parseFloat(coupon.discount_percent)?.toFixed(0)}% de descuento</span>
-  `;
-
+  ${coupon.code}<br>
+  <span class="shipping_note">
+    ${parseFloat(coupon.discount_percent)?.toFixed(
+      0
+    )}% de descuento aplicado a ${itemsWithCoupon} ${
+      itemsWithCoupon === 1 ? "producto" : "productos"
+    }.
+  </span>
+`;
     couponRow.appendChild(label);
 
     const value = document.createElement("p");
@@ -2097,7 +2140,6 @@ export function applyCouponToDetail(coupon = null) {
     )}`;
     couponRow.appendChild(value);
 
-    // Insertar antes del total
     container.insertBefore(couponRow, totalRow);
 
     // Actualizar total
@@ -2108,7 +2150,9 @@ export function applyCouponToDetail(coupon = null) {
   });
 }
 
-function setCouponLoader(isLoading = false){
+function setCouponLoader(isLoading = false) {
   const wrappers = document.querySelectorAll(".coupon_input_wrapper");
-  wrappers.forEach(elem => isLoading ? elem.classList.add("loading") : elem.classList.remove("loading"));
+  wrappers.forEach((elem) =>
+    isLoading ? elem.classList.add("loading") : elem.classList.remove("loading")
+  );
 }

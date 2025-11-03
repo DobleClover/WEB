@@ -14,6 +14,8 @@ export default (sequelize, dataTypes) => {
         color: {type: dataTypes.STRING(255)},
         size: {type: dataTypes.STRING(20)},
         discount: { type: dataTypes.TINYINT },
+        coupon_discount: { type: dataTypes.TINYINT },
+        is_dobleuso: { type: dataTypes.BOOLEAN },
     }
 
     let config = {

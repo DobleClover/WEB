@@ -46,15 +46,10 @@
         </section>
         <section class="related_products_section">
             <p class="page_title">Productos Relacionados</p>
-            <div class="product_cards_wrapper products-container"></div>
+            <div class="product_cards_wrapper_section products-container"></div>
         </section>
     </main>
   <%- include('./partials/footer.ejs') %>
-  <style>
-    .small_images_container {
-        --image-count: <%= productFromDB.files.length%>; /* Cambia según el número de imágenes */
-    }
-  </style>
   
 </body>
 </html>

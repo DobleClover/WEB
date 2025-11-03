@@ -99,15 +99,15 @@ const controller = {
           .status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code)
           .json({ msg: HTTP_STATUS.INTERNAL_SERVER_ERROR.message });
 
-      // Ahora agarro los productos que relaciono
-      let { productIDS } = req.body;
-      productIDS = JSON.parse(productIDS);
-      let relationsToPush = productIDS?.map((prodID) => ({
-        products_id: prodID,
-        drops_id: createdDrop.id,
-      }));
-      relationsToPush.length &&
-        (await db.Product_Drop.bulkCreate(relationsToPush));
+      // // Ahora agarro los productos que relaciono
+      // let { productIDS } = req.body;
+      // productIDS = JSON.parse(productIDS);
+      // let relationsToPush = productIDS?.map((prodID) => ({
+      //   products_id: prodID,
+      //   drops_id: createdDrop.id,
+      // }));
+      // relationsToPush.length &&
+      //   (await db.Product_Drop.bulkCreate(relationsToPush));
       // Ahora, si cargo fotos...
       let { files } = req;
       let { filesFromArray } = req.body; //Esto es lo que me llega por body
@@ -192,28 +192,28 @@ const controller = {
       await updateDropFromDB(dropObjToDB, dropObjToDB.id);
       console.log("🟢 Drop actualizado con éxito:", dropObjToDB);
       // Ahora veo que productos tiene
-      let { productIDS } = req.body;
-      productIDS = JSON.parse(productIDS);
-      // Calcular qué productos agregar y cuáles eliminar
-      let { idsToAdd, idsToRemove } = getDropProductRelationLists({
-        productIDS,
-        dbDrop,
-      });
-      const productRelationsToAdd =
-        idsToAdd?.map((prodID) => ({
-          products_id: prodID,
-          drops_id: dbDrop.id,
-        })) || [];
-      productRelationsToAdd.length &&
-        (await db.Product_Drop.bulkCreate(productRelationsToAdd));
-      idsToRemove.length &&
-        (await db.Product_Drop.destroy({
-          where: {
-            products_id: idsToRemove,
-            drops_id: dbDrop.id,
-          },
-        }));
-      console.log("🟢 Relaciones con productos actualizadas con éxito:");
+      // let { productIDS } = req.body;
+      // productIDS = JSON.parse(productIDS);
+      // // Calcular qué productos agregar y cuáles eliminar
+      // let { idsToAdd, idsToRemove } = getDropProductRelationLists({
+      //   productIDS,
+      //   dbDrop,
+      // });
+      // const productRelationsToAdd =
+      //   idsToAdd?.map((prodID) => ({
+      //     products_id: prodID,
+      //     drops_id: dbDrop.id,
+      //   })) || [];
+      // productRelationsToAdd.length &&
+      //   (await db.Product_Drop.bulkCreate(productRelationsToAdd));
+      // idsToRemove.length &&
+      //   (await db.Product_Drop.destroy({
+      //     where: {
+      //       products_id: idsToRemove,
+      //       drops_id: dbDrop.id,
+      //     },
+      //   }));
+      // console.log("🟢 Relaciones con productos actualizadas con éxito:");
 
       // Tema Imagenes
       const dbFiles = dbDrop?.files || [];
@@ -371,7 +371,7 @@ const controller = {
 export default controller;
 
 let dropIncludeArray = [
-  { association: "products", include: productIncludeArray },
+  { association: "products",where: { active: true },required: false , include: productIncludeArray },
   "files",
 ];
 

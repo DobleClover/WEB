@@ -17,9 +17,9 @@
 }
 
 .main {
-  min-height: 70vh;
-  padding: 2.5vh 5vw;
-  margin: 15vh 0;
+  min-height: calc(var(--real-vh, 1vh) * 70);
+  padding: calc(var(--real-vh, 1vh) * 2.5) 5vw;
+  margin: calc(var(--real-vh, 1vh) * 15) 0;
   flex-direction: row;
   align-items: unset;
   overflow-y: visible;
@@ -31,7 +31,7 @@
   gap: 20px;
   flex-wrap: wrap;
   justify-content: center;
-  padding: 5vh 2.5vw;
+  padding: calc(var(--real-vh, 1vh) * 5) 2.5vw;
 }
 .main_content_wrapper h1 {
   margin: 0 !important;
@@ -72,18 +72,19 @@
 }
 .ui.placeholder.menu_placeholder,
 .ui.placeholder.image_placeholder {
-  height: 55vh;
+  height: calc(var(--real-vh, 1vh) * 55);
 }
 .ui.placeholder.menu_placeholder {
-  margin-top: 9.5vh;
+  margin-top: calc(var(--real-vh, 1vh) * 9.5);
   display: none;
 }
 .user_info_placeholder {
   width: 60%;
-  height: 55vh;
+  height: calc(var(--real-vh, 1vh) * 55);
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin: auto;
 }
 .user_info_placeholder > * {
   width: 100%;
@@ -97,7 +98,7 @@
 }
 .table_container {
   width: 100%;
-  height: 50vh;
+  height: calc(var(--real-vh, 1vh) * 50);
 }
 #myGrid {
   width: 100%;
@@ -238,7 +239,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 12.5px;
-  margin: 2vh 0 !important;
+  margin: calc(var(--real-vh, 1vh) * 2) 0 !important;
 }
 .files_thumb_field.brand_field {
   justify-content: center;
@@ -266,11 +267,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 2.5vh auto;
+  margin: calc(var(--real-vh, 1vh) * 2.5) auto;
 }
 .ui.form .add_size_button_field {
   width: fit-content;
-  margin: 2.5vh auto;
+  margin: calc(var(--real-vh, 1vh) * 2.5) auto;
 }
 .variation_sizes_wrapper {
   width: 100%;
@@ -295,7 +296,7 @@
 }
 
 .ui.modal > .content.order_detail_modal_content {
-  padding: 5vh 0;
+  padding: calc(var(--real-vh, 1vh) * 5) 0;
 }
 .ui.card.order_detail_card {
   margin: 0 auto;
@@ -333,7 +334,8 @@
   height: 100%;
 }
 .product_table_list_content .order_item_description {
-  width: 50%;
+  flex: 1;
+  padding-left: 25px;
   display: flex;
   flex-direction: column;
   align-content: space-between;
@@ -343,7 +345,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 5vh;
+  margin-top: calc(var(--real-vh, 1vh) * 5);
 }
 .order_detail_card_section .card_label.label {
   font-size: large;
@@ -464,11 +466,11 @@
 .field.image_box .image_container img {
   object-fit: cover;
 }
-.setting_cards_wrapper{
+.setting_cards_wrapper {
   flex-direction: column;
   gap: 30px;
 }
-.products_cards_wrapper{
+.products_cards_wrapper {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
@@ -482,13 +484,44 @@
   border-radius: 6px;
   cursor: pointer;
   font-weight: 500;
-  transition:  background-color .3s ease;
+  transition: background-color 0.3s ease;
 }
 
 .change_password_btn:hover {
   background-color: var(--green-cream-color);
 }
+.order_item_price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
+}
 
+.original-price {
+  text-decoration: line-through;
+  font-size: 0.85rem;
+  color: #999;
+}
+
+.total-price {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #333;
+}
+
+.coupon-note {
+  font-size: 0.75rem;
+  color: #888;
+}
+/* PLaceholders */
+.user_addresses_placeholder {
+  margin: 0 auto !important;
+  height: 200px;
+}
+.user_addresses_placeholder * {
+  height: 100%;
+}
 @media (min-width: 768px) {
   .main {
     padding: 0;
@@ -499,13 +532,13 @@
   }
   .main .main_content_wrapper {
     width: 60%;
-    padding: 2.5vh 0;
+    padding: calc(var(--real-vh, 1vh) * 2.5) 0;
   }
   .main > div {
-    margin: 6.5vh 0px;
+    margin: calc(var(--real-vh, 1vh) * 6.5) 0px;
   }
   .main > .main_content_wrapper {
-    margin: 6.5vh auto;
+    margin: calc(var(--real-vh, 1vh) * 6.5) auto;
   }
   .main_content_wrapper.address_wrapper {
     padding: 0;
@@ -527,9 +560,6 @@
   }
   .product_table_list_content .order_item_image {
     width: fit-content;
-  }
-  .product_table_list_content .order_item_description {
-    width: 50%;
   }
 }
 @media (min-width: 1024px) {

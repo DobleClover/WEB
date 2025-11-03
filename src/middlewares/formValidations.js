@@ -61,7 +61,6 @@ export default {
       .withMessage("Tipo de email invalido")
       .bail()
       .custom(async (value, { req }) => {
-        //TODO:
         //No puede ingresar un email que ya esta
         let userEmail = value?.toLowerCase();
         let emailInDataBase = await db.User.findOne({
