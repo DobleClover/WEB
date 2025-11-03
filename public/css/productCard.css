@@ -75,12 +75,12 @@
   position: absolute;
   height: 30%;
   width: 100%;
-  display: flex;
   justify-content: space-evenly;
   bottom: -5%;
   left: 50%;
   transform: translateX(-50%);
   z-index: 10;
+  display: none;
 }
 .product_card_other_image img {
   border: 2px solid var(--green-cream-color);
@@ -195,5 +195,8 @@
   .product_card {
     width: 30vw;
     max-height: 480px;
+  }
+  .product_card_other_image{
+    display: flex;
   }
 }
