@@ -8,7 +8,7 @@ export function createPaginatedProductLoader({
   queryBuilder,
   isDobleUso = false,
   onInitialRender = null,
-  limit = 5,
+  limit = 6,
 }) {
   let offset = 0;
   let fetchingWithoutStock = false;

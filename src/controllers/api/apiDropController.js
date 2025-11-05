@@ -464,6 +464,7 @@ export async function getDropsFromDB({
           id: id, // id es un array, se hace un WHERE id IN (id)
         },
         include: dropIncludeArray,
+        order: [['name', 'ASC']],
       });
       if (!dropsToReturn || !dropsToReturn.length) return null;
       dropsToReturn = getDeepCopy(dropsToReturn);
@@ -472,6 +473,7 @@ export async function getDropsFromDB({
     else {
       dropsToReturn = await db.Drop.findAll({
         include: dropIncludeArray,
+        order: [['name', 'ASC']],
       });
       if (!dropsToReturn || !dropsToReturn.length) return null;
       dropsToReturn = getDeepCopy(dropsToReturn);

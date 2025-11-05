@@ -81,23 +81,26 @@ function listenToFilterSelect() {
 }
 
 function animateBanners() {
+  // Abro todos a priori todos
+      document
+        .querySelectorAll(".accordion_content")
+        .forEach((c) => c.classList.add("open"));
+      document
+        .querySelectorAll(".accordion_header")
+        .forEach((h) => h.classList.add("open"));
+
+        // Escucho click
   document.querySelectorAll(".accordion_header").forEach((header) => {
     header.addEventListener("click", () => {
       const content = header.nextElementSibling;
       const isOpen = content.classList.contains("open");
-
-      // Cierra todos
-      document
-        .querySelectorAll(".accordion_content")
-        .forEach((c) => c.classList.remove("open"));
-      document
-        .querySelectorAll(".accordion_header")
-        .forEach((h) => h.classList.remove("open"));
-
       // Abre el actual si estaba cerrado
       if (!isOpen) {
         content.classList.add("open");
         header.classList.add("open");
+      } else{
+        content.classList.remove("open");
+        header.classList.remove("open");
       }
     });
   });
